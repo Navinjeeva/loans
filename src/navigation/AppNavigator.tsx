@@ -18,36 +18,50 @@ import {
 import Loader from '../common/components/Loader';
 import DrawerNavigator from './DrawerNavigator';
 import { setState } from '@src/store/auth';
+import { getData, removeData } from '@src/common/utils/storage';
 
 const TWO_MINUTES_THIRTY_SECONDS = 1000 * 60 * 2; // 2 minutes
 
 const AppNavigator = () => {
   const [loading, setLoading] = React.useState(false);
   const dispatch = useDispatch();
-  const { loggedIn } = useSelector((state: any) => state.auth);
-  const refreshTokenRef = useRef(loggedIn);
-
-  console.log(loggedIn, 'h9g9g');
+  const { refresh_token, sessionTime, connected, loggedIn } = useSelector(
+    (state: any) => state.auth,
+  );
+  const refreshTokenRef = useRef(refresh_token);
 
   useEffect(() => {
-    refreshTokenRef.current = loggedIn;
-  }, [loggedIn]);
+    refreshTokenRef.current = refresh_token;
+  }, [refresh_token]);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
+      let access = await getData('access_token');
+      let refresh = await getData('refresh_token');
 
-      dispatch(
-        setState({
-          loggedIn: true,
-        }),
-      );
-
+      if (access && refresh) {
+        dispatch(
+          setState({
+            access_token: access,
+            refresh_token: refresh,
+            sessionTime: new Date(),
+          }),
+        );
+      } else {
+        dispatch(
+          setState({
+            access_token: '',
+            refresh_token: '',
+            sessionTime: new Date(),
+          }),
+        );
+        await removeData('access_token');
+        await removeData('refresh_token');
+      }
       setLoading(false);
     })();
-  }, [loggedIn]);
-
-  console.log(loggedIn, 'uoh00h');
+  }, [refresh_token]);
 
   if (loading)
     return (

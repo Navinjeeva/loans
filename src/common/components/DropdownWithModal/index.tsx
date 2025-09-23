@@ -434,7 +434,7 @@ const DropdownWithModal = ({
                       color: colors.text,
                       fontWeight: 'bold',
                       fontSize: 16,
-                      backgroundColor: colors.inputBackground,
+                      //backgroundColor: colors.inputBackground,
                       paddingHorizontal: 8,
                       paddingVertical: 4,
                       borderRadius: 4,

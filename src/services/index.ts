@@ -1,5 +1,9 @@
+import { getData, removeData, storeData } from '@src/common/utils/storage';
+import store from '@src/store';
+import { setState } from '@src/store/auth';
 import axios from 'axios';
 import { Platform } from 'react-native';
+import base64 from 'base-64';
 
 export let ENVIROMENT: string = 'QA'; // DEV, QA, UAT, PROD, VAPT
 
@@ -29,50 +33,10 @@ let urls: {
     ENVIROMENT: 'QA',
     ANDROID_VERSION_NAME: '2.2.9',
     LOAN_BASE_URL: 'https://qa-api-los.impactodigifin.xyz/api/v1/ambassador',
-    IDP_BASE_URL: 'https://qa-ocr.impactodigifin.xyz',
-    AMBANKING_APP_BASE_URL: 'https://qa-api.ambanking.impactodigifin.xyz',
-    AUTH_BASE_URL: 'https://qa-api-iam.impactodigifin.xyz',
+    IDP_BASE_URL: 'http://3.146.230.106:8000/',
+    AMBANKING_APP_BASE_URL: 'http://10.0.3.196:8070/',
+    AUTH_BASE_URL: 'http://10.0.3.196:8071/',
     KYC_AML_URL: 'https://qa-api-kyc.impactodigifin.xyz',
-    ONESIGNAL_ID: 'bd28081a-518b-4761-93d0-6280f1853d55',
-  },
-  UAT: {
-    ENVIROMENT: 'UAT',
-    ANDROID_VERSION_NAME: '3.0.0',
-    LOAN_BASE_URL: 'https://uat-api-los.impactodigifin.xyz/api/v1/ambassador',
-    IDP_BASE_URL: 'https://qa-ocr.impactodigifin.xyz',
-    AMBANKING_APP_BASE_URL: 'https://uat-api-ambanking.impactodigifin.xyz',
-    AUTH_BASE_URL: 'https://uat-api-iam.impactodigifin.xyz',
-    KYC_AML_URL: 'https://uat-api-kyc.impactodigifin.xyz',
-    ONESIGNAL_ID: 'bd28081a-518b-4761-93d0-6280f1853d55',
-  },
-  VAPT: {
-    ENVIROMENT: 'VAPT',
-    ANDROID_VERSION_NAME: '2.2.5',
-    LOAN_BASE_URL: 'https://vapt-api-los.tecutt.com/api/v1/ambassador',
-    IDP_BASE_URL: 'http://192.168.240.112:8000',
-    AMBANKING_APP_BASE_URL: 'https://vapt-api-ambanking.tecutt.com',
-    AUTH_BASE_URL: 'https://vapt-api-iam.tecutt.com',
-    KYC_AML_URL: 'https://vapt-api-kyc.tecutt.com',
-    ONESIGNAL_ID: 'bd28081a-518b-4761-93d0-6280f1853d55',
-  },
-  PREPROD: {
-    ENVIROMENT: 'PREPROD',
-    ANDROID_VERSION_NAME: '2.3.0',
-    LOAN_BASE_URL: 'https://api-los-preprod.tecutt.com/api/v1/ambassador',
-    IDP_BASE_URL: 'http://192.168.240.112:8000',
-    AMBANKING_APP_BASE_URL: 'https://api-ambanking-preprod.tecutt.com',
-    AUTH_BASE_URL: 'https://api-iam-preprod.tecutt.com',
-    KYC_AML_URL: 'https://api-kyc-preprod.tecutt.com',
-    ONESIGNAL_ID: 'bd28081a-518b-4761-93d0-6280f1853d55',
-  },
-  PROD: {
-    ENVIROMENT: 'PROD',
-    ANDROID_VERSION_NAME: '2.2.7',
-    LOAN_BASE_URL: 'https://api-los.tecutt.com/api/v1/ambassador',
-    IDP_BASE_URL: 'http://192.168.240.112:8000',
-    AMBANKING_APP_BASE_URL: 'https://api-ambanking.tecutt.com',
-    AUTH_BASE_URL: 'https://api-iam.tecutt.com',
-    KYC_AML_URL: 'https://api-kyc.tecutt.com',
     ONESIGNAL_ID: 'bd28081a-518b-4761-93d0-6280f1853d55',
   },
 };
@@ -86,13 +50,248 @@ export const KYC_AML_URL = urls[ENVIROMENT].KYC_AML_URL;
 export const ENV = urls[ENVIROMENT].ENVIROMENT;
 export const ONESIGNAL_ID = urls[ENVIROMENT].ONESIGNAL_ID;
 
-const instance = axios.create({
-  baseURL: `${AMBANKING_APP_BASE_URL}/`,
+let refreshTimer: NodeJS.Timeout | null = null;
+
+const refreshAccessToken = async () => {
+  console.log('vug');
+  try {
+    const refreshToken = await getData('refresh_token');
+
+    if (!refreshToken) return;
+
+    const { data } = await authInstance.post('api/v1/auth/refresh-token');
+
+    const { accessToken, refreshToken: newRefreshToken } =
+      data.responseStructure.data;
+    await storeData('access_token', accessToken);
+    await storeData('refresh_token', newRefreshToken);
+
+    authInstance.defaults.headers.common[
+      'Authorization'
+    ] = `Bearer ${accessToken}`;
+
+    instance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+    idpInstance.defaults.headers.common[
+      'Authorization'
+    ] = `Bearer ${accessToken}`;
+  } catch (refreshError) {
+    store.dispatch(
+      setState({
+        access_token: '',
+        refresh_token: '',
+        loggedIn: false,
+      }),
+    );
+    await removeData('access_token');
+  }
+};
+
+const getTokenExpirationTime = (_token: string) => {
+  // Always return 3 minutes from now
+  return Date.now() + 3 * 60 * 1000;
+};
+
+export const scheduleTokenRefresh = (accessToken: string) => {
+  const expirationTime = getTokenExpirationTime(accessToken);
+
+  if (expirationTime) {
+    const now = Date.now();
+    const refreshBefore = 100 * 1000; // Refresh 30 =seconds before expiration
+    // const timeout = expirationTime - now - refreshBefore;
+    const timeout = refreshBefore;
+
+    if (timeout > 0) {
+      clearTimeout(refreshTimer!); // Clear any existing timer
+      refreshTimer = setInterval(() => {
+        refreshAccessToken(); // Refreshing token proactively...
+      }, timeout);
+    } else {
+      refreshAccessToken(); // Token already expired or about to expire. Refreshing now
+    }
+  } else {
+    //  "Unable to determine token expiration. No refresh scheduled."
+  }
+};
+
+export const authInstance = axios.create({
+  baseURL: AUTH_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
 });
+
+authInstance.interceptors.request.use(
+  async config => {
+    const token = await getData('access_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+  },
+);
+
+authInstance.interceptors.response.use(
+  response => response,
+  async error => {
+    const originalRequest = error.config;
+
+    console.log(error, 'errorr');
+    if (error?.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const refreshToken = await getData('refresh_token');
+
+        if (!refreshToken) return;
+
+        const { data } = await authInstance.post('/api/v1/auth/refresh-token');
+        const payload = data?.responseStructure?.data ?? data?.data ?? {};
+        const { accessToken, refreshToken: newRefreshToken } = payload;
+        await storeData('access_token', accessToken);
+        await storeData('refresh_token', newRefreshToken);
+
+        instance.defaults.headers.common[
+          'Authorization'
+        ] = `Bearer ${accessToken}`;
+        idpInstance.defaults.headers.common[
+          'Authorization'
+        ] = `Bearer ${accessToken}`;
+
+        return authInstance(originalRequest); // Retry the original request with the new access token.
+      } catch (refreshError) {
+        store.dispatch(
+          setState({
+            access_token: '',
+            refresh_token: '',
+            loggedIn: false,
+          }),
+        );
+        await removeData('access_token');
+        return Promise.reject(error);
+      }
+    }
+    return Promise.reject(error);
+  },
+);
+
+export const idpInstance = axios.create({
+  baseURL: IDP_BASE_URL,
+  headers: {
+    'Content-Type': 'multipart/form-data',
+  },
+});
+
+// idpInstance.interceptors.request.use(
+//   async config => {
+//     const token = await getData('access_token');
+//     if (token) {
+//       config.headers.Authorization = `Bearer ${token}`;
+//       config.headers['X-Env'] = ENV;
+//       config.headers['clientID'] = 'AMB';
+//     }
+//     return config;
+//   },
+//   error => {
+//     return Promise.reject(error);
+//   },
+// );
+
+idpInstance.interceptors.response.use(
+  response => response,
+  async error => {
+    const originalRequest = error.config;
+    console.log(error);
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const refreshToken = await getData('refresh_token');
+
+        if (!refreshToken) return;
+
+        const { data } = await authInstance.post('/api/v1/auth/refresh-token');
+        const payload = data?.responseStructure?.data ?? data?.data ?? {};
+        const { accessToken, refreshToken: newRefreshToken } = payload;
+        await storeData('access_token', accessToken);
+        await storeData('refresh_token', newRefreshToken);
+
+        instance.defaults.headers.common[
+          'Authorization'
+        ] = `Bearer ${accessToken}`;
+        idpInstance.defaults.headers.common[
+          'Authorization'
+        ] = `Bearer ${accessToken}`;
+
+        return idpInstance(originalRequest); // Retry the original request with the new access token.
+      } catch (refreshError) {
+        store.dispatch(
+          setState({
+            access_token: '',
+            refresh_token: '',
+            loggedIn: false,
+          }),
+        );
+        await removeData('access_token');
+        return Promise.reject(error);
+      }
+    }
+    return Promise.reject(error);
+  },
+);
+
+export const instance = axios.create({
+  baseURL: `${AMBANKING_APP_BASE_URL}/`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+instance.interceptors.request.use(
+  async config => {
+    const token = await getData('access_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+  },
+);
+
+instance.interceptors.response.use(
+  response => response,
+  async error => {
+    const originalRequest = error.config;
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const refreshToken = await getData('refresh_token');
+
+        if (!refreshToken) return;
+
+        const { data } = await authInstance.post('/api/v1/auth/refresh-token');
+        const payload = data?.responseStructure?.data ?? data?.data ?? {};
+        const { accessToken, refreshToken: newRefreshToken } = payload;
+        await storeData('access_token', accessToken);
+        await storeData('refresh_token', newRefreshToken);
+
+        instance.defaults.headers.common[
+          'Authorization'
+        ] = `Bearer ${accessToken}`;
+        idpInstance.defaults.headers.common[
+          'Authorization'
+        ] = `Bearer ${accessToken}`;
+        return instance(originalRequest); // Retry the original request with the new access token.
+      } catch (refreshError) {
+        return Promise.reject(error);
+      }
+    }
+    return Promise.reject(error);
+  },
+);
 
 export const DROPDOWNS = async (
   type: string,

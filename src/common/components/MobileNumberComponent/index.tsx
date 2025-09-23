@@ -14,7 +14,6 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import isdCodes from '../../data/isd.json';
-import { useTheme } from '@src/common/utils/ThemeContext';
 
 export function formatPhoneNumber(numberStr: string, length: number) {
   if (!numberStr || numberStr.length < 1) return numberStr;
@@ -75,8 +74,6 @@ const MobileNumberInputComponent = ({
   const [selectedCountryId, setSelectedCountryId] = useState<string | number>(
     '',
   );
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
 
   useEffect(() => {
     const fetchIsdCodes = () => {
@@ -180,7 +177,7 @@ const MobileNumberInputComponent = ({
       ]}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={colors.primary} />
+        <ActivityIndicator size="small" color="#000" />
       ) : (
         <View style={{ flexDirection: 'row', flex: 1 }}>
           <View
@@ -218,17 +215,16 @@ const MobileNumberInputComponent = ({
               height: hp(5.5),
               flexDirection: 'row',
               alignItems: 'center',
-              borderColor: colors.border,
-              backgroundColor: colors.inputBackground,
+              borderColor: 'blue',
+              backgroundColor: isEditable ? '#fff' : '#F5F5F5',
             }}
           >
             <TextInput
               style={[
                 styles.mobileInput,
-                { color: isEditable ? colors.text : colors.textMuted },
+                { color: isEditable ? '#000' : '#999' },
               ]}
               placeholder="ENTER MOBILE NUMBER"
-              placeholderTextColor={colors.inputPlaceholder}
               keyboardType="numeric"
               value={
                 mobileNumber
@@ -255,46 +251,45 @@ const MobileNumberInputComponent = ({
 
 export default MobileNumberInputComponent;
 
-const createStyles = (colors: any) =>
-  StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 10,
-      overflow: 'hidden',
-      backgroundColor: colors.inputBackground,
-    },
-    isdDropdown: {
-      flex: 0.4,
-      marginRight: wp(2),
-      height: hp(5.5),
-      backgroundColor: colors.inputBackground,
-    },
-    mobileInput: {
-      flex: 1,
-      fontSize: hp(1.8),
-      color: colors.text,
-    },
-    dropdownStyle: {
-      borderColor: colors.border,
-      borderRightWidth: 1,
-      paddingHorizontal: wp(0.5),
-      width: '100%',
-      height: hp(5.5),
-      flex: 1,
-      justifyContent: 'center',
-    },
-    disabledInput: {
-      backgroundColor: colors.inputDisabledBackground,
-      color: colors.textMuted,
-    },
-    image: {
-      width: 20,
-      height: 20,
-    },
-    missingField: {
-      borderColor: colors.error,
-    },
-  });
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+  },
+  isdDropdown: {
+    flex: 0.4,
+    marginRight: wp(2),
+    height: hp(5.5),
+    backgroundColor: '#F3F4F6',
+  },
+  mobileInput: {
+    flex: 1,
+    fontSize: hp(1.8),
+    color: '#000',
+  },
+  dropdownStyle: {
+    borderColor: '#ddd',
+    borderRightWidth: 1,
+    paddingHorizontal: wp(0.5),
+    width: '100%',
+    height: hp(5.5),
+    flex: 1,
+    justifyContent: 'center',
+  },
+  disabledInput: {
+    backgroundColor: '#F5F5F5',
+    color: '#999',
+  },
+  image: {
+    width: 20,
+    height: 20,
+  },
+  missingField: {
+    borderColor: 'red',
+  },
+});

@@ -1,9 +1,13 @@
 import { useNavigation } from '@react-navigation/native';
 import { closeEyeIcon, eyeIcons, loginBgIcon } from '@src/common/assets';
 import Button from '@src/common/components/Button';
+import Loader from '@src/common/components/Loader';
 import MobileNumberInputComponent from '@src/common/components/MobileNumberComponent';
 import TextInputComponent from '@src/common/components/TextInputComponent';
+import { logErr } from '@src/common/utils/logger';
+import { storeData } from '@src/common/utils/storage';
 import { useTheme } from '@src/common/utils/ThemeContext';
+import { authInstance } from '@src/services';
 import { setState } from '@src/store/auth';
 import React, { useState } from 'react';
 import {
@@ -19,20 +23,48 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const { width } = Dimensions.get('window');
 
 const Login = () => {
   const navigation = useNavigation();
   const { colors } = useTheme();
-  const [mobile, setMobile] = useState('');
-  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const { username, password } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
+
+  const handleLogin = async () => {
+    try {
+      setLoading(true);
+      const { data } = await authInstance.post('/api/v1/auth/login', {
+        userName: username,
+        password: password,
+      });
+
+      const { accessToken, refreshToken } = data.responseStructure.data;
+
+      await storeData('access_token', accessToken);
+      await storeData('refresh_token', refreshToken);
+
+      dispatch(
+        setState({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+          loggedIn: true,
+        }),
+      );
+    } catch (error) {
+      logErr(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <Loader loading={loading} />
       <View style={styles.container}>
         <Image source={loginBgIcon} resizeMode="contain" style={styles.hero} />
 
@@ -42,13 +74,17 @@ const Login = () => {
 
         <View style={{ gap: wp(2), width: '90%' }}>
           <TextInputComponent
-            header="Mobile Number"
+            header="User Name"
             maxLength={10}
             inputStyles={{ height: hp(6), fontSize: hp(1.7) }}
-            value={mobile}
-            keyboardType="numeric"
-            onChange={value => setMobile(value)}
-            regex={/^[0-9]*$/}
+            value={username}
+            onChange={value =>
+              dispatch(
+                setState({
+                  username: value,
+                }),
+              )
+            }
           />
           <View style={styles.inputWrapper}>
             <TextInputComponent
@@ -60,7 +96,11 @@ const Login = () => {
               maxLength={16}
               value={password}
               onChange={(text: string) => {
-                setPassword(text);
+                dispatch(
+                  setState({
+                    password: text,
+                  }),
+                );
               }}
               autocapitalize="none"
               keyboardType="default"
@@ -94,10 +134,7 @@ const Login = () => {
         </View>
 
         <View style={styles.actions}>
-          <Button
-            text="Log In"
-            click={() => dispatch(setState({ loggedIn: true }))}
-          />
+          <Button text="Log In" onPress={handleLogin} />
           <Text style={{ textAlign: 'center' }}>
             Don't you have an account?{' '}
             <Text style={{ color: colors.primary }}>Sign up</Text>

@@ -18,47 +18,32 @@ import {
 import { useTheme } from '@src/common/utils/ThemeContext';
 import Button from '@src/common/components/Button';
 import Loader from '@src/common/components/Loader';
-import { idpInstance } from '@src/services';
-import { logErr } from '@src/common/utils/logger';
+import { idpInstance, instance } from '@src/services';
+import { logAlert, logErr } from '@src/common/utils/logger';
 import axios from 'axios';
 import { idpExtract } from '@src/common/utils/idp';
-import NoCustomer from './NoCustomer';
+import TextInputComponent from '@src/common/components/TextInputComponent';
+import MobileNumberInputComponent from '@src/common/components/MobileNumberComponent';
 import { useDispatch, useSelector } from 'react-redux';
 import { setState } from '@src/store/customer';
-import kycProcess from './kycProcess';
 
-const Stack = createNativeStackNavigator();
-
-export const CustomerStack = () => {
-  return (
-    <Stack.Navigator
-      screenOptions={{ headerShown: false }}
-      initialRouteName="iBranch"
-    >
-      <Stack.Screen name="iBranch" component={Customer} />
-      <Stack.Screen name="NoCustomer" component={NoCustomer} />
-      <Stack.Screen name="kycProcess" component={kycProcess} />
-    </Stack.Navigator>
-  );
-};
-
-const Customer = () => {
+const kycProcess = () => {
   useHideBottomBar();
   const navigation = useNavigation();
   const { colors, isDark } = useTheme();
-  const [doc, setDoc] = useState([]);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const custData = useSelector((state: any) => state.customer);
 
-  // const handleProceed = () => {
-  //   if (doc.length === 0) {
-  //     alert('Please upload an Aadhaar card first');
-  //     return;
-  //   }
-  //   // Handle proceed logic
-  //   console.log('Processing verification with:', doc);
-  // };
+  const handleProceed = async () => {
+    try {
+      setLoading(true);
+    } catch (error) {
+      logErr(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const styles = createStyles(colors, isDark);
 
@@ -77,140 +62,115 @@ const Customer = () => {
         </TouchableOpacity>
         <View style={styles.headerContent}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Instant Verification
+            Digital KYC Process
           </Text>
           <Text
             style={[styles.headerSubtitle, { color: colors.textSecondary }]}
           >
-            Upload aadhaar for instant customer verification{'\n'}
-            and loan application
+            Documents For New Customer
           </Text>
         </View>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Upload Section */}
-        <View style={styles.uploadSection}>
-          <View style={styles.sectionHeader}>
-            <View
-              style={[
-                styles.iconContainer,
-                { backgroundColor: colors.primary },
-              ]}
-            >
-              <Text style={styles.cardIcon}>💳</Text>
-            </View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Upload Aadhaar Card
-            </Text>
-          </View>
+        <DocumentUpload
+          header="Aadhaar Card"
+          limit={1}
+          images={custData.aadhaarCard}
+          setImages={async image => {
+            try {
+              setLoading(true);
 
-          <Text style={[styles.fieldLabel, { color: colors.text }]}>
-            Aadhaar Card*
-          </Text>
-
-          {/* Your existing DocumentUpload component */}
-          <DocumentUpload
-            header=""
-            limit={1}
-            images={custData.aadhaarCard}
-            setImages={async image => {
-              try {
-                setLoading(true);
-
-                if (image.length == 0) {
-                  dispatch(
-                    setState({
-                      aadhaarCard: [],
-                    }),
-                  );
-                }
-
-                let updatedDocuments = [];
-                const documentName = 'PROFF' + image[0]?.type.split('/')[1];
-
-                updatedDocuments = [
-                  {
-                    name: documentName,
-                    uri: image[0].uri,
-                    type: image[0].type,
-                  },
-                ];
-
-                //const response = await idpExtract(image);
+              if (image.length == 0) {
                 dispatch(
                   setState({
-                    aadhaarCard: updatedDocuments,
+                    aadhaarCard: [],
                   }),
                 );
-
-                //console.log(response, 'ib9hui');
-              } catch (error) {
-                console.log(error?.response);
-                logErr(error);
-              } finally {
-                setLoading(false);
               }
-            }}
-          />
-        </View>
 
-        {/* How it works Section */}
-        <View
-          style={[
-            styles.infoCard,
-            {
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-            },
-          ]}
-        >
-          <View style={styles.infoHeader}>
-            <Text style={styles.warningIcon}>⚠️</Text>
-            <Text style={[styles.infoTitle, { color: colors.primary }]}>
-              How it works
-            </Text>
-          </View>
+              let updatedDocuments = [];
+              const documentName = 'PROFF' + image[0]?.type.split('/')[1];
 
-          <View style={styles.infoList}>
-            <InfoItem
-              text="Upload Aadhaar for instant verification"
-              colors={colors}
-            />
-            <InfoItem
-              text="System checks if customer has existing account"
-              colors={colors}
-            />
-            <InfoItem
-              text="Auto-links existing customers or starts digital KYC"
-              colors={colors}
-            />
-            <InfoItem
-              text="Apply for loan without bank account requirement"
-              colors={colors}
-            />
-          </View>
-        </View>
+              updatedDocuments = [
+                {
+                  name: documentName,
+                  uri: image[0].uri,
+                  type: image[0].type,
+                },
+              ];
+
+              //const response = await idpExtract(image);
+              dispatch(
+                setState({
+                  aadhaarCard: updatedDocuments,
+                }),
+              );
+
+              //console.log(response, 'ib9hui');
+            } catch (error) {
+              console.log(error?.response);
+              logErr(error);
+            } finally {
+              setLoading(false);
+            }
+          }}
+        />
+        <DocumentUpload
+          header="Pan Card"
+          limit={1}
+          images={custData.panCard}
+          setImages={async image => {
+            try {
+              setLoading(true);
+
+              if (image.length == 0) {
+                dispatch(
+                  setState({
+                    panCard: [],
+                  }),
+                );
+              }
+
+              let updatedDocuments = [];
+              const documentName = 'PROFF' + image[0]?.type.split('/')[1];
+
+              updatedDocuments = [
+                {
+                  name: documentName,
+                  uri: image[0].uri,
+                  type: image[0].type,
+                },
+              ];
+
+              //const response = await idpExtract(image);
+              dispatch(
+                setState({
+                  panCard: updatedDocuments,
+                }),
+              );
+
+              //console.log(response, 'ib9hui');
+            } catch (error) {
+              console.log(error?.response);
+              logErr(error);
+            } finally {
+              setLoading(false);
+            }
+          }}
+        />
       </ScrollView>
 
       <Button
-        text="Proceed"
-        onPress={() => {
-          console.log('huoh0');
-          navigation.navigate('NoCustomer');
+        buttonStyle={{
+          marginVertical: hp(2.5),
         }}
-        //disabled={doc.length === 0}
+        text="Proceed to Digital KYC"
+        onPress={handleProceed}
       />
     </SafeAreaView>
   );
 };
-
-const InfoItem = ({ text, colors }) => (
-  <View style={styles.infoItem}>
-    <View style={[styles.bullet, { backgroundColor: colors.text }]} />
-    <Text style={[styles.infoText, { color: colors.text }]}>{text}</Text>
-  </View>
-);
 
 const styles = StyleSheet.create({
   infoItem: {
@@ -232,7 +192,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const createStyles = (colors, isDark) =>
+const createStyles = (colors: any, isDark: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -335,3 +295,5 @@ const createStyles = (colors, isDark) =>
       fontWeight: '600',
     },
   });
+
+export default kycProcess;
