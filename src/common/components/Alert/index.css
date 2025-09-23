@@ -1,0 +1,34 @@
+/* Toast.css */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    color: white;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+.toast-success {
+    background-color: green;
+}
+
+.toast-error {
+    background-color: red;
+}
+
+.toast-warn {
+    background-color: orange;
+}
+
+.toast-info {
+    background-color: blue;
+}
+
+.toast button {
+    margin-left: 10px;
+    color: white;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
