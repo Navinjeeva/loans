@@ -59,7 +59,11 @@ const refreshAccessToken = async () => {
 
     if (!refreshToken) return;
 
-    const { data } = await authInstance.post('api/v1/auth/refresh-token');
+    const { data } = await authInstance.post('api/v1/auth/refresh-token', {
+      headers: {
+        'Refresh-Token': refreshToken,
+      },
+    });
 
     const { accessToken, refreshToken: newRefreshToken } =
       data.responseStructure.data;
@@ -265,6 +269,7 @@ instance.interceptors.response.use(
   response => response,
   async error => {
     const originalRequest = error.config;
+    console.log(error);
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {

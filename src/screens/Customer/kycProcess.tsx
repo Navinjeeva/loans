@@ -5,6 +5,8 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
+  Modal,
+  TextInput,
 } from 'react-native';
 import React, { useState } from 'react';
 import useHideBottomBar from '@src/common/components/useHideBottomBar';
@@ -26,15 +28,33 @@ import TextInputComponent from '@src/common/components/TextInputComponent';
 import MobileNumberInputComponent from '@src/common/components/MobileNumberComponent';
 import { useDispatch, useSelector } from 'react-redux';
 import { setState } from '@src/store/customer';
+import { OtpInput } from 'react-native-otp-entry';
 
 const kycProcess = () => {
   useHideBottomBar();
-  const navigation = useNavigation();
+  const navigation = useNavigation() as any;
   const { colors, isDark } = useTheme();
   const [loading, setLoading] = useState(false);
+  const [showModel, setShowModel] = useState(false);
+  const [pin, setPin] = useState<string | null>(null);
+  const inputRef = React.useRef<TextInput>(null);
   const dispatch = useDispatch();
   const custData = useSelector((state: any) => state.customer);
 
+  const handleVerify = async () => {
+    try {
+      setLoading(true);
+      setShowModel(true);
+
+      const response = await instance.post(
+        `api/v1/loans/customer/otp?customerId=${''}`,
+      );
+    } catch (error) {
+      logErr(error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleProceed = async () => {
     try {
       setLoading(true);
@@ -42,6 +62,19 @@ const kycProcess = () => {
       logErr(error);
     } finally {
       setLoading(false);
+    }
+  };
+  const handleDone = async () => {
+    try {
+      setLoading(true);
+      const response = await instance.post(
+        `api/v1/loans/customer/otp/verify?customerId=${''}&otpCode=${pin}`,
+      );
+    } catch (error) {
+      logErr(error);
+    } finally {
+      setLoading(false);
+      setShowModel(false);
     }
   };
 
@@ -77,7 +110,7 @@ const kycProcess = () => {
           header="Aadhaar Card"
           limit={1}
           images={custData.aadhaarCard}
-          setImages={async image => {
+          setImages={async (image: any) => {
             try {
               setLoading(true);
 
@@ -109,18 +142,27 @@ const kycProcess = () => {
 
               //console.log(response, 'ib9hui');
             } catch (error) {
-              console.log(error?.response);
-              logErr(error);
+              const err: any = error;
+              console.log(err?.response);
+              logErr(err);
             } finally {
               setLoading(false);
             }
           }}
         />
+
+        <Button
+          text="Verify"
+          buttonStyle={{
+            marginVertical: hp(3),
+          }}
+          onPress={handleVerify}
+        />
         <DocumentUpload
           header="Pan Card"
           limit={1}
           images={custData.panCard}
-          setImages={async image => {
+          setImages={async (image: any) => {
             try {
               setLoading(true);
 
@@ -133,7 +175,7 @@ const kycProcess = () => {
               }
 
               let updatedDocuments = [];
-              const documentName = 'PROFF' + image[0]?.type.split('/')[1];
+              const documentName = 'PROOF' + image[0]?.type.split('/')[1];
 
               updatedDocuments = [
                 {
@@ -152,8 +194,9 @@ const kycProcess = () => {
 
               //console.log(response, 'ib9hui');
             } catch (error) {
-              console.log(error?.response);
-              logErr(error);
+              const err: any = error;
+              console.log(err?.response);
+              logErr(err);
             } finally {
               setLoading(false);
             }
@@ -163,11 +206,64 @@ const kycProcess = () => {
 
       <Button
         buttonStyle={{
-          marginVertical: hp(2.5),
+          marginVertical: hp(3),
         }}
-        text="Proceed to Digital KYC"
+        text="Continue"
         onPress={handleProceed}
       />
+
+      <Modal visible={showModel} transparent animationType="fade">
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
+            <TouchableOpacity
+              onPress={() => setShowModel(false)}
+              style={styles.modalClose}
+            >
+              <Text style={{ fontSize: hp(3) }}>×</Text>
+            </TouchableOpacity>
+
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              Enter Your Aadhaar OTP
+            </Text>
+            <Text
+              style={[styles.modalSubtitle, { color: colors.textSecondary }]}
+            >
+              We’ve sent it to *****392
+            </Text>
+
+            <OtpInput
+              // secureTextEntry={visible}
+              numberOfDigits={6}
+              focusColor="orange"
+              focusStickBlinkingDuration={500}
+              onTextChange={text => setPin(text)}
+              // onFilled={handleFilled}
+              theme={{
+                containerStyle: styles.otpContainer,
+                inputsContainerStyle: styles.inputsContainer,
+                pinCodeContainerStyle: styles.pinCodeContainer,
+                pinCodeTextStyle: styles.pinCodeText,
+                focusStickStyle: styles.focusStick,
+                focusedPinCodeContainerStyle: styles.activePinCodeContainer,
+              }}
+            />
+
+            <TouchableOpacity
+              onPress={() => {
+                /* hook up resend here */
+              }}
+            >
+              <Text style={styles.resendText}>Resend OTP</Text>
+            </TouchableOpacity>
+
+            <Button
+              text="Done"
+              onPress={handleDone}
+              buttonStyle={styles.doneButton}
+            />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -293,6 +389,102 @@ const createStyles = (colors: any, isDark: boolean) =>
       color: 'white',
       fontSize: hp(2),
       fontWeight: '600',
+    },
+    // Modal styles
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.35)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: wp(6),
+    },
+    modalCard: {
+      width: '100%',
+      borderRadius: 20,
+      paddingVertical: hp(3),
+      paddingHorizontal: wp(5),
+    },
+    modalClose: {
+      position: 'absolute',
+      right: wp(4),
+      top: hp(1.5),
+      zIndex: 1,
+    },
+    modalTitle: {
+      textAlign: 'center',
+      fontSize: hp(2.6),
+      fontWeight: '700',
+      marginTop: hp(1),
+    },
+    modalSubtitle: {
+      textAlign: 'center',
+      fontSize: hp(1.8),
+      marginTop: hp(1),
+      marginBottom: hp(2),
+    },
+    otpBoxesRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      width: '100%',
+      marginVertical: hp(1),
+    },
+    otpBox: {
+      width: wp(12),
+      height: wp(12),
+      borderRadius: 12,
+      backgroundColor: 'rgba(0,0,0,0.05)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderColor: '#000000',
+      borderWidth: hp(0.05),
+    },
+    otpDigit: {
+      fontSize: hp(2.4),
+      fontWeight: '600',
+    },
+    hiddenOtpInput: {
+      position: 'absolute',
+      opacity: 0,
+      width: 1,
+      height: 1,
+    },
+    resendText: {
+      textAlign: 'center',
+      color: '#3B45AC',
+      fontWeight: '600',
+      marginTop: hp(1.5),
+      marginBottom: hp(2.5),
+    },
+    doneButton: {
+      borderRadius: 14,
+      paddingVertical: hp(1.8),
+    },
+    otpContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    inputsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    pinCodeContainer: {
+      width: wp(10),
+      height: hp(5),
+      borderWidth: 1,
+      borderColor: '#000',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    pinCodeText: {
+      fontSize: 18,
+      color: '#000',
+    },
+    focusStick: {
+      backgroundColor: 'orange',
+    },
+    activePinCodeContainer: {
+      borderColor: 'orange',
     },
   });
 

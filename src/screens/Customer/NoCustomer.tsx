@@ -46,7 +46,7 @@ const NoCustomer = () => {
         address: '123, Sample Street, Test City',
       });
 
-      if (response.status == 200) {
+      if (response?.status == 200) {
         navigation.navigate('kycProcess');
       }
       console.log(response);

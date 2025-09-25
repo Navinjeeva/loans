@@ -5,11 +5,11 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
+  TextInput,
 } from 'react-native';
 import React, { useState } from 'react';
 import useHideBottomBar from '@src/common/components/useHideBottomBar';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import DocumentUpload from '@src/common/components/DocumentUpload';
 import { useNavigation } from '@react-navigation/native';
 import {
   widthPercentageToDP as wp,
@@ -18,10 +18,7 @@ import {
 import { useTheme } from '@src/common/utils/ThemeContext';
 import Button from '@src/common/components/Button';
 import Loader from '@src/common/components/Loader';
-import { idpInstance } from '@src/services';
 import { logErr } from '@src/common/utils/logger';
-import axios from 'axios';
-import { idpExtract } from '@src/common/utils/idp';
 import NoCustomer from './NoCustomer';
 import { useDispatch, useSelector } from 'react-redux';
 import { setState } from '@src/store/customer';
@@ -33,9 +30,9 @@ export const CustomerStack = () => {
   return (
     <Stack.Navigator
       screenOptions={{ headerShown: false }}
-      initialRouteName="iBranch"
+      initialRouteName="customer"
     >
-      <Stack.Screen name="iBranch" component={Customer} />
+      <Stack.Screen name="customer" component={Customer} />
       <Stack.Screen name="NoCustomer" component={NoCustomer} />
       <Stack.Screen name="kycProcess" component={kycProcess} />
     </Stack.Navigator>
@@ -46,28 +43,41 @@ const Customer = () => {
   useHideBottomBar();
   const navigation = useNavigation();
   const { colors, isDark } = useTheme();
-  const [doc, setDoc] = useState([]);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const custData = useSelector((state: any) => state.customer);
 
-  // const handleProceed = () => {
-  //   if (doc.length === 0) {
-  //     alert('Please upload an Aadhaar card first');
-  //     return;
-  //   }
-  //   // Handle proceed logic
-  //   console.log('Processing verification with:', doc);
-  // };
+  // Form state
+  const [formData, setFormData] = useState({
+    purpose: 'Personal Loan',
+    mobile: '+91 9876543210',
+    email: 'sample@gmail.com',
+    loanAmount: '₹12,00,000',
+    tenure: '3 years',
+  });
+
+  const [calculations, setCalculations] = useState({
+    interestRate: '10.99%',
+    monthlyEMI: '₹36,000',
+    principalAmount: '₹12,00,000',
+    totalInterest: '₹96,000',
+    totalAmount: '₹12,96,000',
+  });
 
   const styles = createStyles(colors, isDark);
+
+  const handleSendQuotation = () => {
+    // Handle send quotation logic
+    console.log('Sending quotation with data:', formData);
+    (navigation as any).navigate('NoCustomer');
+  };
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <Loader loading={loading} />
-      {/* Header */}
+
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -77,260 +87,316 @@ const Customer = () => {
         </TouchableOpacity>
         <View style={styles.headerContent}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Instant Verification
+            Loan Calculator
           </Text>
           <Text
             style={[styles.headerSubtitle, { color: colors.textSecondary }]}
           >
-            Upload aadhaar for instant customer verification{'\n'}
-            and loan application
+            Calculate your EMI and get personalised offers
           </Text>
         </View>
       </View>
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Upload Section */}
-        <View style={styles.uploadSection}>
-          <View style={styles.sectionHeader}>
-            <View
-              style={[
-                styles.iconContainer,
-                { backgroundColor: colors.primary },
-              ]}
-            >
-              <Text style={styles.cardIcon}>💳</Text>
-            </View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Upload Aadhaar Card
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Form Fields */}
+        <View style={styles.formContainer}>
+          {/* Purpose of Loan */}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>
+              Purpose of Loan
             </Text>
+            <TouchableOpacity
+              style={[styles.dropdownInput, { borderColor: colors.border }]}
+            >
+              <Text style={[styles.dropdownText, { color: colors.text }]}>
+                {formData.purpose}
+              </Text>
+              <Text
+                style={[styles.dropdownArrow, { color: colors.textSecondary }]}
+              >
+                ▼
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          <Text style={[styles.fieldLabel, { color: colors.text }]}>
-            Aadhaar Card*
-          </Text>
+          {/* Mobile Number */}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>
+              Mobile Number
+            </Text>
+            <TextInput
+              style={[
+                styles.textInput,
+                {
+                  borderColor: colors.border,
+                  color: colors.text,
+                  backgroundColor: colors.surface,
+                },
+              ]}
+              value={formData.mobile}
+              onChangeText={text => setFormData({ ...formData, mobile: text })}
+              placeholder="Enter mobile number"
+              placeholderTextColor={colors.textSecondary}
+            />
+          </View>
 
-          {/* Your existing DocumentUpload component */}
-          <DocumentUpload
-            header=""
-            limit={1}
-            images={custData.aadhaarCard}
-            setImages={async image => {
-              try {
-                setLoading(true);
+          {/* Email */}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>
+              Mail
+            </Text>
+            <TextInput
+              style={[
+                styles.textInput,
+                {
+                  borderColor: colors.border,
+                  color: colors.text,
+                  backgroundColor: colors.surface,
+                },
+              ]}
+              value={formData.email}
+              onChangeText={text => setFormData({ ...formData, email: text })}
+              placeholder="Enter email"
+              placeholderTextColor={colors.textSecondary}
+            />
+          </View>
 
-                if (image.length == 0) {
-                  dispatch(
-                    setState({
-                      aadhaarCard: [],
-                    }),
-                  );
-                }
+          {/* Loan Amount */}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>
+              Loan Amount
+            </Text>
+            <TouchableOpacity
+              style={[styles.dropdownInput, { borderColor: colors.border }]}
+            >
+              <Text style={[styles.dropdownText, { color: colors.text }]}>
+                {formData.loanAmount}
+              </Text>
+              <Text
+                style={[styles.dropdownArrow, { color: colors.textSecondary }]}
+              >
+                ▼
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-                let updatedDocuments = [];
-                const documentName = 'PROFF' + image[0]?.type.split('/')[1];
-
-                updatedDocuments = [
-                  {
-                    name: documentName,
-                    uri: image[0].uri,
-                    type: image[0].type,
-                  },
-                ];
-
-                //const response = await idpExtract(image);
-                dispatch(
-                  setState({
-                    aadhaarCard: updatedDocuments,
-                  }),
-                );
-
-                //console.log(response, 'ib9hui');
-              } catch (error) {
-                console.log(error?.response);
-                logErr(error);
-              } finally {
-                setLoading(false);
-              }
-            }}
-          />
+          {/* Loan Tenure */}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>
+              Loan Tenure
+            </Text>
+            <TouchableOpacity
+              style={[styles.dropdownInput, { borderColor: colors.border }]}
+            >
+              <Text style={[styles.dropdownText, { color: colors.text }]}>
+                {formData.tenure}
+              </Text>
+              <Text
+                style={[styles.dropdownArrow, { color: colors.textSecondary }]}
+              >
+                ▼
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* How it works Section */}
-        <View
-          style={[
-            styles.infoCard,
-            {
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-            },
-          ]}
-        >
-          <View style={styles.infoHeader}>
-            <Text style={styles.warningIcon}>⚠️</Text>
-            <Text style={[styles.infoTitle, { color: colors.primary }]}>
-              How it works
+        {/* Calculation Cards */}
+        <View style={styles.calculationCards}>
+          <View
+            style={[styles.calculationCard, { backgroundColor: '#E8D5FF' }]}
+          >
+            <Text style={styles.calculationLabel}>Tentative Interest Rate</Text>
+            <Text style={[styles.calculationValue, { color: '#8B5CF6' }]}>
+              {calculations.interestRate}
             </Text>
           </View>
 
-          <View style={styles.infoList}>
-            <InfoItem
-              text="Upload Aadhaar for instant verification"
-              colors={colors}
-            />
-            <InfoItem
-              text="System checks if customer has existing account"
-              colors={colors}
-            />
-            <InfoItem
-              text="Auto-links existing customers or starts digital KYC"
-              colors={colors}
-            />
-            <InfoItem
-              text="Apply for loan without bank account requirement"
-              colors={colors}
-            />
+          <View
+            style={[styles.calculationCard, { backgroundColor: '#E8D5FF' }]}
+          >
+            <Text style={styles.calculationLabel}>Monthly EMI</Text>
+            <Text style={[styles.calculationValue, { color: '#8B5CF6' }]}>
+              {calculations.monthlyEMI}
+            </Text>
+          </View>
+        </View>
+
+        {/* Loan Breakdown */}
+        <View
+          style={[styles.breakdownCard, { backgroundColor: colors.surface }]}
+        >
+          <Text style={[styles.breakdownTitle, { color: colors.text }]}>
+            Loan Breakdown
+          </Text>
+
+          <View style={styles.breakdownItem}>
+            <Text style={[styles.breakdownLabel, { color: colors.text }]}>
+              Principal Amount
+            </Text>
+            <View style={styles.breakdownDots} />
+            <Text style={[styles.breakdownValue, { color: colors.text }]}>
+              {calculations.principalAmount}
+            </Text>
+          </View>
+
+          <View style={styles.breakdownItem}>
+            <Text style={[styles.breakdownLabel, { color: colors.text }]}>
+              Total Interest
+            </Text>
+            <View style={styles.breakdownDots} />
+            <Text style={[styles.breakdownValue, { color: colors.text }]}>
+              {calculations.totalInterest}
+            </Text>
+          </View>
+
+          <View style={styles.breakdownItem}>
+            <Text style={[styles.breakdownLabel, { color: colors.text }]}>
+              Total Amount Payable
+            </Text>
+            <View style={styles.breakdownDots} />
+            <Text style={[styles.breakdownValue, { color: colors.text }]}>
+              {calculations.totalAmount}
+            </Text>
           </View>
         </View>
       </ScrollView>
 
-      <Button
-        text="Proceed"
-        onPress={() => {
-          console.log('huoh0');
-          navigation.navigate('NoCustomer');
-        }}
-        //disabled={doc.length === 0}
-      />
+      {/* Send Quotation Button */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.sendButton, { borderColor: '#8B5CF6' }]}
+          onPress={handleSendQuotation}
+        >
+          <Text style={[styles.sendButtonText, { color: '#8B5CF6' }]}>
+            Send Quotation
+          </Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
 
-const InfoItem = ({ text, colors }) => (
-  <View style={styles.infoItem}>
-    <View style={[styles.bullet, { backgroundColor: colors.text }]} />
-    <Text style={[styles.infoText, { color: colors.text }]}>{text}</Text>
-  </View>
-);
-
-const styles = StyleSheet.create({
-  infoItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingLeft: wp(1),
-  },
-  bullet: {
-    width: wp(1.5),
-    height: wp(1.5),
-    borderRadius: wp(0.75),
-    marginRight: wp(3),
-    marginTop: hp(0.8),
-  },
-  infoText: {
-    fontSize: hp(1.6),
-    flex: 1,
-    lineHeight: hp(2.2),
-  },
-});
-
-const createStyles = (colors, isDark) =>
+const createStyles = (colors: any, isDark: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      paddingTop: hp(5),
+      backgroundColor: '#1A1A1A', // Dark background
     },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
       paddingHorizontal: wp(4),
       paddingTop: hp(2),
-      paddingBottom: hp(1),
+      paddingBottom: hp(8),
     },
-    backButton: {
-      marginRight: wp(4),
-      marginTop: hp(0.5),
+    formContainer: {
+      marginBottom: hp(3),
     },
-    backIcon: {
-      fontSize: hp(3),
-      fontWeight: 'bold',
-    },
-    headerContent: {
-      flex: 1,
-    },
-    headerTitle: {
-      fontSize: hp(2.8),
-      fontWeight: 'bold',
-      marginBottom: hp(0.5),
-    },
-    headerSubtitle: {
-      fontSize: hp(1.6),
-      lineHeight: hp(2.2),
-    },
-    content: {
-      flex: 1,
-      paddingHorizontal: wp(4),
-    },
-    uploadSection: {
-      marginTop: hp(3),
-    },
-    sectionHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
+    inputContainer: {
       marginBottom: hp(2),
     },
-    iconContainer: {
-      width: wp(8),
-      height: wp(8),
-      borderRadius: wp(4),
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginRight: wp(3),
-    },
-    cardIcon: {
-      fontSize: hp(2),
-    },
-    sectionTitle: {
-      fontSize: hp(2.2),
-      fontWeight: '600',
-    },
-    fieldLabel: {
+    inputLabel: {
       fontSize: hp(1.8),
       fontWeight: '500',
       marginBottom: hp(1),
+      color: '#FFFFFF',
     },
-    infoCard: {
-      borderRadius: 12,
+    textInput: {
+      height: hp(6),
       borderWidth: 1,
-      padding: wp(4),
-      marginTop: hp(2),
-      marginBottom: hp(3),
+      borderRadius: 8,
+      paddingHorizontal: wp(4),
+      fontSize: hp(1.8),
+      backgroundColor: '#2A2A2A',
     },
-    infoHeader: {
+    dropdownInput: {
+      height: hp(6),
+      borderWidth: 1,
+      borderRadius: 8,
+      paddingHorizontal: wp(4),
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: '#2A2A2A',
+    },
+    dropdownText: {
+      fontSize: hp(1.8),
+      color: '#FFFFFF',
+    },
+    dropdownArrow: {
+      fontSize: hp(1.5),
+    },
+    calculationCards: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: hp(3),
+      gap: wp(3),
+    },
+    calculationCard: {
+      flex: 1,
+      borderRadius: 12,
+      padding: wp(4),
+      alignItems: 'center',
+    },
+    calculationLabel: {
+      fontSize: hp(1.6),
+      fontWeight: '500',
+      marginBottom: hp(1),
+      color: '#8B5CF6',
+    },
+    calculationValue: {
+      fontSize: hp(2.4),
+      fontWeight: 'bold',
+    },
+    breakdownCard: {
+      borderRadius: 12,
+      padding: wp(4),
+      marginBottom: hp(2),
+    },
+    breakdownTitle: {
+      fontSize: hp(2.2),
+      fontWeight: 'bold',
+      marginBottom: hp(2),
+    },
+    breakdownItem: {
       flexDirection: 'row',
       alignItems: 'center',
       marginBottom: hp(1.5),
     },
-    warningIcon: {
-      fontSize: hp(2),
-      marginRight: wp(2),
-    },
-    infoTitle: {
+    breakdownLabel: {
       fontSize: hp(1.8),
-      fontWeight: '600',
+      flex: 1,
     },
-    infoList: {
-      gap: hp(1),
+    breakdownDots: {
+      flex: 1,
+      height: 1,
+      borderBottomWidth: 1,
+      borderBottomColor: '#666',
+      borderStyle: 'dashed',
+      marginHorizontal: wp(2),
     },
-    bottomContainer: {
+    breakdownValue: {
+      fontSize: hp(1.8),
+      fontWeight: '500',
+    },
+    buttonContainer: {
       paddingHorizontal: wp(4),
       paddingVertical: hp(2),
+      backgroundColor: '#1A1A1A',
     },
-    proceedButton: {
-      borderRadius: 12,
-      paddingVertical: hp(2),
+    sendButton: {
+      height: hp(6),
+      borderWidth: 1,
+      borderRadius: 8,
+      justifyContent: 'center',
       alignItems: 'center',
+      backgroundColor: 'transparent',
     },
-    proceedButtonText: {
-      color: 'white',
+    sendButtonText: {
       fontSize: hp(2),
       fontWeight: '600',
     },

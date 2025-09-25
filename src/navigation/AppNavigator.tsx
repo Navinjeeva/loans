@@ -83,7 +83,7 @@ const AppNavigator = () => {
         flex: 1,
       }}
     >
-      {!loggedIn ? <AuthNavigator /> : <DrawerNavigator />}
+      <DrawerNavigator />
     </KeyboardAvoidingView>
   );
 };
