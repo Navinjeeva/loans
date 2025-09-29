@@ -20,7 +20,7 @@ import { useTheme } from '@src/common/utils/ThemeContext';
 import Button from '@src/common/components/Button';
 import Loader from '@src/common/components/Loader';
 import { idpInstance, instance } from '@src/services';
-import { logErr } from '@src/common/utils/logger';
+import { logAlert, logErr } from '@src/common/utils/logger';
 import axios from 'axios';
 import { idpExtract } from '@src/common/utils/idp';
 import NoCustomer from './NoCustomer';
@@ -31,6 +31,9 @@ import TextInputComponent from '@src/common/components/TextInputComponent';
 import DropdownWithModal from '@src/common/components/DropdownWithModal';
 import MobileNumberInputComponent from '@src/common/components/MobileNumberComponent';
 import UploadDoc from './UploadDoc';
+import MemberDetails from './MemberDetails';
+import Application from './Application';
+import Signature from './Signature';
 
 const Stack = createNativeStackNavigator();
 
@@ -44,6 +47,9 @@ export const CustomerStack = () => {
       <Stack.Screen name="UploadDoc" component={UploadDoc} />
       <Stack.Screen name="NoCustomer" component={NoCustomer} />
       <Stack.Screen name="kycProcess" component={kycProcess} />
+      <Stack.Screen name="MemberDetails" component={MemberDetails} />
+      <Stack.Screen name="Application" component={Application} />
+      <Stack.Screen name="Signature" component={Signature} />
     </Stack.Navigator>
   );
 };

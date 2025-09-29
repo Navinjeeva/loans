@@ -2,36 +2,9 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
-  aadhaarCard: [],
-  panCard: [],
-  addressProof: [],
-  salarySlip1: [],
-  salarySlip2: [],
-  salarySlip3: [],
-  form16: [],
-  bankStatement: [],
-  admissionLetter: [],
-  feeProof: [],
-
-  //Education
-  gaurantorAadhaarCard: [],
-  gaurantorPanCard: [],
-  gaurantorAddressProof: [],
-
-  //Vehicle
-  rcDoc: [],
-  invoice: [],
-  vehicleBookingReceipt: [],
-
-  //Business
-  businessReg: [],
-  gstProof: [],
-
-  //Travel
-  passport: [],
-
-  //Marriage
-  occasionProof: [],
+  extraDocuments: [{ id: 1, name: '', doc: [] }],
+  personalDocuments: [{ id: 1, name: '', doc: [] }],
+  loanDocuments: [{ id: 1, name: '', doc: [] }],
 };
 export const customerSlice = createSlice({
   name: 'customer',

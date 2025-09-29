@@ -1,0 +1,265 @@
+import { useNavigation } from '@react-navigation/native';
+import Button from '@src/common/components/Button';
+import Loader from '@src/common/components/Loader';
+import { useTheme } from '@src/common/utils/ThemeContext';
+import { useState } from 'react';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Image,
+  Modal,
+} from 'react-native';
+import { OtpInput } from 'react-native-otp-entry';
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from 'react-native-responsive-screen';
+import SignatureScreen from 'react-native-signature-canvas';
+
+const Signature = () => {
+  const { colors, isDark } = useTheme();
+  const styles = createStyles(colors, isDark);
+  const [loading, setLoading] = useState(false);
+  const navigation = useNavigation();
+  const [fetchedImageSign, setFetchedImageSign] = useState(null);
+  const [capturedSignature, setCapturedSignature] = useState<any>(null);
+  const [signatureVisible, setSignatureVisible] = useState(false);
+  const [pin, setPin] = useState<string | null>(null);
+
+  return (
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <Loader loading={loading} />
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
+        </TouchableOpacity>
+        <View style={styles.headerContent}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
+            Document Holder Verification
+          </Text>
+        </View>
+      </View>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            gap: 20,
+          }}
+        >
+          <View
+            style={{
+              height: hp(20),
+              flex: 1,
+              borderColor: '#000',
+              borderWidth: 1,
+              borderRadius: 10,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            {fetchedImageSign ? (
+              <Image
+                source={{ uri: fetchedImageSign }}
+                style={styles.imagePreview}
+              />
+            ) : (
+              <Text style={styles.uploadText}>{`No Signature\nPresent`}</Text>
+            )}
+          </View>
+
+          <TouchableOpacity
+            onPressIn={() => setSignatureVisible(true)}
+            style={{
+              flex: 1,
+              height: hp(20),
+              borderColor: '#000',
+              borderWidth: 1,
+              borderStyle: 'dashed',
+              borderRadius: 10,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            {capturedSignature ? (
+              <Image
+                source={{ uri: capturedSignature }}
+                style={styles.imagePreview}
+              />
+            ) : (
+              <Text style={styles.uploadText}>{`Click To\nCapture`}</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+      <View style={{ marginVertical: hp(3), paddingHorizontal: wp(4.5) }}>
+        <Text style={[styles.modalTitle, { color: colors.text }]}>
+          Passcode Verification
+        </Text>
+        <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
+          Please enter the 6-digit code to confirm this transaction.
+        </Text>
+
+        <OtpInput
+          // secureTextEntry={visible}
+          numberOfDigits={6}
+          focusColor="orange"
+          focusStickBlinkingDuration={500}
+          onTextChange={text => setPin(text)}
+          // onFilled={handleFilled}
+          theme={{
+            containerStyle: styles.otpContainer,
+            inputsContainerStyle: styles.inputsContainer,
+            pinCodeContainerStyle: styles.pinCodeContainer,
+            pinCodeTextStyle: styles.pinCodeText,
+            focusStickStyle: styles.focusStick,
+            focusedPinCodeContainerStyle: styles.activePinCodeContainer,
+          }}
+        />
+      </View>
+      <Button
+        buttonStyle={{
+          marginVertical: hp(3),
+        }}
+        text="Continue"
+        onPress={() => {}}
+      />
+      <Modal
+        visible={signatureVisible}
+        animationType="slide"
+        onRequestClose={() => setSignatureVisible(false)}
+        testID="camera-modal"
+      >
+        <View style={{ flex: 1, marginTop: hp(6), backgroundColor: '#000' }}>
+          <SignatureScreen
+            webStyle={`
+            .m-signature-pad {
+              position: fixed;
+              margin:auto; 
+              top: 0;
+              width:100%;
+              height:100vw;
+            }
+            body,html { 
+              position:relative; 
+            }
+          `}
+            onClear={() => {
+              setSignatureVisible(false);
+            }}
+            androidHardwareAccelerationDisabled={true}
+            onOK={async image => {
+              await setCapturedSignature(String(image));
+              setSignatureVisible(false);
+            }}
+            descriptionText="Member Signature"
+            penColor="white"
+            backgroundColor="black"
+            clearText="Close"
+            confirmText="Confirm"
+            imageType="image/jpeg"
+          />
+        </View>
+      </Modal>
+    </SafeAreaView>
+  );
+};
+
+export default Signature;
+
+const createStyles = (colors: any, isDark: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      paddingTop: hp(5),
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      paddingHorizontal: wp(4),
+      paddingTop: hp(2),
+      paddingBottom: hp(1),
+    },
+    backButton: {
+      marginRight: wp(4),
+      marginTop: hp(0.5),
+    },
+    backIcon: {
+      fontSize: hp(3),
+      fontWeight: 'bold',
+    },
+    headerContent: {
+      flex: 1,
+    },
+    headerTitle: {
+      fontSize: hp(2.8),
+      fontWeight: 'bold',
+      marginBottom: hp(0.5),
+    },
+    headerSubtitle: {
+      fontSize: hp(1.6),
+      lineHeight: hp(2.2),
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: wp(4),
+    },
+    imagePreview: {
+      width: '100%',
+      height: '100%',
+      borderRadius: 10,
+      resizeMode: 'contain',
+      backgroundColor: '#000',
+    },
+    uploadText: {
+      color: '#000',
+      fontSize: 16,
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    otpContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    inputsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    pinCodeContainer: {
+      width: wp(10),
+      height: hp(5),
+      borderWidth: 1,
+      borderColor: '#000',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    pinCodeText: {
+      fontSize: 18,
+      color: '#000',
+    },
+    focusStick: {
+      backgroundColor: 'orange',
+    },
+    activePinCodeContainer: {
+      borderColor: 'orange',
+    },
+    modalTitle: {
+      fontSize: hp(2.6),
+      marginTop: hp(1),
+    },
+    modalSubtitle: {
+      fontSize: hp(1.8),
+      marginTop: hp(1),
+      marginBottom: hp(1),
+    },
+  });

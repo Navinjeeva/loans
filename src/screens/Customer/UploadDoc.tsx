@@ -38,15 +38,18 @@ const UploadDoc = () => {
   const navigation = useNavigation() as any;
   const { colors, isDark } = useTheme();
   const [loading, setLoading] = useState(false);
-  const [docs, setDocs] = useState([{ id: 1, name: '', doc: [] }]);
   const [clicked, setClicked] = useState(false);
 
   const dispatch = useDispatch();
-  const custData = useSelector((state: any) => state.customer);
+  const { extraDocuments } = useSelector((state: any) => state.customer);
+
+  // Use extraDocuments from Redux as the source of truth
+  const docs = extraDocuments || [{ id: 1, name: '', doc: [] }];
 
   const handleProceed = async () => {
     try {
       setLoading(true);
+      navigation.navigate('MemberDetails');
     } catch (error) {
       logErr(error);
     } finally {
@@ -56,13 +59,17 @@ const UploadDoc = () => {
 
   const addDocument = () => {
     if (docs?.length < 10)
-      setDocs([...docs, { id: docs.length + 1, name: '', doc: [] }]);
+      dispatch(
+        setState({
+          extraDocuments: [...docs, { id: docs.length + 1, name: '', doc: [] }],
+        }),
+      );
   };
 
   const removeDocument = (index: number) => {
     let updatedDocuments = [...docs];
     updatedDocuments.splice(index, 1);
-    setDocs(updatedDocuments);
+    dispatch(setState({ extraDocuments: updatedDocuments }));
   };
 
   const validateAndSanitizeInput = (text: string) => {
@@ -106,7 +113,7 @@ const UploadDoc = () => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={{ marginVertical: hp(2) }}>
           <View>
-            {docs.map((item, index) => (
+            {extraDocuments.map((item: any, index: number) => (
               <View key={index} style={{ marginVertical: hp(2) }}>
                 <View
                   style={{
@@ -171,9 +178,13 @@ const UploadDoc = () => {
                     setLoading(true);
                     let updatedDocuments = [...docs];
 
+                    // Append new images to existing ones instead of replacing
+                    const existingDocs = updatedDocuments[index]?.doc || [];
+                    const newDocs = [...existingDocs, ...images];
+
                     updatedDocuments[index] = {
                       ...updatedDocuments[index],
-                      doc: images,
+                      doc: newDocs,
                     };
 
                     dispatch(
@@ -198,7 +209,9 @@ const UploadDoc = () => {
                       name: validateAndSanitizeInput(text.toUpperCase()),
                     };
 
-                    setDocs([...updatedDocuments]);
+                    dispatch(
+                      setState({ extraDocuments: [...updatedDocuments] }),
+                    );
                   }}
                   customStyles={{
                     marginTop: hp(1),

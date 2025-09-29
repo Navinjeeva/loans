@@ -17,6 +17,7 @@ import {
   widthPercentageToDP,
 } from 'react-native-responsive-screen';
 import { alertIcon, errorIcon, successIcon } from '@src/common/assets';
+import { useTheme } from '@src/common/utils/ThemeContext';
 
 let types = [
   {
@@ -87,6 +88,9 @@ export const AlertProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     AlertService.register(showAlert);
   }, []);
+
+  const { colors, isDark } = useTheme();
+  const styles = createStyles(colors, isDark);
 
   return (
     <>
@@ -178,57 +182,58 @@ export const AlertProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  alertBox: {
-    width: widthPercentageToDP(85),
-    padding: 20,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  iconContainer: {
-    padding: 10,
-    borderRadius: 50,
-    position: 'absolute',
-    top: -35,
-  },
-  alertTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginVertical: 10,
-  },
-  alertMessage: {
-    fontSize: heightPercentageToDP(1.8),
-    color: '#333',
+const createStyles = (colors: any, isDark: boolean) =>
+  StyleSheet.create({
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    alertBox: {
+      width: widthPercentageToDP(85),
+      padding: 20,
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      alignItems: 'center',
+    },
+    iconContainer: {
+      padding: 10,
+      borderRadius: 50,
+      position: 'absolute',
+      top: -35,
+    },
+    alertTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginVertical: 10,
+    },
+    alertMessage: {
+      fontSize: heightPercentageToDP(1.8),
+      color: '#333',
 
-    marginTop: 5,
-    marginBottom: 6,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    marginTop: 20,
-  },
-  button: {
-    flex: 1,
-    backgroundColor: '#E3781C',
-    paddingVertical: 10,
-    borderRadius: 5,
-    marginHorizontal: 5,
-    alignItems: 'center',
-  },
-  buttonNo: {
-    borderColor: '#E3781C',
-    borderWidth: 1,
-    backgroundColor: '#fff',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-});
+      marginTop: 5,
+      marginBottom: 6,
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      marginTop: 20,
+    },
+    button: {
+      flex: 1,
+      backgroundColor: colors.buttonPrimary,
+      paddingVertical: 10,
+      borderRadius: 5,
+      marginHorizontal: 5,
+      alignItems: 'center',
+    },
+    buttonNo: {
+      borderColor: '#E3781C',
+      borderWidth: 1,
+      backgroundColor: '#fff',
+    },
+    buttonText: {
+      color: '#fff',
+      fontSize: 16,
+    },
+  });
