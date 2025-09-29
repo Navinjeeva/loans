@@ -54,7 +54,7 @@ const BottomSheetOptions = ({
   files: any;
 }) => {
   const [showCamera, setShowCamera] = React.useState(false);
-  console.log('camera ', showCamera);
+  const { colors } = useTheme();
   return (
     <Portal>
       {showCamera && (
@@ -125,6 +125,7 @@ const BottomSheetOptions = ({
                     height: 40,
                     width: 40,
                   }}
+                  tintColor={colors.primary}
                 />
                 <Text
                   style={{
@@ -174,6 +175,7 @@ const BottomSheetOptions = ({
                     height: 40,
                     width: 40,
                   }}
+                  tintColor={colors.primary}
                 />
                 <Text
                   style={{
@@ -516,6 +518,7 @@ const CustomUploadButton = ({
                 height: hp(7),
                 resizeMode: 'contain',
               }}
+              tintColor={colors.primary}
             />
             <Text
               style={{

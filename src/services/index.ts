@@ -11,44 +11,25 @@ let urls: {
   [key: string]: {
     ENVIROMENT: string;
     ANDROID_VERSION_NAME: string;
-    LOAN_BASE_URL: string;
     IDP_BASE_URL: string;
-    AMBANKING_APP_BASE_URL: string;
+    APP_BASE_URL: string;
     AUTH_BASE_URL: string;
-    KYC_AML_URL: string;
-    ONESIGNAL_ID: string;
   };
 } = {
-  DEV: {
-    ENVIROMENT: 'DEV',
-    ANDROID_VERSION_NAME: '1.0.0',
-    LOAN_BASE_URL: 'https://dev-api-los.impactodigifin.xyz/api/v1/ambassador',
-    IDP_BASE_URL: 'https://qa-ocr.impactodigifin.xyz',
-    AMBANKING_APP_BASE_URL: 'https://dev-api.ambanking.impactodigifin.xyz',
-    AUTH_BASE_URL: 'https://dev-api-iam.impactodigifin.xyz',
-    KYC_AML_URL: 'https://dev-api-kyc.impactodigifin.xyz',
-    ONESIGNAL_ID: 'bd28081a-518b-4761-93d0-6280f1853d55',
-  },
   QA: {
     ENVIROMENT: 'QA',
     ANDROID_VERSION_NAME: '2.2.9',
-    LOAN_BASE_URL: 'https://qa-api-los.impactodigifin.xyz/api/v1/ambassador',
     IDP_BASE_URL: 'http://3.146.230.106:8000/',
-    AMBANKING_APP_BASE_URL: 'http://10.0.3.196:8070/',
+    APP_BASE_URL: 'http://10.0.3.196:8080/',
     AUTH_BASE_URL: 'http://10.0.3.196:8071/',
-    KYC_AML_URL: 'https://qa-api-kyc.impactodigifin.xyz',
-    ONESIGNAL_ID: 'bd28081a-518b-4761-93d0-6280f1853d55',
   },
 };
 
 export const ANDROID_VERSION_NAME = urls[ENVIROMENT].ANDROID_VERSION_NAME;
-export const LOAN_BASE_URL = urls[ENVIROMENT].LOAN_BASE_URL;
 export const IDP_BASE_URL = urls[ENVIROMENT].IDP_BASE_URL;
-export const AMBANKING_APP_BASE_URL = urls[ENVIROMENT].AMBANKING_APP_BASE_URL;
+export const APP_BASE_URL = urls[ENVIROMENT].APP_BASE_URL;
 export const AUTH_BASE_URL = urls[ENVIROMENT].AUTH_BASE_URL;
-export const KYC_AML_URL = urls[ENVIROMENT].KYC_AML_URL;
 export const ENV = urls[ENVIROMENT].ENVIROMENT;
-export const ONESIGNAL_ID = urls[ENVIROMENT].ONESIGNAL_ID;
 
 let refreshTimer: NodeJS.Timeout | null = null;
 
@@ -246,7 +227,7 @@ idpInstance.interceptors.response.use(
 );
 
 export const instance = axios.create({
-  baseURL: `${AMBANKING_APP_BASE_URL}/`,
+  baseURL: `${APP_BASE_URL}/`,
   headers: {
     'Content-Type': 'application/json',
   },
