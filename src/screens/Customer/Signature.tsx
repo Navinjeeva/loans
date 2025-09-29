@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import Button from '@src/common/components/Button';
 import Loader from '@src/common/components/Loader';
+import KeyboardAwareScrollView from '@src/common/components/KeyboardAwareScrollView';
 import { useTheme } from '@src/common/utils/ThemeContext';
 import { useState } from 'react';
 import {
@@ -49,7 +50,10 @@ const Signature = () => {
           </Text>
         </View>
       </View>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <View
           style={{
             flexDirection: 'row',
@@ -101,32 +105,39 @@ const Signature = () => {
             )}
           </TouchableOpacity>
         </View>
-      </ScrollView>
-      <View style={{ marginVertical: hp(3), paddingHorizontal: wp(4.5) }}>
-        <Text style={[styles.modalTitle, { color: colors.text }]}>
-          Passcode Verification
-        </Text>
-        <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
-          Please enter the 6-digit code to confirm this transaction.
-        </Text>
-
-        <OtpInput
-          // secureTextEntry={visible}
-          numberOfDigits={6}
-          focusColor="orange"
-          focusStickBlinkingDuration={500}
-          onTextChange={text => setPin(text)}
-          // onFilled={handleFilled}
-          theme={{
-            containerStyle: styles.otpContainer,
-            inputsContainerStyle: styles.inputsContainer,
-            pinCodeContainerStyle: styles.pinCodeContainer,
-            pinCodeTextStyle: styles.pinCodeText,
-            focusStickStyle: styles.focusStick,
-            focusedPinCodeContainerStyle: styles.activePinCodeContainer,
+        <View
+          style={{
+            paddingHorizontal: wp(4.5),
+            position: 'absolute',
+            bottom: hp(2),
           }}
-        />
-      </View>
+        >
+          <Text style={[styles.modalTitle, { color: colors.text }]}>
+            Passcode Verification
+          </Text>
+          <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
+            Please enter the 6-digit code to confirm this transaction.
+          </Text>
+
+          <OtpInput
+            // secureTextEntry={visible}
+            numberOfDigits={6}
+            focusColor="orange"
+            focusStickBlinkingDuration={500}
+            onTextChange={text => setPin(text)}
+            // onFilled={handleFilled}
+            theme={{
+              containerStyle: styles.otpContainer,
+              inputsContainerStyle: styles.inputsContainer,
+              pinCodeContainerStyle: styles.pinCodeContainer,
+              pinCodeTextStyle: styles.pinCodeText,
+              focusStickStyle: styles.focusStick,
+              focusedPinCodeContainerStyle: styles.activePinCodeContainer,
+            }}
+          />
+        </View>
+      </KeyboardAwareScrollView>
+
       <Button
         buttonStyle={{
           marginVertical: hp(3),

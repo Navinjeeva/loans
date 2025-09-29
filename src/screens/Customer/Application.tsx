@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import Loader from '@src/common/components/Loader';
 import Stepper from '@src/common/components/Stepper';
+import KeyboardAwareScrollView from '@src/common/components/KeyboardAwareScrollView';
 import { useTheme } from '@src/common/utils/ThemeContext';
 import { useState } from 'react';
 import {
@@ -58,10 +59,13 @@ const Application = () => {
         }}
         currentStep={currentStep}
       />
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {currentStep === 0 && <PersonalDoc />}
         {currentStep === 1 && <LoanDoc />}
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <Button
         buttonStyle={{
           marginVertical: hp(3),

@@ -4,6 +4,7 @@ import ImageViewer from '@src/common/components/imageViewer';
 import Loader from '@src/common/components/Loader';
 import MobileNumberInputComponent from '@src/common/components/MobileNumberComponent';
 import TextInputComponent from '@src/common/components/TextInputComponent';
+import KeyboardAwareScrollView from '@src/common/components/KeyboardAwareScrollView';
 import { useTheme } from '@src/common/utils/ThemeContext';
 import { useState } from 'react';
 import {
@@ -55,7 +56,10 @@ const MemberDetails = () => {
         </View>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Upload Section */}
         <View style={styles.uploadSection}>
           <View style={{}}>
@@ -110,7 +114,7 @@ const MemberDetails = () => {
               />
             ))
           : null}
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <Button
         buttonStyle={{

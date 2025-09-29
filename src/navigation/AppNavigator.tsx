@@ -7,7 +7,6 @@ import {
   Modal,
   Text,
   StyleSheet,
-  KeyboardAvoidingView,
   Vibration,
   Platform,
 } from 'react-native';
@@ -77,15 +76,7 @@ const AppNavigator = () => {
       </View>
     );
 
-  return (
-    <KeyboardAvoidingView
-      style={{
-        flex: 1,
-      }}
-    >
-      <DrawerNavigator />
-    </KeyboardAvoidingView>
-  );
+  return <DrawerNavigator />;
 };
 
 const styles = StyleSheet.create({

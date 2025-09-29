@@ -4,6 +4,7 @@ import Button from '@src/common/components/Button';
 import Loader from '@src/common/components/Loader';
 import MobileNumberInputComponent from '@src/common/components/MobileNumberComponent';
 import TextInputComponent from '@src/common/components/TextInputComponent';
+import KeyboardAwareScrollView from '@src/common/components/KeyboardAwareScrollView';
 import { logErr } from '@src/common/utils/logger';
 import { storeData } from '@src/common/utils/storage';
 import { useTheme } from '@src/common/utils/ThemeContext';
@@ -65,82 +66,88 @@ const Login = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <Loader loading={loading} />
-      <View style={styles.container}>
-        <Image source={loginBgIcon} resizeMode="contain" style={styles.hero} />
-
-        <View style={styles.headingBlock}>
-          <Text style={styles.brand}>Welcome Back</Text>
-        </View>
-
-        <View style={{ gap: wp(2), width: '90%' }}>
-          <TextInputComponent
-            header="User Name"
-            maxLength={10}
-            inputStyles={{ height: hp(6), fontSize: hp(1.7) }}
-            value={username}
-            onChange={value =>
-              dispatch(
-                setState({
-                  username: value,
-                }),
-              )
-            }
+      <KeyboardAwareScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.container}>
+          <Image
+            source={loginBgIcon}
+            resizeMode="contain"
+            style={styles.hero}
           />
-          <View style={styles.inputWrapper}>
+
+          <View style={styles.headingBlock}>
+            <Text style={styles.brand}>Welcome Back</Text>
+          </View>
+
+          <View style={{ gap: wp(2), width: '90%' }}>
             <TextInputComponent
-              header="Enter Password"
-              inputStyles={{
-                fontSize: hp(1.8),
-              }}
-              placeholder="Enter Password"
-              maxLength={16}
-              value={password}
-              onChange={(text: string) => {
+              header="User Name"
+              maxLength={10}
+              inputStyles={{ height: hp(6), fontSize: hp(1.7) }}
+              value={username}
+              onChange={value =>
                 dispatch(
                   setState({
-                    password: text,
+                    username: value,
                   }),
-                );
-              }}
-              autocapitalize="none"
-              keyboardType="default"
-              required={false}
-              secureTextEntry={!passwordVisible}
-              caps={false}
+                )
+              }
             />
-            {/* Eye Icon */}
-            <TouchableOpacity
-              onPress={() => setPasswordVisible(!passwordVisible)}
-              style={styles.inputIcon}
-            >
-              {passwordVisible ? (
-                <Image
-                  source={eyeIcons}
-                  style={{ width: wp(5), height: wp(5) }}
-                  tintColor={colors.text}
-                />
-              ) : (
-                <Image
-                  source={closeEyeIcon}
-                  style={{ width: wp(5), height: wp(5) }}
-                  tintColor={colors.text}
-                />
-              )}
-            </TouchableOpacity>
+            <View style={styles.inputWrapper}>
+              <TextInputComponent
+                header="Enter Password"
+                inputStyles={{
+                  fontSize: hp(1.8),
+                }}
+                placeholder="Enter Password"
+                maxLength={16}
+                value={password}
+                onChange={(text: string) => {
+                  dispatch(
+                    setState({
+                      password: text,
+                    }),
+                  );
+                }}
+                autocapitalize="none"
+                keyboardType="default"
+                required={false}
+                secureTextEntry={!passwordVisible}
+                caps={false}
+              />
+              {/* Eye Icon */}
+              <TouchableOpacity
+                onPress={() => setPasswordVisible(!passwordVisible)}
+                style={styles.inputIcon}
+              >
+                {passwordVisible ? (
+                  <Image
+                    source={eyeIcons}
+                    style={{ width: wp(5), height: wp(5) }}
+                    tintColor={colors.text}
+                  />
+                ) : (
+                  <Image
+                    source={closeEyeIcon}
+                    style={{ width: wp(5), height: wp(5) }}
+                    tintColor={colors.text}
+                  />
+                )}
+              </TouchableOpacity>
+            </View>
+            <Text style={{ color: colors.primary, textAlign: 'right' }}>
+              Forgot Password?
+            </Text>
           </View>
-          <Text style={{ color: colors.primary, textAlign: 'right' }}>
-            Forgot Password?
-          </Text>
-        </View>
 
-        <View style={styles.actions}>
-          <Button text="Log In" onPress={handleLogin} />
-          <Text style={{ textAlign: 'center' }}>
-            Don't you have an account?{' '}
-            <Text style={{ color: colors.primary }}>Sign up</Text>
-          </Text>
+          <View style={styles.actions}>
+            <Button text="Log In" onPress={handleLogin} />
+            <Text style={{ textAlign: 'center' }}>
+              Don't you have an account?{' '}
+              <Text style={{ color: colors.primary }}>Sign up</Text>
+            </Text>
+          </View>
         </View>
-      </View>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };
@@ -191,6 +198,9 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 'auto',
     marginBottom: 24,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   primaryButton: {
     height: 56,

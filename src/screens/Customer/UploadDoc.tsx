@@ -10,6 +10,7 @@ import {
   Pressable,
   Image,
 } from 'react-native';
+import KeyboardAwareScrollView from '@src/common/components/KeyboardAwareScrollView';
 import React, { useState } from 'react';
 import useHideBottomBar from '@src/common/components/useHideBottomBar';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -110,7 +111,10 @@ const UploadDoc = () => {
         </View>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={{ marginVertical: hp(2) }}>
           <View>
             {extraDocuments.map((item: any, index: number) => (
@@ -224,7 +228,7 @@ const UploadDoc = () => {
             ))}
           </View>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <Button
         buttonStyle={{

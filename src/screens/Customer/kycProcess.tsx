@@ -8,6 +8,7 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
+import KeyboardAwareScrollView from '@src/common/components/KeyboardAwareScrollView';
 import React, { useState } from 'react';
 import useHideBottomBar from '@src/common/components/useHideBottomBar';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -105,7 +106,10 @@ const kycProcess = () => {
         </View>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <DocumentUpload
           header="Aadhaar Card"
           limit={1}
@@ -202,7 +206,7 @@ const kycProcess = () => {
             }
           }}
         />
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <Button
         buttonStyle={{

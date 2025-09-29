@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { loginBgIcon } from '@src/common/assets';
 import Button from '@src/common/components/Button';
+import KeyboardAwareScrollView from '@src/common/components/KeyboardAwareScrollView';
 import { logAlert } from '@src/common/utils/logger';
 import React from 'react';
 import {
@@ -20,29 +21,35 @@ const Register = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Image source={loginBgIcon} resizeMode="contain" style={styles.hero} />
+      <KeyboardAwareScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.container}>
+          <Image
+            source={loginBgIcon}
+            resizeMode="contain"
+            style={styles.hero}
+          />
 
-        <View style={styles.headingBlock}>
-          <Text style={styles.brand}>IMPACTO</Text>
-          <Text style={styles.title}>LOAN ORIGINATION SYSTEM</Text>
-          <Text style={styles.subtitle}>
-            {`Efficiency in Motion, Accuracy in View  Redefining Lending, Designed for You`}
-          </Text>
-        </View>
-
-        <View style={styles.actions}>
-          <Button text="Login" onPress={() => navigation.navigate('Login')} />
-
-          <View style={styles.separatorRow}>
-            <View style={styles.separator} />
-            <Text style={styles.separatorText}>or</Text>
-            <View style={styles.separator} />
+          <View style={styles.headingBlock}>
+            <Text style={styles.brand}>IMPACTO</Text>
+            <Text style={styles.title}>LOAN ORIGINATION SYSTEM</Text>
+            <Text style={styles.subtitle}>
+              {`Efficiency in Motion, Accuracy in View  Redefining Lending, Designed for You`}
+            </Text>
           </View>
 
-          <Button text="Sign Up" onPress={() => logAlert('Comming Soon')} />
+          <View style={styles.actions}>
+            <Button text="Login" onPress={() => navigation.navigate('Login')} />
+
+            <View style={styles.separatorRow}>
+              <View style={styles.separator} />
+              <Text style={styles.separatorText}>or</Text>
+              <View style={styles.separator} />
+            </View>
+
+            <Button text="Sign Up" onPress={() => logAlert('Comming Soon')} />
+          </View>
         </View>
-      </View>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };
@@ -133,6 +140,9 @@ const styles = StyleSheet.create({
     color: '#6C4AF2',
     fontSize: 16,
     fontWeight: '700',
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
 });
 

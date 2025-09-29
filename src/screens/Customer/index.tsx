@@ -7,6 +7,7 @@ import {
   ScrollView,
   TextInput,
 } from 'react-native';
+import KeyboardAwareScrollView from '@src/common/components/KeyboardAwareScrollView';
 import React, { useEffect, useState } from 'react';
 import useHideBottomBar from '@src/common/components/useHideBottomBar';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -165,7 +166,10 @@ const Customer = () => {
         </View>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Input Fields Section */}
         <View style={styles.formSection}>
           {/* Purpose of Loan */}
@@ -321,7 +325,7 @@ const Customer = () => {
             View Amortisation Sheet
           </Text>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* Action Buttons */}
       <View style={styles.buttonContainer}>

@@ -8,6 +8,7 @@ import {
   Pressable,
   ScrollView,
 } from 'react-native';
+import KeyboardAwareScrollView from '@src/common/components/KeyboardAwareScrollView';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -367,7 +368,7 @@ const Dashboard = () => {
         </View>
       </View>
 
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={styles.scrollViewContent}
         showsVerticalScrollIndicator={false}
       >
@@ -492,7 +493,7 @@ const Dashboard = () => {
 
         {/* --- Recent Activities Section --- */}
         <RecentActivities activitiesData={recentActivitiesData} />
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <Modal
         animationType="fade"
