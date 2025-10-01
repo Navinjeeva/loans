@@ -33,6 +33,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setState } from '@src/store/customer';
 import { OtpInput } from 'react-native-otp-entry';
 import { eyeIcons } from '@src/common/assets';
+import AdditionalDocuments from './AdditionalDocuments';
 
 const UploadDoc = () => {
   useHideBottomBar();
@@ -179,6 +180,13 @@ const UploadDoc = () => {
                   headerDesc=""
                   limit={1}
                   images={item?.doc}
+                  details={{
+                    'First Name': 'Manikandan',
+                    'Last Name': 'Duraisamy',
+                    'Date of Birth': '16/07/1986',
+                    'PAN Number': 'BNZPM2501F',
+                    'Mobile Number': '864-9031',
+                  }}
                   setImages={async (images: any) => {
                     setLoading(true);
                     let updatedDocuments = [...docs];
@@ -218,6 +226,27 @@ const UploadDoc = () => {
             ))}
           </View>
         </View>
+
+        {/* Joint Partner Documents */}
+        <AdditionalDocuments
+          title="Joint Partner"
+          subtitle="Upload Joint Partner Documents"
+          storeKey="jointPartnerDocuments"
+        />
+
+        {/* Beneficiary Documents */}
+        <AdditionalDocuments
+          title="Beneficiary"
+          subtitle="Upload Beneficiary Documents"
+          storeKey="beneficiaryDocuments"
+        />
+
+        {/* Linked Identities Documents */}
+        <AdditionalDocuments
+          title="Linked Identities"
+          subtitle="Upload Linked Identities Documents"
+          storeKey="linkedIdentitiesDocuments"
+        />
       </KeyboardAwareScrollView>
 
       <Button

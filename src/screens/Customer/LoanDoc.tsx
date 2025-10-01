@@ -10,10 +10,15 @@ import { eyeIcons } from '@src/common/assets';
 import DocumentUpload from '@src/common/components/DocumentUpload';
 import { useState } from 'react';
 import TextInputComponent from '@src/common/components/TextInputComponent';
+import { idpExtract } from '@src/common/utils/idp';
+import { logErr } from '@src/common/utils/logger';
 
 const loanDoc = () => {
   const { loanDocuments } = useSelector((state: any) => state.customer);
-  const docs = loanDocuments || [{ id: 1, name: '', doc: [] }];
+  const docs =
+    loanDocuments.length > 0
+      ? loanDocuments
+      : [{ id: 1, name: '', doc: [], details: {} }];
   const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
@@ -22,7 +27,10 @@ const loanDoc = () => {
     if (loanDocuments?.length < 10)
       dispatch(
         setState({
-          loanDocuments: [...docs, { id: docs.length + 1, name: '', doc: [] }],
+          loanDocuments: [
+            ...docs,
+            { id: docs.length + 1, name: '', doc: [], details: {} },
+          ],
         }),
       );
   };
@@ -110,28 +118,45 @@ const loanDoc = () => {
             headerDesc=""
             limit={1}
             images={item?.doc}
+            details={item?.details || {}}
             setImages={async (images: any) => {
-              setLoading(true);
+              let updatedDocuments = [...docs];
 
               if (images.length == 0) {
-                let updatedDocuments = [...docs];
                 updatedDocuments.splice(index, 1);
                 dispatch(setState({ loanDocuments: updatedDocuments }));
                 return;
               }
-              let updatedDocuments = [...docs];
 
-              // Append new images to existing ones instead of replacing
               const existingDocs = updatedDocuments[index]?.doc || [];
               const newDocs = [...existingDocs, ...images];
 
               updatedDocuments[index] = {
                 ...updatedDocuments[index],
                 doc: newDocs,
+                details: updatedDocuments[index]?.details || {},
               };
 
               dispatch(setState({ loanDocuments: [...updatedDocuments] }));
-              setLoading(false);
+
+              try {
+                setLoading(true);
+                const response = await idpExtract(images);
+                console.log(response, 'response');
+
+                let latestDocuments = [...updatedDocuments];
+                latestDocuments[index] = {
+                  ...latestDocuments[index],
+                  details: response || {},
+                };
+
+                dispatch(setState({ loanDocuments: [...latestDocuments] }));
+              } catch (error) {
+                console.log(error, 'error');
+                logErr(error);
+              } finally {
+                setLoading(false);
+              }
             }}
           />
         </View>

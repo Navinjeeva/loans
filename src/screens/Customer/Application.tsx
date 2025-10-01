@@ -19,14 +19,61 @@ import {
 import PersonalDoc from './PersonalDoc';
 import LoanDoc from './LoanDoc';
 import Button from '@src/common/components/Button';
+import { logErr, logSuccess } from '@src/common/utils/logger';
+import { instance } from '@src/services';
+import { useDispatch, useSelector } from 'react-redux';
+import { setState } from '@src/store/customer';
 
 const Application = () => {
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   const { colors, isDark } = useTheme();
   const [currentStep, setCurrentStep] = useState(0);
+  const dispatch = useDispatch();
 
   const styles = createStyles(colors, isDark);
+  const custData = useSelector((state: any) => state.customer);
+
+  const {
+    firstName,
+    lastName,
+    dateOfBirth,
+    mobileNumber,
+    email,
+    gender,
+    address,
+  } = custData;
+
+  const handleContinue = async () => {
+    navigation.navigate('Verification');
+    return;
+    try {
+      setLoading(true);
+      const { data } = await instance.post('/api/v1/loans/customer/create', {
+        firstName: firstName,
+        lastName: lastName,
+        dateOfBirth: dateOfBirth,
+        mobileNumber: mobileNumber,
+        email: email,
+        gender: gender,
+        address: address,
+      });
+
+      console.log(data, 'data');
+      if (data?.status == 201) {
+        dispatch(setState({ isMember: false }));
+        logSuccess('Customer created successfully');
+        navigation.navigate('UploadDoc');
+      } else {
+        dispatch(setState({ isMember: true }));
+      }
+    } catch (error) {
+      console.log(error?.response, 'error');
+      logErr(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView
@@ -71,9 +118,7 @@ const Application = () => {
           marginVertical: hp(3),
         }}
         text="Continue"
-        onPress={() => {
-          navigation.navigate('Signature');
-        }}
+        onPress={handleContinue}
       />
     </SafeAreaView>
   );

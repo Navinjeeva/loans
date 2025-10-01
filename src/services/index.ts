@@ -296,6 +296,7 @@ export const DROPDOWNS = async (
     const response = await instance.get(url);
     return response.data.data.payload;
   } catch (error) {
+    console.log(error);
     return [];
   }
 };

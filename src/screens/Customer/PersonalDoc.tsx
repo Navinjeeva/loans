@@ -10,10 +10,16 @@ import { eyeIcons } from '@src/common/assets';
 import DocumentUpload from '@src/common/components/DocumentUpload';
 import { useState } from 'react';
 import TextInputComponent from '@src/common/components/TextInputComponent';
+import { idpExtract } from '@src/common/utils/idp';
+import { logErr } from '@src/common/utils/logger';
+import AdditionalDocuments from './AdditionalDocuments';
 
 const PersonalDoc = () => {
   const { personalDocuments } = useSelector((state: any) => state.customer);
-  const docs = personalDocuments || [{ id: 1, name: '', doc: [] }];
+  const docs =
+    personalDocuments.length > 0
+      ? personalDocuments
+      : [{ id: 1, name: '', doc: [], details: {} }];
   const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
@@ -24,7 +30,7 @@ const PersonalDoc = () => {
         setState({
           personalDocuments: [
             ...docs,
-            { id: docs.length + 1, name: '', doc: [] },
+            { id: docs.length + 1, name: '', doc: [], details: {} },
           ],
         }),
       );
@@ -81,13 +87,13 @@ const PersonalDoc = () => {
                     },
                   ]}
                 >
-                  <Image
+                  {/* <Image
                     source={eyeIcons}
                     style={{
                       height: hp(2),
                       width: wp(4),
                     }}
-                  />
+                  /> */}
                   <Text style={{ color: 'red' }}> Remove</Text>
                 </Pressable>
               )}
@@ -113,33 +119,121 @@ const PersonalDoc = () => {
             headerDesc=""
             limit={1}
             images={item?.doc}
+            details={item?.details || {}}
             setImages={async (images: any) => {
-              setLoading(true);
+              let updatedDocuments = [...docs];
 
               if (images.length == 0) {
-                let updatedDocuments = [...docs];
                 updatedDocuments.splice(index, 1);
                 dispatch(setState({ personalDocuments: updatedDocuments }));
                 return;
               }
 
-              let updatedDocuments = [...docs];
-
-              // Append new images to existing ones instead of replacing
               const existingDocs = updatedDocuments[index]?.doc || [];
               const newDocs = [...existingDocs, ...images];
 
               updatedDocuments[index] = {
                 ...updatedDocuments[index],
                 doc: newDocs,
+                details: updatedDocuments[index]?.details || {},
               };
 
               dispatch(setState({ personalDocuments: [...updatedDocuments] }));
-              setLoading(false);
+
+              try {
+                setLoading(true);
+                const response: any = await idpExtract(images);
+                console.log(response, 'response');
+
+                const updateData: any = {};
+
+                if (response?.name) {
+                  updateData.name = response.name;
+                  // Split name into firstName and lastName if possible
+                  const nameParts = response.name.split(' ');
+                  if (nameParts.length >= 2) {
+                    updateData.firstName = nameParts[0];
+                    updateData.lastName = nameParts.slice(1).join(' ');
+                  } else {
+                    updateData.firstName = response.name;
+                  }
+                }
+
+                if (response?.date_of_birth) {
+                  // Convert from DD/MM/YYYY to YYYY-MM-DD
+                  const dateParts = response.date_of_birth.split('/');
+                  if (dateParts.length === 3) {
+                    const [day, month, year] = dateParts;
+                    updateData.dateOfBirth = `${year}-${month}-${day}`;
+                  } else {
+                    updateData.dateOfBirth = response.date_of_birth;
+                  }
+                }
+
+                if (response?.gender) {
+                  updateData.gender = response.gender.toUpperCase();
+                }
+
+                // if (response?.mobile_number) {
+                //   updateData.mobileNumber = response.mobile_number;
+                // }
+
+                // if (response?.aadhaar_number) {
+                //   updateData.aadhaarNumber = response.aadhaar_number;
+                // }
+
+                // if (response?.vid) {
+                //   updateData.vid = response.vid;
+                // }
+
+                if (response?.address) {
+                  updateData.address = response.address;
+                }
+
+                // Update document details
+                let latestDocuments = [...updatedDocuments];
+                latestDocuments[index] = {
+                  ...latestDocuments[index],
+                  details: response || {},
+                };
+
+                dispatch(
+                  setState({
+                    ...updateData,
+                    personalDocuments: [...latestDocuments],
+                  }),
+                );
+              } catch (error) {
+                console.log(error, 'error');
+                logErr(error);
+              } finally {
+                setLoading(false);
+              }
             }}
           />
         </View>
       ))}
+
+      {/* Joint Partner Documents */}
+      <AdditionalDocuments
+        title="Joint Partner"
+        subtitle="Upload Joint Partner Documents"
+        storeKey="jointPartnerDocuments"
+      />
+
+      {/* Beneficiary Documents */}
+      <AdditionalDocuments
+        title="Beneficiary"
+        subtitle="Upload Beneficiary Documents"
+        storeKey="beneficiaryDocuments"
+      />
+
+      {/* Linked Identities Documents */}
+      <AdditionalDocuments
+        title="Linked Identities"
+        subtitle="Upload Linked Identities Documents"
+        storeKey="linkedIdentitiesDocuments"
+      />
     </View>
   );
 };

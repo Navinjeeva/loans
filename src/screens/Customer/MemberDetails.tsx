@@ -24,12 +24,16 @@ import { useSelector } from 'react-redux';
 
 const MemberDetails = () => {
   const [loading, setLoading] = useState(false);
-  const { extraDocuments } = useSelector((state: any) => state.customer);
-
+  const { extraDocuments, personalDocuments } = useSelector(
+    (state: any) => state.customer,
+  );
+  const custData = useSelector((state: any) => state.customer);
   const navigation = useNavigation();
   const { colors, isDark } = useTheme();
 
   const styles = createStyles(colors, isDark);
+
+  console.log(!custData.isMember, 'kpkmkp');
 
   return (
     <SafeAreaView
@@ -61,59 +65,119 @@ const MemberDetails = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* Upload Section */}
-        <View style={styles.uploadSection}>
-          <View style={{}}>
-            <TextInputComponent
-              header="Member Name"
-              value={'John'}
-              //inputStyles={{ width: '48%' }}
-              onChange={() => {}}
-              isEditable={false}
-            />
-            <TextInputComponent
-              header="Member Number"
-              value={'Doe'}
-              //inputStyles={{ width: '48%' }}
-              onChange={() => {}}
-              isEditable={false}
-            />
-          </View>
+        {custData.isMember ? (
+          <>
+            <View style={styles.uploadSection}>
+              <View style={{}}>
+                <TextInputComponent
+                  header="Member Name"
+                  value={'John'}
+                  //inputStyles={{ width: '48%' }}
+                  onChange={() => {}}
+                  isEditable={false}
+                />
+                <TextInputComponent
+                  header="Member Number"
+                  value={'Doe'}
+                  //inputStyles={{ width: '48%' }}
+                  onChange={() => {}}
+                  isEditable={false}
+                />
+              </View>
 
-          <TextInputComponent
-            header="Email"
-            value={'john.doe@test.com'}
-            onChange={() => {}}
-            isEditable={false}
-          />
-
-          <View style={{ gap: hp(0.4) }}>
-            <Text>Mobile Number</Text>
-            <MobileNumberInputComponent
-              mobileNumber="9999999999"
-              isdCode={'91'}
-              onChangeMobileNumber={() => {}}
-              onChangeIsdCode={() => {}}
-              isEditable={false}
-            />
-            <TextInputComponent
-              header="Address"
-              value={'123, Sample Street, Test City'}
-              onChange={() => {}}
-              isEditable={false}
-            />
-          </View>
-        </View>
-        {extraDocuments && extraDocuments.length > 0
-          ? extraDocuments.map((item: any, index: number) => (
-              <ImageContainer
-                key={index}
-                imageUrl={
-                  item.doc && item.doc.length > 0 ? item.doc[0].uri : ''
-                }
-                title={item.name || item.documentName || 'Document'}
+              <TextInputComponent
+                header="Email"
+                value={'john.doe@test.com'}
+                onChange={() => {}}
+                isEditable={false}
               />
-            ))
-          : null}
+
+              <View style={{ gap: hp(0.4) }}>
+                <Text>Mobile Number</Text>
+                <MobileNumberInputComponent
+                  mobileNumber="9999999999"
+                  isdCode={'91'}
+                  onChangeMobileNumber={() => {}}
+                  onChangeIsdCode={() => {}}
+                  isEditable={false}
+                />
+                <TextInputComponent
+                  header="Address"
+                  value={'123, Sample Street, Test City'}
+                  onChange={() => {}}
+                  isEditable={false}
+                />
+              </View>
+            </View>
+            {extraDocuments && extraDocuments.length > 0
+              ? extraDocuments.map((item: any, index: number) => (
+                  <ImageContainer
+                    key={index}
+                    imageUrl={
+                      item.doc && item.doc.length > 0 ? item.doc[0].uri : ''
+                    }
+                    title={item.name || item.documentName || 'Document'}
+                  />
+                ))
+              : null}
+          </>
+        ) : (
+          <>
+            <View style={styles.uploadSection}>
+              <View style={{}}>
+                <TextInputComponent
+                  header="Member Name"
+                  value={custData.firstName}
+                  //inputStyles={{ width: '48%' }}
+                  onChange={() => {}}
+                  isEditable={false}
+                />
+                <TextInputComponent
+                  header="Member Number"
+                  value={'Doe'}
+                  //inputStyles={{ width: '48%' }}
+                  onChange={() => {}}
+                  isEditable={false}
+                />
+              </View>
+
+              <TextInputComponent
+                header="Email"
+                value={custData.email}
+                onChange={() => {}}
+                isEditable={false}
+              />
+
+              <View style={{ gap: hp(0.4) }}>
+                <Text>Mobile Number</Text>
+                <MobileNumberInputComponent
+                  mobileNumber={custData.mobileNumber}
+                  isdCode={custData.isdCode}
+                  onChangeMobileNumber={() => {}}
+                  onChangeIsdCode={() => {}}
+                  isEditable={false}
+                />
+                <TextInputComponent
+                  header="Address"
+                  value={custData.address}
+                  onChange={() => {}}
+                  isEditable={false}
+                />
+              </View>
+            </View>
+            {personalDocuments && personalDocuments.length > 0
+              ? personalDocuments.map((item: any, index: number) => (
+                  <ImageContainer
+                    key={index}
+                    imageUrl={
+                      item.doc && item.doc.length > 0 ? item.doc[0].uri : ''
+                    }
+                    title={item.name || item.documentName || 'Document'}
+                  />
+                ))
+              : null}
+          </>
+        )}
       </KeyboardAwareScrollView>
 
       <Button
@@ -122,7 +186,7 @@ const MemberDetails = () => {
         }}
         text="Proceed to Digital KYC"
         onPress={() => {
-          navigation.navigate('Application');
+          navigation.navigate('MemberOnboarding');
         }}
       />
     </SafeAreaView>

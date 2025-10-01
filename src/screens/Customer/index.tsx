@@ -33,8 +33,10 @@ import DropdownWithModal from '@src/common/components/DropdownWithModal';
 import MobileNumberInputComponent from '@src/common/components/MobileNumberComponent';
 import UploadDoc from './UploadDoc';
 import MemberDetails from './MemberDetails';
+import MemberOnboarding from './MemberOnboarding';
 import Application from './Application';
 import Signature from './Signature';
+import Verification from './Verification';
 
 const Stack = createNativeStackNavigator();
 
@@ -48,9 +50,11 @@ export const CustomerStack = () => {
       <Stack.Screen name="UploadDoc" component={UploadDoc} />
       <Stack.Screen name="NoCustomer" component={NoCustomer} />
       <Stack.Screen name="KycProcess" component={KycProcess} />
+      <Stack.Screen name="MemberOnboarding" component={MemberOnboarding} />
       <Stack.Screen name="MemberDetails" component={MemberDetails} />
       <Stack.Screen name="Application" component={Application} />
       <Stack.Screen name="Signature" component={Signature} />
+      <Stack.Screen name="Verification" component={Verification} />
     </Stack.Navigator>
   );
 };
@@ -63,19 +67,19 @@ const Customer = () => {
   const dispatch = useDispatch();
   const custData = useSelector((state: any) => state.customer);
 
-  // Form state
-  const [loanPurpose, setLoanPurpose] = useState('Personal Loan');
-  const [isdCode, setIsdCode] = useState('+91');
-  const [mobileNumber, setMobileNumber] = useState('');
-  const [email, setEmail] = useState('');
-  const [loanAmount, setLoanAmount] = useState('');
-  const [loanTenure, setLoanTenure] = useState('');
-
-  const [tentativeInterestRate, setTentativeInterestRate] = useState('');
-  const [monthlyEMI, setMonthlyEMI] = useState('00,000');
-  const [principalAmount, setPrincipalAmount] = useState('00,00,000');
-  const [totalInterest, setTotalInterest] = useState('00,000');
-  const [totalAmountPayable, setTotalAmountPayable] = useState('00,00,000');
+  const {
+    loanPurpose,
+    isdCode,
+    mobileNumber,
+    email,
+    loanAmount,
+    loanTenure,
+    tentativeInterestRate,
+    monthlyEMI,
+    principalAmount,
+    totalInterest,
+    totalAmountPayable,
+  } = custData;
 
   // useEffect(() => {
   //   (async () => {
@@ -127,10 +131,14 @@ const Customer = () => {
       );
 
       console.log(data.responseStructure.data);
-      setMonthlyEMI(data.responseStructure.data.monthlyEMI);
-      setPrincipalAmount(data.responseStructure.data.principalAmount);
-      setTotalInterest(data.responseStructure.data.totalInterest);
-      setTotalAmountPayable(data.responseStructure.data.totalAmountPayable);
+      dispatch(
+        setState({
+          monthlyEMI: data.responseStructure.data.monthlyEMI,
+          principalAmount: data.responseStructure.data.principalAmount,
+          totalInterest: data.responseStructure.data.totalInterest,
+          totalAmountPayable: data.responseStructure.data.totalAmountPayable,
+        }),
+      );
     } catch (error) {
       console.log(error);
       logErr(error);
@@ -180,7 +188,7 @@ const Customer = () => {
               { label: 'Car Loan', value: 'Car Loan' },
             ]}
             value={loanPurpose}
-            setValue={setLoanPurpose}
+            setValue={value => dispatch(setState({ loanPurpose: value }))}
             placeholder="Select Purpose of Loan"
             header="Purpose of Loan"
             label="Purpose of Loan"
@@ -195,8 +203,12 @@ const Customer = () => {
             <MobileNumberInputComponent
               mobileNumber={mobileNumber}
               isdCode={isdCode}
-              onChangeMobileNumber={value => setMobileNumber(value)}
-              onChangeIsdCode={(code, desc) => setIsdCode(String(code))}
+              onChangeMobileNumber={value =>
+                dispatch(setState({ mobileNumber: value }))
+              }
+              onChangeIsdCode={(code, desc) =>
+                dispatch(setState({ isdCode: String(code) }))
+              }
               isEditable={true}
             />
           </View>
@@ -206,7 +218,7 @@ const Customer = () => {
             header="Enter mail"
             placeholder="Enter email"
             value={email}
-            onChange={setEmail}
+            onChange={value => dispatch(setState({ email: value }))}
             keyboardType="email-address"
             inputStyles={styles.textInput}
           />
@@ -222,7 +234,7 @@ const Customer = () => {
               { label: '₹35,00,000', value: '₹35,00,000' },
             ]}
             value={loanAmount}
-            setValue={setLoanAmount}
+            setValue={value => dispatch(setState({ loanAmount: value }))}
             placeholder="Select Purpose of Loan"
             header="Loan Amount"
             label="Loan Amount"
@@ -235,7 +247,7 @@ const Customer = () => {
               { label: '5 years', value: '5' },
             ]}
             value={loanTenure}
-            setValue={setLoanTenure}
+            setValue={value => dispatch(setState({ loanTenure: value }))}
             placeholder="Select Purpose of Loan"
             header="Loan Tenure"
             label="Loan Tenure"
@@ -251,12 +263,12 @@ const Customer = () => {
             </Text>
             <View style={styles.interestRateContainer}>
               <TextInput
-                header=""
-                //placeholder="Enter interest rate"
                 value={tentativeInterestRate ? tentativeInterestRate : '0.0'}
-                onChangeText={setTentativeInterestRate}
+                onChangeText={value =>
+                  dispatch(setState({ tentativeInterestRate: value }))
+                }
                 keyboardType="numeric"
-                inputStyles={styles.interestRateInput}
+                style={styles.interestRateInput}
               />
               <Text style={[styles.percentageSymbol, { color: '#6C4FF7' }]}>
                 %
@@ -339,7 +351,7 @@ const Customer = () => {
         <Button
           text="Proceed"
           onPress={() => {
-            navigation.navigate('UploadDoc' as never);
+            navigation.navigate('Application' as never);
           }}
           buttonStyle={styles.proceedButton}
         />
