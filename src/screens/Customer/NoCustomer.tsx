@@ -47,7 +47,7 @@ const NoCustomer = () => {
       });
 
       if (response?.status == 200) {
-        navigation.navigate('kycProcess');
+        navigation.navigate('KycProcess');
       }
       console.log(response);
     } catch (error) {

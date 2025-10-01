@@ -38,9 +38,9 @@ export const idpExtract = (docs: any) => {
       );
       const result = await response.json();
 
-      console.log(result);
+      console.log(result?.response);
 
-      const responseData = result;
+      const responseData = result?.response;
       resolve(responseData);
     } catch (error) {
       console.log(error);

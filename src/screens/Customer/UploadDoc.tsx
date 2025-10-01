@@ -45,7 +45,8 @@ const UploadDoc = () => {
   const { extraDocuments } = useSelector((state: any) => state.customer);
 
   // Use extraDocuments from Redux as the source of truth
-  const docs = extraDocuments || [{ id: 1, name: '', doc: [] }];
+  const docs =
+    extraDocuments.length > 0 ? extraDocuments : [{ id: 1, name: '', doc: [] }];
 
   const handleProceed = async () => {
     try {
@@ -117,7 +118,7 @@ const UploadDoc = () => {
       >
         <View style={{ marginVertical: hp(2) }}>
           <View>
-            {extraDocuments.map((item: any, index: number) => (
+            {docs.map((item: any, index: number) => (
               <View key={index} style={{ marginVertical: hp(2) }}>
                 <View
                   style={{
@@ -182,6 +183,22 @@ const UploadDoc = () => {
                     setLoading(true);
                     let updatedDocuments = [...docs];
 
+                    if (images.length == 0) {
+                      let updatedDocuments = [...docs];
+                      updatedDocuments.splice(index, 1);
+                      dispatch(setState({ extraDocuments: updatedDocuments }));
+                      setLoading(false);
+                      return;
+                    }
+
+                    try {
+                      const response = await idpExtract(images);
+                      console.log(response, 'response');
+                    } catch (error) {
+                      console.log(error, 'error');
+                      logErr(error);
+                    }
+
                     // Append new images to existing ones instead of replacing
                     const existingDocs = updatedDocuments[index]?.doc || [];
                     const newDocs = [...existingDocs, ...images];
@@ -196,33 +213,6 @@ const UploadDoc = () => {
                     );
                     setLoading(false);
                   }}
-                />
-
-                <TextInputComponent
-                  missingField={
-                    clicked && docs[index]?.doc.length != 0 && !item?.name
-                  }
-                  submitClicked={clicked}
-                  value={item?.name}
-                  required={item?.doc.length > 0}
-                  onChange={text => {
-                    let updatedDocuments = [...docs];
-
-                    updatedDocuments[index] = {
-                      ...updatedDocuments[index],
-                      name: validateAndSanitizeInput(text.toUpperCase()),
-                    };
-
-                    dispatch(
-                      setState({ extraDocuments: [...updatedDocuments] }),
-                    );
-                  }}
-                  customStyles={{
-                    marginTop: hp(1),
-                  }}
-                  header={`Additional Document ${index + 1} Name`}
-                  placeholder="Enter Document Name"
-                  maxLength={105}
                 />
               </View>
             ))}

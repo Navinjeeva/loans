@@ -27,7 +27,7 @@ import { idpExtract } from '@src/common/utils/idp';
 import NoCustomer from './NoCustomer';
 import { useDispatch, useSelector } from 'react-redux';
 import { setState } from '@src/store/customer';
-import kycProcess from './kycProcess';
+import KycProcess from './KycProcess';
 import TextInputComponent from '@src/common/components/TextInputComponent';
 import DropdownWithModal from '@src/common/components/DropdownWithModal';
 import MobileNumberInputComponent from '@src/common/components/MobileNumberComponent';
@@ -47,7 +47,7 @@ export const CustomerStack = () => {
       <Stack.Screen name="customer" component={Customer} />
       <Stack.Screen name="UploadDoc" component={UploadDoc} />
       <Stack.Screen name="NoCustomer" component={NoCustomer} />
-      <Stack.Screen name="kycProcess" component={kycProcess} />
+      <Stack.Screen name="KycProcess" component={KycProcess} />
       <Stack.Screen name="MemberDetails" component={MemberDetails} />
       <Stack.Screen name="Application" component={Application} />
       <Stack.Screen name="Signature" component={Signature} />

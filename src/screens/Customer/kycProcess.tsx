@@ -31,7 +31,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setState } from '@src/store/customer';
 import { OtpInput } from 'react-native-otp-entry';
 
-const kycProcess = () => {
+const KycProcess = () => {
   useHideBottomBar();
   const navigation = useNavigation() as any;
   const { colors, isDark } = useTheme();
@@ -492,4 +492,4 @@ const createStyles = (colors: any, isDark: boolean) =>
     },
   });
 
-export default kycProcess;
+export default KycProcess;
