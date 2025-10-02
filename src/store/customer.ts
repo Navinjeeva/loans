@@ -41,23 +41,61 @@ const initialState = {
   personalDocuments: [{ id: 1, name: '', doc: [], details: {} }],
   loanDocuments: [{ id: 1, name: '', doc: [], details: {} }],
 
-  // Joint Partner Documents (2 documents)
-  jointPartnerDocuments: [
-    { id: 1, name: 'Joint Partner Document 1', doc: [], details: {} },
-    { id: 2, name: 'Joint Partner Document 2', doc: [], details: {} },
-  ],
 
-  // Beneficiary Documents (2 documents)
-  beneficiaryDocuments: [
-    { id: 1, name: 'Beneficiary Document 1', doc: [], details: {} },
-    { id: 2, name: 'Beneficiary Document 2', doc: [], details: {} },
-  ],
-
-  // Linked Identities Documents (2 documents)
-  linkedIdentitiesDocuments: [
+  // Linked Entities Documents (2 documents)
+  linkedEntitiesDocuments: [
     { id: 1, name: 'Linked Identity Document 1', doc: [], details: {} },
     { id: 2, name: 'Linked Identity Document 2', doc: [], details: {} },
   ],
+
+  // Additional Details
+  additionalDetails: {
+    nationality: '',
+    primaryNationalityKeyId: '',
+    residency: '',
+    residencyKeyId: '',
+    countryOfBirth: '',
+    countryOfBirthKeyId: '',
+    placeOfBirth: '',
+    placeOfBirthKeyId: '',
+    preferredModeOfCommunication: '',
+    preferredModeOfCommunicationDesc: '',
+    maritalStatus: '',
+    maritalStatusKeyId: '',
+  },
+
+  // PEP (Politically Exposed Person) Data
+  pep: {
+    isHeadOfState: false,
+    isHeadOfGovt: false,
+    isSenPolitician: false,
+    isSenGovtOfficial: false,
+    isSenJudicialOfficial: false,
+    isSenMilitaryOfficial: false,
+    isSenExecSOC: false,
+    isImpPPO: false,
+    isImmediateFamily: false,
+    isMemberOfSeniorManagement: false,
+    isPepAssociate: false,
+    additionalPepInfo: '',
+  },
+
+  // FATCA (Foreign Account Tax Compliance Act) Data
+  fatca: {
+    isGreenCardHolder: false,
+    isGranteePOA: false,
+    hasStandingInstructIncome: false,
+    isDisclosureTaxResidency: false,
+    fatcaCountry1Key: '',
+    fatcaCountry1Desc: '',
+    fatcaCountry2Key: '',
+    fatcaCountry2Desc: '',
+    ssnNo1: '',
+    ssnNo2: '',
+    documentType: '',
+    fatcaDocument: [],
+    referenceLetter: [],
+  },
 };
 export const customerSlice = createSlice({
   name: 'customer',

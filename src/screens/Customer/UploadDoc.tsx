@@ -34,6 +34,7 @@ import { setState } from '@src/store/customer';
 import { OtpInput } from 'react-native-otp-entry';
 import { eyeIcons } from '@src/common/assets';
 import AdditionalDocuments from './AdditionalDocuments';
+import Header from '@src/common/components/Header';
 
 const UploadDoc = () => {
   useHideBottomBar();
@@ -93,25 +94,11 @@ const UploadDoc = () => {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <Loader loading={loading} />
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Upload Documents
-          </Text>
-          <Text
-            style={[styles.headerSubtitle, { color: colors.textSecondary }]}
-          >
-            Submit require document to complete Your loan application
-          </Text>
-        </View>
-      </View>
+
+      <Header
+        title="Upload Documents"
+        subTitle="Submit require document to complete Your loan application"
+      />
 
       <KeyboardAwareScrollView
         style={styles.content}

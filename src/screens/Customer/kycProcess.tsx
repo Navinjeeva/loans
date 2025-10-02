@@ -20,6 +20,7 @@ import {
 } from 'react-native-responsive-screen';
 import { useTheme } from '@src/common/utils/ThemeContext';
 import Button from '@src/common/components/Button';
+import Header from '@src/common/components/Header';
 import Loader from '@src/common/components/Loader';
 import { idpInstance, instance } from '@src/services';
 import { logAlert, logErr } from '@src/common/utils/logger';
@@ -86,25 +87,11 @@ const KycProcess = () => {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <Loader loading={loading} />
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Digital KYC Process
-          </Text>
-          <Text
-            style={[styles.headerSubtitle, { color: colors.textSecondary }]}
-          >
-            Documents For New Customer
-          </Text>
-        </View>
-      </View>
+
+      <Header
+        title="Digital KYC Process"
+        subTitle="Documents For New Customer"
+      />
 
       <KeyboardAwareScrollView
         style={styles.content}

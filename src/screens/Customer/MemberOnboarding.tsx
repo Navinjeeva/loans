@@ -25,6 +25,7 @@ import DateInput from '@src/common/components/DateInput';
 import { calendar1 } from '@src/common/assets/icons';
 import CurrencyInputField from '@src/common/components/CurrencyInputField';
 import DropdownWithModal from '@src/common/components/DropdownWithModalValues';
+import Header from '@src/common/components/Header';
 
 const validateAndSanitizeInput = (text: string) => {
   const allowedPattern = /^[a-zA-Z0-9.,'\- ]*$/;
@@ -249,29 +250,13 @@ const MemberOnboarding = () => {
 
   const styles = createStyles(colors, isDark);
 
-  const handleContinue = () => {};
+  const handleContinue = () => { };
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Member Onboarding
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.helpButton}>
-          <Text style={[styles.helpIcon, { color: colors.text }]}>?</Text>
-        </TouchableOpacity>
-      </View>
+      <Header title="Member Onboarding" />
 
       <KeyboardAwareScrollView
         style={styles.content}
@@ -645,38 +630,38 @@ const MemberOnboarding = () => {
 
           {(memberOnboardingData.employerKey == 'OTHER' ||
             memberOnboardingData.employerKey == 'SELF') && (
-            <View style={{ gap: hp(1) }}>
-              <TextInputComponent
-                required={employementStatusRequiredKeys[
-                  memberOnboardingData.employementStatusId
-                ]?.fields?.includes('employerKey')}
-                inputStyles={{
-                  fontSize: hp(1.6),
-                  height: hp(5),
-                }}
-                header={
-                  memberOnboardingData.employerKey == 'SELF'
-                    ? 'Name Of Company/Business'
-                    : 'Other Employer'
-                }
-                value={memberOnboardingData.otherEmployer}
-                onChange={text =>
-                  dispatch(
-                    setState({
-                      otherEmployer: validateAndSanitizeInput(
-                        text.toUpperCase(),
-                      ),
-                    }),
-                  )
-                }
-                maxLength={105}
-                removeCharsImmediately={true}
-                caps={true}
-                submitClicked={clicked}
-                missingField={!memberOnboardingData.otherEmployer}
-              />
-            </View>
-          )}
+              <View style={{ gap: hp(1) }}>
+                <TextInputComponent
+                  required={employementStatusRequiredKeys[
+                    memberOnboardingData.employementStatusId
+                  ]?.fields?.includes('employerKey')}
+                  inputStyles={{
+                    fontSize: hp(1.6),
+                    height: hp(5),
+                  }}
+                  header={
+                    memberOnboardingData.employerKey == 'SELF'
+                      ? 'Name Of Company/Business'
+                      : 'Other Employer'
+                  }
+                  value={memberOnboardingData.otherEmployer}
+                  onChange={text =>
+                    dispatch(
+                      setState({
+                        otherEmployer: validateAndSanitizeInput(
+                          text.toUpperCase(),
+                        ),
+                      }),
+                    )
+                  }
+                  maxLength={105}
+                  removeCharsImmediately={true}
+                  caps={true}
+                  submitClicked={clicked}
+                  missingField={!memberOnboardingData.otherEmployer}
+                />
+              </View>
+            )}
 
           {memberOnboardingData.employementStatusId != 'U' &&
             memberOnboardingData.employementStatusId != 'N' &&
@@ -981,7 +966,7 @@ const MemberOnboarding = () => {
                 backgroundColor="#fff"
                 showFormat
                 label="Salary"
-                // lableimp
+              // lableimp
               />
             </View>
           )}
@@ -1099,8 +1084,8 @@ const MemberOnboarding = () => {
                 )
               }
               value={memberOnboardingData.employerAddress2}
-              // missingField={!memberOnboardingData.employerAddress2}
-              // submitClicked={clicked}
+            // missingField={!memberOnboardingData.employerAddress2}
+            // submitClicked={clicked}
             />
             {/* <Text style={{ color: "#000", fontSize: hp(1.7) }}>
                 Address Line 2
@@ -1355,34 +1340,6 @@ const createStyles = (colors: any, isDark: boolean) =>
     container: {
       flex: 1,
       paddingTop: hp(5),
-    },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: wp(4),
-      paddingVertical: hp(2),
-    },
-    backButton: {
-      marginRight: wp(4),
-    },
-    backIcon: {
-      fontSize: hp(3),
-      fontWeight: 'bold',
-    },
-    headerContent: {
-      flex: 1,
-      alignItems: 'center',
-    },
-    headerTitle: {
-      fontSize: hp(2.8),
-      fontWeight: 'bold',
-    },
-    helpButton: {
-      marginLeft: wp(4),
-    },
-    helpIcon: {
-      fontSize: hp(2.5),
-      fontWeight: 'bold',
     },
     content: {
       flex: 1,

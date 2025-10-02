@@ -16,9 +16,9 @@ interface AdditionalDocumentsProps {
   title: string;
   subtitle: string;
   storeKey:
-    | 'jointPartnerDocuments'
-    | 'beneficiaryDocuments'
-    | 'linkedIdentitiesDocuments';
+  | 'jointPartnerDocuments'
+  | 'beneficiaryDocuments'
+  | 'linkedEntitiesDocuments';
 }
 
 const AdditionalDocuments = ({

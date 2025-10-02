@@ -21,6 +21,7 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import { useSelector } from 'react-redux';
+import Header from '@src/common/components/Header';
 
 const MemberDetails = () => {
   const [loading, setLoading] = useState(false);
@@ -40,25 +41,11 @@ const MemberDetails = () => {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <Loader loading={loading} />
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text
-            style={[
-              styles.headerTitle,
-              { color: colors.text, textAlign: 'center' },
-            ]}
-          >
-            Member Details
-          </Text>
-        </View>
-      </View>
+
+      <Header
+        title="Member Details"
+        subTitle="Review and verify member information"
+      />
 
       <KeyboardAwareScrollView
         style={styles.content}
@@ -73,14 +60,14 @@ const MemberDetails = () => {
                   header="Member Name"
                   value={'John'}
                   //inputStyles={{ width: '48%' }}
-                  onChange={() => {}}
+                  onChange={() => { }}
                   isEditable={false}
                 />
                 <TextInputComponent
                   header="Member Number"
                   value={'Doe'}
                   //inputStyles={{ width: '48%' }}
-                  onChange={() => {}}
+                  onChange={() => { }}
                   isEditable={false}
                 />
               </View>
@@ -88,7 +75,7 @@ const MemberDetails = () => {
               <TextInputComponent
                 header="Email"
                 value={'john.doe@test.com'}
-                onChange={() => {}}
+                onChange={() => { }}
                 isEditable={false}
               />
 
@@ -97,28 +84,28 @@ const MemberDetails = () => {
                 <MobileNumberInputComponent
                   mobileNumber="9999999999"
                   isdCode={'91'}
-                  onChangeMobileNumber={() => {}}
-                  onChangeIsdCode={() => {}}
+                  onChangeMobileNumber={() => { }}
+                  onChangeIsdCode={() => { }}
                   isEditable={false}
                 />
                 <TextInputComponent
                   header="Address"
                   value={'123, Sample Street, Test City'}
-                  onChange={() => {}}
+                  onChange={() => { }}
                   isEditable={false}
                 />
               </View>
             </View>
             {extraDocuments && extraDocuments.length > 0
               ? extraDocuments.map((item: any, index: number) => (
-                  <ImageContainer
-                    key={index}
-                    imageUrl={
-                      item.doc && item.doc.length > 0 ? item.doc[0].uri : ''
-                    }
-                    title={item.name || item.documentName || 'Document'}
-                  />
-                ))
+                <ImageContainer
+                  key={index}
+                  imageUrl={
+                    item.doc && item.doc.length > 0 ? item.doc[0].uri : ''
+                  }
+                  title={item.name || item.documentName || 'Document'}
+                />
+              ))
               : null}
           </>
         ) : (
@@ -129,14 +116,14 @@ const MemberDetails = () => {
                   header="Member Name"
                   value={custData.firstName}
                   //inputStyles={{ width: '48%' }}
-                  onChange={() => {}}
+                  onChange={() => { }}
                   isEditable={false}
                 />
                 <TextInputComponent
                   header="Member Number"
                   value={'Doe'}
                   //inputStyles={{ width: '48%' }}
-                  onChange={() => {}}
+                  onChange={() => { }}
                   isEditable={false}
                 />
               </View>
@@ -144,7 +131,7 @@ const MemberDetails = () => {
               <TextInputComponent
                 header="Email"
                 value={custData.email}
-                onChange={() => {}}
+                onChange={() => { }}
                 isEditable={false}
               />
 
@@ -153,28 +140,28 @@ const MemberDetails = () => {
                 <MobileNumberInputComponent
                   mobileNumber={custData.mobileNumber}
                   isdCode={custData.isdCode}
-                  onChangeMobileNumber={() => {}}
-                  onChangeIsdCode={() => {}}
+                  onChangeMobileNumber={() => { }}
+                  onChangeIsdCode={() => { }}
                   isEditable={false}
                 />
                 <TextInputComponent
                   header="Address"
                   value={custData.address}
-                  onChange={() => {}}
+                  onChange={() => { }}
                   isEditable={false}
                 />
               </View>
             </View>
             {personalDocuments && personalDocuments.length > 0
               ? personalDocuments.map((item: any, index: number) => (
-                  <ImageContainer
-                    key={index}
-                    imageUrl={
-                      item.doc && item.doc.length > 0 ? item.doc[0].uri : ''
-                    }
-                    title={item.name || item.documentName || 'Document'}
-                  />
-                ))
+                <ImageContainer
+                  key={index}
+                  imageUrl={
+                    item.doc && item.doc.length > 0 ? item.doc[0].uri : ''
+                  }
+                  title={item.name || item.documentName || 'Document'}
+                />
+              ))
               : null}
           </>
         )}

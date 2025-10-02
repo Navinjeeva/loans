@@ -20,6 +20,7 @@ import MobileNumberInputComponent from '@src/common/components/MobileNumberCompo
 import Button from '@src/common/components/Button';
 import TextInputComponent from '@src/common/components/TextInputComponent';
 import { OtpInput } from 'react-native-otp-entry';
+import Header from '@src/common/components/Header';
 
 const Verification = () => {
   const navigation = useNavigation() as any;
@@ -106,24 +107,9 @@ const Verification = () => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Member Onboarding
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.helpButton}>
-          <Text style={[styles.helpIcon, { color: colors.text }]}>?</Text>
-        </TouchableOpacity>
-      </View>
 
+
+      <Header title={" Member Onboarding"} />
       <KeyboardAwareScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}

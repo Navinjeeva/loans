@@ -23,12 +23,17 @@ import { logErr, logSuccess } from '@src/common/utils/logger';
 import { instance } from '@src/services';
 import { useDispatch, useSelector } from 'react-redux';
 import { setState } from '@src/store/customer';
+import Header from '@src/common/components/Header';
+import PersonalDocumentModal from '@src/common/components/PersonalDocumentModal';
+import LoanDocumentModal from '@src/common/components/LoanDocumentModal';
 
 const Application = () => {
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   const { colors, isDark } = useTheme();
   const [currentStep, setCurrentStep] = useState(0);
+  const [showPersonalModal, setShowPersonalModal] = useState(false);
+  const [showLoanModal, setShowLoanModal] = useState(false);
   const dispatch = useDispatch();
 
   const styles = createStyles(colors, isDark);
@@ -44,8 +49,16 @@ const Application = () => {
     address,
   } = custData;
 
+  const handleHelpPress = () => {
+    if (currentStep === 0) {
+      setShowPersonalModal(true);
+    } else if (currentStep === 1) {
+      setShowLoanModal(true);
+    }
+  };
+
   const handleContinue = async () => {
-    navigation.navigate('Verification');
+    navigation.navigate('Signature');
     return;
     try {
       setLoading(true);
@@ -63,11 +76,12 @@ const Application = () => {
       if (data?.status == 201) {
         dispatch(setState({ isMember: false }));
         logSuccess('Customer created successfully');
-        navigation.navigate('UploadDoc');
+        (navigation as any).navigate('UploadDoc');
       } else {
         dispatch(setState({ isMember: true }));
+        navigation.navigate('MemberDetails');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(error?.response, 'error');
       logErr(error);
     } finally {
@@ -80,25 +94,12 @@ const Application = () => {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <Loader loading={loading} />
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Upload Documents
-          </Text>
-          <Text
-            style={[styles.headerSubtitle, { color: colors.textSecondary }]}
-          >
-            Submit require document to complete Your loan application
-          </Text>
-        </View>
-      </View>
+
+      <Header
+        title={"Upload Documents"}
+        subTitle={"Submit require document to complete Your loan application"}
+        onHelpPress={handleHelpPress}
+      />
       <Stepper
         steps={['Personal Documents', 'Loan Documents']}
         onClick={(index: number) => {
@@ -119,6 +120,16 @@ const Application = () => {
         }}
         text="Continue"
         onPress={handleContinue}
+      />
+
+      {/* Modals */}
+      <PersonalDocumentModal
+        visible={showPersonalModal}
+        onClose={() => setShowPersonalModal(false)}
+      />
+      <LoanDocumentModal
+        visible={showLoanModal}
+        onClose={() => setShowLoanModal(false)}
       />
     </SafeAreaView>
   );

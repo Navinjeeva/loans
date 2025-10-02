@@ -17,6 +17,7 @@ import {
 } from 'react-native-responsive-screen';
 import { useTheme } from '@src/common/utils/ThemeContext';
 import Button from '@src/common/components/Button';
+import Header from '@src/common/components/Header';
 import Loader from '@src/common/components/Loader';
 import { idpInstance, instance } from '@src/services';
 import { logAlert, logErr } from '@src/common/utils/logger';
@@ -64,25 +65,11 @@ const NoCustomer = () => {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <Loader loading={loading} />
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Customer Doesn’t Exist
-          </Text>
-          <Text
-            style={[styles.headerSubtitle, { color: colors.textSecondary }]}
-          >
-            No existing account found in our system
-          </Text>
-        </View>
-      </View>
+
+      <Header
+        title="Customer Doesn't Exist"
+        subTitle="No existing account found in our system"
+      />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Upload Section */}
@@ -97,45 +84,45 @@ const NoCustomer = () => {
               header="First Name"
               value={'John'}
               //inputStyles={{ width: '48%' }}
-              onChange={() => {}}
+              onChange={() => { }}
               isEditable={false}
             />
             <TextInputComponent
               header="Last Name"
               value={'Doe'}
               //inputStyles={{ width: '48%' }}
-              onChange={() => {}}
+              onChange={() => { }}
               isEditable={false}
             />
           </View>
           <TextInputComponent
             header="Date of Birth"
             value={'1990-01-01'}
-            onChange={() => {}}
+            onChange={() => { }}
             isEditable={false}
           />
           <TextInputComponent
             header="Gender"
             value={'MALE'}
-            onChange={() => {}}
+            onChange={() => { }}
             isEditable={false}
           />
           <TextInputComponent
             header="Aadhaar Number"
             value={'XXXX XXXX 1234'}
-            onChange={() => {}}
+            onChange={() => { }}
             isEditable={false}
           />
           <TextInputComponent
             header="Email"
             value={'john.doe@test.com'}
-            onChange={() => {}}
+            onChange={() => { }}
             isEditable={false}
           />
           <TextInputComponent
             header="Address"
             value={'123, Sample Street, Test City'}
-            onChange={() => {}}
+            onChange={() => { }}
             isEditable={false}
           />
 
@@ -144,8 +131,8 @@ const NoCustomer = () => {
             <MobileNumberInputComponent
               mobileNumber="9999999999"
               isdCode={'91'}
-              onChangeMobileNumber={() => {}}
-              onChangeIsdCode={() => {}}
+              onChangeMobileNumber={() => { }}
+              onChangeIsdCode={() => { }}
               isEditable={false}
             />
           </View>

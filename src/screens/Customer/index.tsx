@@ -27,7 +27,6 @@ import { idpExtract } from '@src/common/utils/idp';
 import NoCustomer from './NoCustomer';
 import { useDispatch, useSelector } from 'react-redux';
 import { setState } from '@src/store/customer';
-import KycProcess from './KycProcess';
 import TextInputComponent from '@src/common/components/TextInputComponent';
 import DropdownWithModal from '@src/common/components/DropdownWithModal';
 import MobileNumberInputComponent from '@src/common/components/MobileNumberComponent';
@@ -37,6 +36,11 @@ import MemberOnboarding from './MemberOnboarding';
 import Application from './Application';
 import Signature from './Signature';
 import Verification from './Verification';
+import KycProcess from './KycProcess';
+import Header from '@src/common/components/Header';
+import AdditionalDetails from './AdditionalDetails';
+import Pep from './Pep';
+import Fatca from './Fatca';
 
 const Stack = createNativeStackNavigator();
 
@@ -55,6 +59,9 @@ export const CustomerStack = () => {
       <Stack.Screen name="Application" component={Application} />
       <Stack.Screen name="Signature" component={Signature} />
       <Stack.Screen name="Verification" component={Verification} />
+      <Stack.Screen name="AdditionalDetails" component={AdditionalDetails} />
+      <Stack.Screen name="Pep" component={Pep} />
+      <Stack.Screen name="Fatca" component={Fatca} />
     </Stack.Navigator>
   );
 };
@@ -154,25 +161,9 @@ const Customer = () => {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <Loader loading={loading} />
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Loan Calculator
-          </Text>
-          <Text
-            style={[styles.headerSubtitle, { color: colors.textSecondary }]}
-          >
-            Calculate your EMI and get personalised offers
-          </Text>
-        </View>
-      </View>
+
+
+      <Header title={"Loan Calculator"} subTitle={"Calculate your EMI and get personalised offers"} />?
 
       <KeyboardAwareScrollView
         style={styles.content}
@@ -351,7 +342,7 @@ const Customer = () => {
         <Button
           text="Proceed"
           onPress={() => {
-            navigation.navigate('Application' as never);
+            navigation.navigate('Fatca' as never);
           }}
           buttonStyle={styles.proceedButton}
         />

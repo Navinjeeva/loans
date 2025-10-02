@@ -90,37 +90,7 @@ const DrawerNavigator = () => {
             ),
           }}
         />
-        <Tab.Screen
-          name="Scan"
-          component={CustomerStack}
-          options={{
-            tabBarIcon: () => (
-              <Image
-                source={closeIcon}
-                style={{ width: wp(4.8), height: wp(4.8), tintColor: '#fff' }}
-              />
-            ),
-          }}
-          listeners={({ navigation }) => ({
-            tabPress: e => {
-              setCameraOn(true);
-            },
-          })}
-        />
 
-        <Tab.Screen
-          name="Productss"
-          component={CustomerStack}
-          options={{
-            tabBarLabel: 'Products',
-            tabBarIcon: ({ focused }) => (
-              <Image
-                source={focused ? closeIcon : closeIcon}
-                style={{ width: 24, height: 24 }}
-              />
-            ),
-          }}
-        />
       </Tab.Navigator>
     </>
   );

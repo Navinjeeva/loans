@@ -20,6 +20,7 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import SignatureScreen from 'react-native-signature-canvas';
+import Header from '@src/common/components/Header';
 
 const Signature = () => {
   const { colors, isDark } = useTheme();
@@ -36,20 +37,11 @@ const Signature = () => {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <Loader loading={loading} />
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Document Holder Verification
-          </Text>
-        </View>
-      </View>
+
+      <Header
+        title="Document Holder Verification"
+        subTitle="Complete signature and passcode verification"
+      />
       <KeyboardAwareScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
@@ -143,7 +135,7 @@ const Signature = () => {
           marginVertical: hp(3),
         }}
         text="Continue"
-        onPress={() => {}}
+        onPress={() => { }}
       />
       <Modal
         visible={signatureVisible}
@@ -151,7 +143,7 @@ const Signature = () => {
         onRequestClose={() => setSignatureVisible(false)}
         testID="camera-modal"
       >
-        <View style={{ flex: 1, marginTop: hp(6), backgroundColor: '#000' }}>
+        <View style={{ flex: 1, marginTop: hp(6), backgroundColor: "#000" }}>
           <SignatureScreen
             webStyle={`
             .m-signature-pad {
@@ -169,7 +161,7 @@ const Signature = () => {
               setSignatureVisible(false);
             }}
             androidHardwareAccelerationDisabled={true}
-            onOK={async image => {
+            onOK={async (image) => {
               await setCapturedSignature(String(image));
               setSignatureVisible(false);
             }}
@@ -272,5 +264,31 @@ const createStyles = (colors: any, isDark: boolean) =>
       fontSize: hp(1.8),
       marginTop: hp(1),
       marginBottom: hp(1),
+    },
+    signatureHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: wp(4),
+      paddingVertical: hp(2),
+      backgroundColor: '#000',
+      borderBottomWidth: 1,
+      borderBottomColor: '#333',
+    },
+    closeSignatureButton: {
+      padding: wp(2),
+    },
+    closeSignatureText: {
+      color: '#fff',
+      fontSize: hp(2.5),
+      fontWeight: 'bold',
+    },
+    signatureTitle: {
+      color: '#fff',
+      fontSize: hp(2.2),
+      fontWeight: '600',
+      flex: 1,
+      textAlign: 'center',
+      marginRight: wp(10), // Compensate for close button width
     },
   });
