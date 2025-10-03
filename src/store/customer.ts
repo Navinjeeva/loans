@@ -2,6 +2,8 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
+  customerId: '',
+
   // Loan Application Data
   loanPurpose: 'Personal Loan',
   isdCode: '+91',
@@ -40,7 +42,6 @@ const initialState = {
   extraDocuments: [{ id: 1, name: '', doc: [], details: {} }],
   personalDocuments: [{ id: 1, name: '', doc: [], details: {} }],
   loanDocuments: [{ id: 1, name: '', doc: [], details: {} }],
-
 
   // Linked Entities Documents (2 documents)
   linkedEntitiesDocuments: [

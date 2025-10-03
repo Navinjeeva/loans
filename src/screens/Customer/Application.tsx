@@ -58,8 +58,6 @@ const Application = () => {
   };
 
   const handleContinue = async () => {
-    navigation.navigate('Signature');
-    return;
     try {
       setLoading(true);
       const { data } = await instance.post('/api/v1/loans/customer/create', {
@@ -78,8 +76,10 @@ const Application = () => {
         logSuccess('Customer created successfully');
         (navigation as any).navigate('UploadDoc');
       } else {
-        dispatch(setState({ isMember: true }));
-        navigation.navigate('MemberDetails');
+        dispatch(
+          setState({ isMember: true, customerId: data?.data?.customerId }),
+        );
+        navigation.navigate('Verification');
       }
     } catch (error: any) {
       console.log(error?.response, 'error');
@@ -96,8 +96,8 @@ const Application = () => {
       <Loader loading={loading} />
 
       <Header
-        title={"Upload Documents"}
-        subTitle={"Submit require document to complete Your loan application"}
+        title={'Upload Documents'}
+        subTitle={'Submit require document to complete Your loan application'}
         onHelpPress={handleHelpPress}
       />
       <Stepper

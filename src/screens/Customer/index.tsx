@@ -161,10 +161,11 @@ const Customer = () => {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <Loader loading={loading} />
-
-
-      <Header title={"Loan Calculator"} subTitle={"Calculate your EMI and get personalised offers"} />?
-
+      <Header
+        title={'Loan Calculator'}
+        subTitle={'Calculate your EMI and get personalised offers'}
+      />
+      ?
       <KeyboardAwareScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
@@ -329,7 +330,6 @@ const Customer = () => {
           </Text>
         </View>
       </KeyboardAwareScrollView>
-
       {/* Action Buttons */}
       <View style={styles.buttonContainer}>
         <Button
@@ -342,7 +342,7 @@ const Customer = () => {
         <Button
           text="Proceed"
           onPress={() => {
-            navigation.navigate('Fatca' as never);
+            navigation.navigate('Signature' as never);
           }}
           buttonStyle={styles.proceedButton}
         />

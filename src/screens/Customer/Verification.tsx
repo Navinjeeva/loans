@@ -21,6 +21,8 @@ import Button from '@src/common/components/Button';
 import TextInputComponent from '@src/common/components/TextInputComponent';
 import { OtpInput } from 'react-native-otp-entry';
 import Header from '@src/common/components/Header';
+import { instance } from '@src/services';
+import { logErr, logSuccess } from '@src/common/utils/logger';
 
 const Verification = () => {
   const navigation = useNavigation() as any;
@@ -36,21 +38,45 @@ const Verification = () => {
   const [useSameForWhatsapp, setUseSameForWhatsapp] = useState(true);
   const [mobileOtp, setMobileOtp] = useState('');
   const [mobileVerified, setMobileVerified] = useState(false);
+  const [mobileOtpSent, setMobileOtpSent] = useState(false);
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [whatsappIsdCode, setWhatsappIsdCode] = useState('+91');
   const [whatsappOtp, setWhatsappOtp] = useState('');
   const [whatsappVerified, setWhatsappVerified] = useState(false);
+  const [whatsappOtpSent, setWhatsappOtpSent] = useState(false);
   const [emailOtp, setEmailOtp] = useState('');
   const [emailVerified, setEmailVerified] = useState(false);
-
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
+  const { customerId } = useSelector((state: any) => state.customer);
   const styles = createStyles(colors, isDark);
+
+  const handleSendMobileOtp = async () => {
+    setLoading(true);
+    try {
+      const response = await instance.get(
+        `api/v1/loans/customer/otp?customerId=${'CUST2025100114551449'}`,
+      );
+      logSuccess('Mobile OTP sent successfully');
+      setMobileOtpSent(true);
+    } catch (error) {
+      console.error('Mobile OTP send failed:', error?.response);
+      logErr(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleVerifyMobile = async () => {
     setLoading(true);
     try {
+      const response = await instance.get(
+        `api/v1/loans/customer/otp/verify?customerId=${'CUST2025100114551449'}&otpCode=${mobileOtp}`,
+      );
+      logSuccess('Mobile OTP verified successfully');
       setMobileVerified(true);
     } catch (error) {
-      console.error('Mobile verification failed:', error);
+      console.error('Mobile verification failed:', error?.response);
+      logErr(error);
     } finally {
       setLoading(false);
     }
@@ -59,8 +85,31 @@ const Verification = () => {
   const handleSendWhatsappOtp = async () => {
     setLoading(true);
     try {
+      const response = await instance.get(
+        `api/v1/loans/customer/otp?customerId=${'CUST2025100114551449'}`,
+      );
+      logSuccess('WhatsApp OTP sent successfully');
+      setWhatsappOtpSent(true);
+    } catch (error: any) {
+      console.error('WhatsApp OTP send failed:', error?.response);
+      logErr(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyWhatsapp = async () => {
+    setLoading(true);
+    try {
+      const response = await instance.get(
+        `api/v1/loans/customer/otp/verify?customerId=${'CUST2025100114551449'}&otpCode=${whatsappOtp}`,
+      );
+      logSuccess('WhatsApp OTP verified successfully');
+      console.log(response);
+      setWhatsappVerified(true);
     } catch (error) {
-      console.error('WhatsApp OTP send failed:', error);
+      console.error('WhatsApp verification failed:', error?.response);
+      logErr(error);
     } finally {
       setLoading(false);
     }
@@ -69,18 +118,39 @@ const Verification = () => {
   const handleSendEmailOtp = async () => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // OTP sent successfully
+      const response = await instance.get(
+        `api/v1/loans/customer/otp?customerId=${'CUST2025100114551449'}`,
+      );
+      logSuccess('Email OTP sent successfully');
+      console.log(response);
+
+      setEmailOtpSent(true);
     } catch (error) {
-      console.error('Email OTP send failed:', error);
+      console.error('Email OTP send failed:', error?.response);
+      logErr(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyEmail = async () => {
+    setLoading(true);
+    try {
+      const response = await instance.post(
+        `api/v1/loans/customer/otp/verify?customerId=${'CUST2025100114551449'}&otpCode=${emailOtp}`,
+      );
+      logSuccess('Email OTP verified successfully');
+      setEmailVerified(true);
+    } catch (error) {
+      console.error('Email verification failed:', error?.response);
+      logErr(error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleSkip = () => {
-    navigation.goBack();
+    navigation.navigate('AdditionalDetails');
   };
 
   const handleContinue = () => {
@@ -100,16 +170,14 @@ const Verification = () => {
       }),
     );
 
-    navigation.navigate('MemberDetails');
+    navigation.navigate('AdditionalDetails');
   };
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-
-
-      <Header title={" Member Onboarding"} />
+      <Header title={' Member Onboarding'} subTitle={''} />
       <KeyboardAwareScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
@@ -163,7 +231,14 @@ const Verification = () => {
           </TouchableOpacity>
 
           {/* Mobile OTP Section */}
-          {
+          {!mobileOtpSent ? (
+            <Button
+              text="Send OTP"
+              onPress={handleSendMobileOtp}
+              buttonStyle={styles.sendOtpButton}
+              disabled={!mobileNumber || loading}
+            />
+          ) : !mobileVerified ? (
             <View style={styles.otpSection}>
               <OtpInput
                 numberOfDigits={6}
@@ -181,17 +256,33 @@ const Verification = () => {
                   focusedPinCodeContainerStyle: styles.activeOtpBox,
                 }}
               />
-              <Text style={[styles.resendText, { color: colors.primary }]}>
-                Resend OTP
-              </Text>
+              <TouchableOpacity
+                onPress={handleSendMobileOtp}
+                style={styles.resendText}
+              >
+                <Text style={[styles.resendText, { color: colors.primary }]}>
+                  Resend OTP
+                </Text>
+              </TouchableOpacity>
               <Button
                 text="Verify"
                 onPress={handleVerifyMobile}
                 buttonStyle={styles.verifyButton}
-                disabled={mobileOtp.length !== 5 || loading}
+                disabled={mobileOtp.length !== 6 || loading}
               />
             </View>
-          }
+          ) : (
+            <View style={styles.verifiedSection}>
+              <Text
+                style={[
+                  styles.verifiedText,
+                  { color: colors.success || '#4CAF50' },
+                ]}
+              >
+                ✓ Mobile Number Verified
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* WhatsApp Number Section */}
@@ -207,30 +298,123 @@ const Verification = () => {
               onChangeIsdCode={(code, desc) => setWhatsappIsdCode(String(code))}
               isEditable={true}
             />
-            <Button
-              text="Send OTP"
-              onPress={handleSendWhatsappOtp}
-              buttonStyle={styles.sendOtpButton}
-              disabled={!whatsappNumber || loading}
-            />
+            {!whatsappOtpSent ? (
+              <Button
+                text="Send OTP"
+                onPress={handleSendWhatsappOtp}
+                buttonStyle={styles.sendOtpButton}
+                disabled={!whatsappNumber || loading}
+              />
+            ) : !whatsappVerified ? (
+              <View style={styles.otpSection}>
+                <OtpInput
+                  numberOfDigits={6}
+                  onTextChange={setWhatsappOtp}
+                  focusColor={colors.primary}
+                  focusStickBlinkingDuration={500}
+                  textInputProps={{
+                    accessibilityLabel: 'One-Time Password',
+                  }}
+                  theme={{
+                    containerStyle: styles.otpContainer,
+                    pinCodeContainerStyle: styles.otpBox,
+                    pinCodeTextStyle: styles.otpText,
+                    focusStickStyle: styles.focusStick,
+                    focusedPinCodeContainerStyle: styles.activeOtpBox,
+                  }}
+                />
+                <TouchableOpacity
+                  onPress={handleSendWhatsappOtp}
+                  style={styles.resendText}
+                >
+                  <Text style={[styles.resendText, { color: colors.primary }]}>
+                    Resend OTP
+                  </Text>
+                </TouchableOpacity>
+                <Button
+                  text="Verify"
+                  onPress={handleVerifyWhatsapp}
+                  buttonStyle={styles.verifyButton}
+                  disabled={whatsappOtp.length !== 6 || loading}
+                />
+              </View>
+            ) : (
+              <View style={styles.verifiedSection}>
+                <Text
+                  style={[
+                    styles.verifiedText,
+                    { color: colors.success || '#4CAF50' },
+                  ]}
+                >
+                  ✓ WhatsApp Number Verified
+                </Text>
+              </View>
+            )}
           </View>
         )}
 
         {/* Email ID Section */}
-
-        <TextInputComponent
-          header="Email ID"
-          placeholder="Enter Your Email"
-          value={email}
-          onChange={value => dispatch(setState({ email: value }))}
-          keyboardType="email-address"
-        />
-        <Button
-          text="Send OTP"
-          onPress={handleSendEmailOtp}
-          buttonStyle={styles.sendOtpButton}
-          disabled={!email || loading}
-        />
+        <View style={styles.section}>
+          <TextInputComponent
+            header="Email ID"
+            placeholder="Enter Your Email"
+            value={email}
+            onChange={value => dispatch(setState({ email: value }))}
+            keyboardType="email-address"
+          />
+          {!emailOtpSent ? (
+            <Button
+              text="Send OTP"
+              onPress={handleSendEmailOtp}
+              buttonStyle={styles.sendOtpButton}
+              disabled={!email || loading}
+            />
+          ) : !emailVerified ? (
+            <View style={styles.otpSection}>
+              <OtpInput
+                numberOfDigits={6}
+                onTextChange={setEmailOtp}
+                focusColor={colors.primary}
+                focusStickBlinkingDuration={500}
+                textInputProps={{
+                  accessibilityLabel: 'One-Time Password',
+                }}
+                theme={{
+                  containerStyle: styles.otpContainer,
+                  pinCodeContainerStyle: styles.otpBox,
+                  pinCodeTextStyle: styles.otpText,
+                  focusStickStyle: styles.focusStick,
+                  focusedPinCodeContainerStyle: styles.activeOtpBox,
+                }}
+              />
+              <TouchableOpacity
+                onPress={handleSendEmailOtp}
+                style={styles.resendText}
+              >
+                <Text style={[styles.resendText, { color: colors.primary }]}>
+                  Resend OTP
+                </Text>
+              </TouchableOpacity>
+              <Button
+                text="Verify"
+                onPress={handleVerifyEmail}
+                buttonStyle={styles.verifyButton}
+                disabled={emailOtp.length !== 6 || loading}
+              />
+            </View>
+          ) : (
+            <View style={styles.verifiedSection}>
+              <Text
+                style={[
+                  styles.verifiedText,
+                  { color: colors.success || '#4CAF50' },
+                ]}
+              >
+                ✓ Email Verified
+              </Text>
+            </View>
+          )}
+        </View>
       </KeyboardAwareScrollView>
 
       {/* Bottom Navigation */}
@@ -368,7 +552,7 @@ const createStyles = (colors: any, isDark: boolean) =>
     resendText: {
       fontSize: hp(1.6),
       fontWeight: '600',
-      marginBottom: hp(2),
+      marginBottom: hp(1),
       textDecorationLine: 'underline',
     },
     verifyButton: {
@@ -403,6 +587,16 @@ const createStyles = (colors: any, isDark: boolean) =>
     },
     continueButton: {
       backgroundColor: colors.primary,
+    },
+    verifiedSection: {
+      alignItems: 'center',
+      marginTop: hp(2),
+      paddingVertical: hp(1),
+    },
+    verifiedText: {
+      fontSize: hp(1.8),
+      fontWeight: '600',
+      color: '#4CAF50',
     },
   });
 

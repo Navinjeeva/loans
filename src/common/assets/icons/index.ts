@@ -7,3 +7,4 @@ export const fileIcon = require('./fileIcon.png');
 export const pdf = require('./pdf.png');
 
 export const calendar1 = require('./calendar1.png');
+export const refresh = require('./refresh.png');
