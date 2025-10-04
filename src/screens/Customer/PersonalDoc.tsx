@@ -14,13 +14,16 @@ import { idpExtract } from '@src/common/utils/idp';
 import { logErr } from '@src/common/utils/logger';
 import AdditionalDocuments from './AdditionalDocuments';
 
-const PersonalDoc = () => {
+const PersonalDoc = ({
+  setLoading,
+}: {
+  setLoading: (loading: boolean) => void;
+}) => {
   const { personalDocuments } = useSelector((state: any) => state.customer);
   const docs =
     personalDocuments.length > 0
       ? personalDocuments
       : [{ id: 1, name: '', doc: [], details: {} }];
-  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -117,7 +120,7 @@ const PersonalDoc = () => {
           <DocumentUpload
             header="Upload Additional Document"
             headerDesc=""
-            limit={1}
+            limit={2}
             images={item?.doc}
             details={item?.details || {}}
             setImages={async (images: any) => {
@@ -150,7 +153,24 @@ const PersonalDoc = () => {
 
                 // Determine document type based on IDP response and update document names
                 let documentType = 'AadhaarCard'; // default
-                if (response?.aadhaar_number || response?.aadhar_number) {
+
+                if (
+                  response?.['Card Type'] == 'National Identification Card' ||
+                  response?.['NATIONAL IDENTIFICATION CARD']
+                ) {
+                  documentType = 'NationalId';
+                } else if (response?.license_number) {
+                  documentType = 'DriversPermit';
+                } else if (response?.['Card Type'] == 'Driving License') {
+                  documentType = 'DriversPermit';
+                } else if (response?.['Card Type'] == 'Voter ID') {
+                  documentType = 'VoterID';
+                } else if (response?.pancard_number) {
+                  documentType = 'PanCard';
+                } else if (
+                  response?.aadhaar_number ||
+                  response?.aadhar_number
+                ) {
                   documentType = 'AadhaarCard';
                 } else if (
                   response?.pancard_number ||
@@ -168,7 +188,7 @@ const PersonalDoc = () => {
                   response?.driving_license_number ||
                   response?.dl_number
                 ) {
-                  documentType = 'DrivingLicense';
+                  documentType = 'DriversPermit';
                 } else if (response?.voter_id || response?.voter_id_number) {
                   documentType = 'VoterID';
                 }
@@ -273,7 +293,6 @@ const PersonalDoc = () => {
         </View>
       ))}
 
-      {/* Linked Identities Documents */}
       <AdditionalDocuments
         title="Linked Entities"
         subtitle="Upload Additional Documents for Beneficiary and Joint Partners"

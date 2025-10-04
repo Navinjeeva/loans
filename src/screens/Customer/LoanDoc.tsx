@@ -13,13 +13,16 @@ import TextInputComponent from '@src/common/components/TextInputComponent';
 import { idpExtract } from '@src/common/utils/idp';
 import { logErr } from '@src/common/utils/logger';
 
-const loanDoc = () => {
+const loanDoc = ({
+  setLoading,
+}: {
+  setLoading: (loading: boolean) => void;
+}) => {
   const { loanDocuments } = useSelector((state: any) => state.customer);
   const docs =
     loanDocuments.length > 0
       ? loanDocuments
       : [{ id: 1, name: '', doc: [], details: {} }];
-  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
 

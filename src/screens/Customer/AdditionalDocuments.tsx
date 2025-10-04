@@ -96,7 +96,7 @@ const AdditionalDocuments = ({
           <DocumentUpload
             header=""
             headerDesc=""
-            limit={1}
+            limit={2}
             images={item?.doc || []}
             details={item?.details || {}}
             setImages={(images: any[]) => updateDocument(index, images)}

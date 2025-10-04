@@ -81,11 +81,15 @@ const Customer = () => {
 
   const {
     loanPurpose,
+    promotions,
+    name,
     isdCode,
     mobileNumber,
     email,
     loanAmount,
-    loanTenure,
+    loanTenor,
+    tenorDuration,
+    moratorium,
     tentativeInterestRate,
     monthlyEMI,
     principalAmount,
@@ -128,7 +132,7 @@ const Customer = () => {
   const calculateEMI = async () => {
     console.log({
       loanAmount: loanAmount.replace(/[₹,]/g, '') + '.0',
-      tenureInYears: Number(loanTenure),
+      tenureInMonths: Number(tenorDuration),
       interestRate: Number(tentativeInterestRate),
     });
     try {
@@ -136,9 +140,12 @@ const Customer = () => {
       const { data } = await instance.post(
         'api/v1/loans/application/calculate',
         {
-          loanAmount: 500000.0,
-          tenureInYears: loanTenure,
-          interestRate: tentativeInterestRate,
+          loanAmount: parseFloat(loanAmount.replace(/[₹,]/g, '')),
+          tenureInYears:
+            loanTenor === 'Months'
+              ? Number(tenorDuration) / 12
+              : Number(tenorDuration),
+          interestRate: Number(tentativeInterestRate),
         },
       );
 
@@ -193,6 +200,30 @@ const Customer = () => {
             required
           />
 
+          {/* Promotions */}
+          <DropdownWithModal
+            options={[
+              { label: 'Christmas Loan', value: 'Christmas Loan' },
+              { label: 'New Year Special', value: 'New Year Special' },
+              { label: 'Festival Offer', value: 'Festival Offer' },
+              { label: 'No Promotion', value: 'No Promotion' },
+            ]}
+            value={promotions}
+            setValue={value => dispatch(setState({ promotions: value }))}
+            placeholder="Enter Promotion"
+            header="Promotions"
+            label="Promotions"
+          />
+
+          {/* Name */}
+          <TextInputComponent
+            header="Name"
+            placeholder="Enter Name"
+            value={name}
+            onChange={value => dispatch(setState({ name: value }))}
+            inputStyles={styles.textInput}
+          />
+
           {/* Mobile Number */}
           <View style={styles.inputContainer}>
             <Text style={[styles.fieldLabel, { color: colors.text }]}>
@@ -233,59 +264,104 @@ const Customer = () => {
             ]}
             value={loanAmount}
             setValue={value => dispatch(setState({ loanAmount: value }))}
-            placeholder="Select Purpose of Loan"
+            placeholder="Select Loan Amount"
             header="Loan Amount"
             label="Loan Amount"
             required
           />
-          <DropdownWithModal
-            options={[
-              { label: '3 years', value: '3' },
-              { label: '4 years', value: '4' },
-              { label: '5 years', value: '5' },
-            ]}
-            value={loanTenure}
-            setValue={value => dispatch(setState({ loanTenure: value }))}
-            placeholder="Select Purpose of Loan"
-            header="Loan Tenure"
-            label="Loan Tenure"
-            required
+
+          {/* Loan Tenor and Tenor Duration Row */}
+          <View style={styles.rowContainer}>
+            <View style={styles.halfWidth}>
+              <DropdownWithModal
+                options={[
+                  { label: 'Months', value: 'Months' },
+                  { label: 'Years', value: 'Years' },
+                ]}
+                value={loanTenor}
+                setValue={value => dispatch(setState({ loanTenor: value }))}
+                placeholder="-"
+                header="Loan Tenor"
+                label="Loan Tenor"
+                required
+              />
+            </View>
+            <View style={styles.halfWidth}>
+              <DropdownWithModal
+                options={[
+                  { label: '12', value: '12' },
+                  { label: '24', value: '24' },
+                  { label: '36', value: '36' },
+                  { label: '48', value: '48' },
+                  { label: '60', value: '60' },
+                ]}
+                value={tenorDuration}
+                setValue={value => dispatch(setState({ tenorDuration: value }))}
+                placeholder="-"
+                header="Tenor Duration"
+                label="Tenor Duration"
+                required
+              />
+            </View>
+          </View>
+
+          {/* Moratorium and Tentative Interest Rate Row */}
+          <View style={styles.rowContainer}>
+            <View style={styles.halfWidth}>
+              <DropdownWithModal
+                options={[
+                  { label: '-', value: '-' },
+                  { label: '3 months', value: '3 months' },
+                  { label: '6 months', value: '6 months' },
+                  { label: '12 months', value: '12 months' },
+                ]}
+                value={moratorium}
+                setValue={value => dispatch(setState({ moratorium: value }))}
+                placeholder="Select Moratorium"
+                header="Moratorium"
+                label="Moratorium"
+                required
+              />
+            </View>
+            <View style={styles.halfWidth}>
+              <TextInputComponent
+                value={tentativeInterestRate}
+                required
+                caps
+                customStyles={{
+                  flex: 1,
+                }}
+                onChange={value => {
+                  dispatch(setState({ tentativeInterestRate: value }));
+                }}
+                placeholder="Enter Interest Rate"
+                header="Interest Rate (Annually)"
+                keyboardType="numeric"
+                regex={/^[0-9.]*$/}
+                //submitClicked={submitClicked}
+                missingField={!tentativeInterestRate}
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* Calculate EMI Button */}
+        <View style={styles.calculateButtonContainer}>
+          <Button
+            text="Calculate Monthly EMI"
+            onPress={calculateEMI}
+            buttonStyle={styles.calculateButton}
           />
         </View>
 
-        {/* Summary Cards */}
-        <View style={styles.summaryCards}>
-          <View style={styles.summaryCardContainer}>
-            <Text style={[styles.summaryLabel, { color: colors.text }]}>
-              Tentative Interest Rate
-            </Text>
-            <View style={styles.interestRateContainer}>
-              <TextInput
-                value={tentativeInterestRate ? tentativeInterestRate : '0.0'}
-                onChangeText={value =>
-                  dispatch(setState({ tentativeInterestRate: value }))
-                }
-                keyboardType="numeric"
-                style={styles.interestRateInput}
-              />
-              <Text style={[styles.percentageSymbol, { color: '#6C4FF7' }]}>
-                %
-              </Text>
-            </View>
-          </View>
-          <View
-            style={[
-              styles.summaryCard,
-              { backgroundColor: '#F3F1FF', borderColor: '#6C4FF7' },
-            ]}
-          >
-            <Text style={[styles.summaryLabel, { color: colors.text }]}>
-              Monthly EMI
-            </Text>
-            <Text style={[styles.summaryValue, { color: '#6C4FF7' }]}>
-              ₹{monthlyEMI}
-            </Text>
-          </View>
+        {/* Monthly EMI Display */}
+        <View style={styles.emiDisplayContainer}>
+          <Text style={[styles.emiLabel, { color: colors.text }]}>
+            Monthly EMI
+          </Text>
+          <Text style={[styles.emiValue, { color: '#6C4FF7' }]}>
+            ₹{monthlyEMI || '0'}
+          </Text>
         </View>
 
         {/* Loan Breakdown */}
@@ -308,7 +384,7 @@ const Customer = () => {
             </Text>
             <View style={styles.dottedLine} />
             <Text style={[styles.breakdownValue, { color: colors.text }]}>
-              ₹{principalAmount}
+              ₹{principalAmount || '0'}
             </Text>
           </View>
 
@@ -318,7 +394,7 @@ const Customer = () => {
             </Text>
             <View style={styles.dottedLine} />
             <Text style={[styles.breakdownValue, { color: colors.text }]}>
-              ₹{totalInterest}
+              ₹{totalInterest || '0'}
             </Text>
           </View>
 
@@ -328,7 +404,7 @@ const Customer = () => {
             </Text>
             <View style={styles.dottedLine} />
             <Text style={[styles.breakdownValue, { color: colors.text }]}>
-              ₹{totalAmountPayable}
+              ₹{totalAmountPayable || '0'}
             </Text>
           </View>
           <Text style={{ textAlign: 'center', color: colors.primary }}>
@@ -458,6 +534,50 @@ const createStyles = (colors: any, isDark: any) =>
     },
     textInput: {
       fontSize: hp(1.6),
+    },
+    rowContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: hp(2),
+      gap: wp(3),
+    },
+    halfWidth: {
+      flex: 1,
+    },
+    interestRateField: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: '#E0E0E0',
+      borderRadius: 8,
+      backgroundColor: '#FFFFFF',
+      paddingHorizontal: wp(3),
+      paddingVertical: hp(1.5),
+    },
+    calculateButtonContainer: {
+      marginVertical: hp(3),
+    },
+    calculateButton: {
+      backgroundColor: '#6C4FF7',
+      borderRadius: 8,
+      paddingVertical: hp(1.8),
+      alignItems: 'center',
+    },
+    emiDisplayContainer: {
+      backgroundColor: '#F3F1FF',
+      borderRadius: 8,
+      padding: wp(4),
+      marginBottom: hp(3),
+      alignItems: 'center',
+    },
+    emiLabel: {
+      fontSize: hp(1.4),
+      color: '#666666',
+      marginBottom: hp(0.5),
+    },
+    emiValue: {
+      fontSize: hp(2.8),
+      fontWeight: 'bold',
     },
     summaryCards: {
       flexDirection: 'row',

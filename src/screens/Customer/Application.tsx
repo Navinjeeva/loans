@@ -26,6 +26,7 @@ import { setState } from '@src/store/customer';
 import Header from '@src/common/components/Header';
 import PersonalDocumentModal from '@src/common/components/PersonalDocumentModal';
 import LoanDocumentModal from '@src/common/components/LoanDocumentModal';
+import LinkedEntities from './LinkedEntities';
 
 const Application = () => {
   const [loading, setLoading] = useState(false);
@@ -193,7 +194,7 @@ const Application = () => {
         onHelpPress={handleHelpPress}
       />
       <Stepper
-        steps={['Personal Documents', 'Loan Documents']}
+        steps={['Personal Documents', 'Linked Entities', 'Loan Documents']}
         onClick={(index: number) => {
           setCurrentStep(index);
         }}
@@ -203,8 +204,9 @@ const Application = () => {
         style={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {currentStep === 0 && <PersonalDoc />}
-        {currentStep === 1 && <LoanDoc />}
+        {currentStep === 0 && <PersonalDoc setLoading={setLoading} />}
+        {currentStep === 1 && <LinkedEntities setLoading={setLoading} />}
+        {currentStep === 2 && <LoanDoc setLoading={setLoading} />}
       </KeyboardAwareScrollView>
       <Button
         buttonStyle={{

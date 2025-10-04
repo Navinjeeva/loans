@@ -5,26 +5,30 @@ const initialState = {
   customerId: '',
 
   // Loan Application Data
-  loanPurpose: 'PERSONAL',
-  isdCode: '+91',
+  loanPurpose: '',
+  promotions: '',
+  name: '',
+  isdCode: '+1868',
   mobileNumber: '',
   email: '',
   loanAmount: '',
-  loanTenure: '',
+  loanTenor: '',
+  tenorDuration: '',
+  moratorium: '-',
   tentativeInterestRate: '',
 
   // Member Onboarding Data
   whatsappNumber: '',
-  whatsappIsdCode: '+91',
+  whatsappIsdCode: '+1868',
   mobileVerified: false,
   whatsappVerified: false,
   emailVerified: false,
 
   // Calculated EMI Data
-  monthlyEMI: '00,000',
-  principalAmount: '00,00,000',
-  totalInterest: '00,000',
-  totalAmountPayable: '00,00,000',
+  monthlyEMI: '',
+  principalAmount: '',
+  totalInterest: '',
+  totalAmountPayable: '',
 
   // IDP Information
   idpFirstName: '',
@@ -34,7 +38,6 @@ const initialState = {
   idpAddress: '',
 
   // Personal Information
-  name: '',
   firstName: '',
   lastName: '',
   dateOfBirth: '',
