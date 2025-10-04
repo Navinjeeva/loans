@@ -29,7 +29,7 @@ const Verification = () => {
   const { colors, isDark } = useTheme();
   const dispatch = useDispatch();
 
-  const { mobileNumber, isdCode, email } = useSelector(
+  const { mobileNumber, isdCode, email, customerId } = useSelector(
     (state: any) => state.customer,
   );
 
@@ -40,21 +40,20 @@ const Verification = () => {
   const [mobileVerified, setMobileVerified] = useState(false);
   const [mobileOtpSent, setMobileOtpSent] = useState(false);
   const [whatsappNumber, setWhatsappNumber] = useState('');
-  const [whatsappIsdCode, setWhatsappIsdCode] = useState('+91');
+  const [whatsappIsdCode, setWhatsappIsdCode] = useState('+1868');
   const [whatsappOtp, setWhatsappOtp] = useState('');
   const [whatsappVerified, setWhatsappVerified] = useState(false);
   const [whatsappOtpSent, setWhatsappOtpSent] = useState(false);
   const [emailOtp, setEmailOtp] = useState('');
   const [emailVerified, setEmailVerified] = useState(false);
   const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const { customerId } = useSelector((state: any) => state.customer);
   const styles = createStyles(colors, isDark);
 
   const handleSendMobileOtp = async () => {
     setLoading(true);
     try {
       const response = await instance.get(
-        `api/v1/loans/customer/otp?customerId=${'CUST2025100114551449'}`,
+        `api/v1/loans/customer/otp?customerId=${customerId}`,
       );
       logSuccess('Mobile OTP sent successfully');
       setMobileOtpSent(true);
@@ -70,7 +69,7 @@ const Verification = () => {
     setLoading(true);
     try {
       const response = await instance.get(
-        `api/v1/loans/customer/otp/verify?customerId=${'CUST2025100114551449'}&otpCode=${mobileOtp}`,
+        `api/v1/loans/customer/otp/verify?customerId=${customerId}&otpCode=${mobileOtp}`,
       );
       logSuccess('Mobile OTP verified successfully');
       setMobileVerified(true);
@@ -86,7 +85,7 @@ const Verification = () => {
     setLoading(true);
     try {
       const response = await instance.get(
-        `api/v1/loans/customer/otp?customerId=${'CUST2025100114551449'}`,
+        `api/v1/loans/customer/otp?customerId=${customerId}`,
       );
       logSuccess('WhatsApp OTP sent successfully');
       setWhatsappOtpSent(true);
@@ -102,7 +101,7 @@ const Verification = () => {
     setLoading(true);
     try {
       const response = await instance.get(
-        `api/v1/loans/customer/otp/verify?customerId=${'CUST2025100114551449'}&otpCode=${whatsappOtp}`,
+        `api/v1/loans/customer/otp/verify?customerId=${customerId}&otpCode=${whatsappOtp}`,
       );
       logSuccess('WhatsApp OTP verified successfully');
       console.log(response);
@@ -119,7 +118,7 @@ const Verification = () => {
     setLoading(true);
     try {
       const response = await instance.get(
-        `api/v1/loans/customer/otp?customerId=${'CUST2025100114551449'}`,
+        `api/v1/loans/customer/otp?customerId=${customerId}`,
       );
       logSuccess('Email OTP sent successfully');
       console.log(response);
@@ -136,8 +135,8 @@ const Verification = () => {
   const handleVerifyEmail = async () => {
     setLoading(true);
     try {
-      const response = await instance.post(
-        `api/v1/loans/customer/otp/verify?customerId=${'CUST2025100114551449'}&otpCode=${emailOtp}`,
+      const response = await instance.get(
+        `api/v1/loans/customer/otp/verify?customerId=${customerId}&otpCode=${emailOtp}`,
       );
       logSuccess('Email OTP verified successfully');
       setEmailVerified(true);

@@ -21,6 +21,7 @@ import {
 } from 'react-native-responsive-screen';
 import SignatureScreen from 'react-native-signature-canvas';
 import Header from '@src/common/components/Header';
+import { useSelector } from 'react-redux';
 
 const Signature = () => {
   const { colors, isDark } = useTheme();
@@ -31,6 +32,7 @@ const Signature = () => {
   const [fetchedImageSign, setFetchedImageSign] = useState(null);
   const [signatureVisible, setSignatureVisible] = useState(false);
   const [pin, setPin] = useState<string | null>(null);
+  const custData = useSelector((state: any) => state.customer);
 
   return (
     <SafeAreaView

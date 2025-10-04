@@ -55,8 +55,8 @@ const initialState = {
 
   // Linked Entities Documents (2 documents)
   linkedEntitiesDocuments: [
-    { id: 1, name: 'Linked Identity Document 1', doc: [], details: {} },
-    { id: 2, name: 'Linked Identity Document 2', doc: [], details: {} },
+    { id: 1, name: 'Beneficiary Document', doc: [], details: {} },
+    { id: 2, name: 'Joint Partner Document', doc: [], details: {} },
   ],
 
   // Joint Partner Documents

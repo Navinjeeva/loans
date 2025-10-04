@@ -173,7 +173,7 @@ const MemberDetails = () => {
         }}
         text="Proceed to Digital KYC"
         onPress={() => {
-          navigation.navigate('MemberOnboarding');
+          navigation.navigate('Verification');
         }}
       />
     </SafeAreaView>

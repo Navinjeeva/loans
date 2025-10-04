@@ -161,11 +161,18 @@ const PersonalDoc = ({
                   documentType = 'NationalId';
                 } else if (response?.license_number) {
                   documentType = 'DriversPermit';
-                } else if (response?.['Card Type'] == 'Driving License') {
+                } else if (
+                  response?.['Card Type'] == 'Driving License' ||
+                  response?.driver_license_number
+                ) {
                   documentType = 'DriversPermit';
                 } else if (response?.['Card Type'] == 'Voter ID') {
                   documentType = 'VoterID';
-                } else if (response?.pancard_number) {
+                } else if (
+                  response?.pancard_number ||
+                  response?.card_type == 'Permanent Account Number Card' ||
+                  response?.panc_number
+                ) {
                   documentType = 'PanCard';
                 } else if (
                   response?.aadhaar_number ||
@@ -225,19 +232,21 @@ const PersonalDoc = ({
 
                 const updateData: any = {};
 
-                if (response?.aadhaar_number) {
-                  if (response?.name) {
-                    updateData.name = response.name;
-                    // Split name into firstName and lastName if possible
-                    const nameParts = response.name.split(' ');
-                    if (nameParts.length >= 2) {
-                      updateData.idpFirstName = nameParts[0];
-                      updateData.idpLastName = nameParts.slice(1).join(' ');
-                    } else {
-                      updateData.idpFirstName = response.name;
-                    }
+                if (response?.name) {
+                  updateData.name = response.name;
+                  console.log(response?.name, 'name from IDP');
+                  // Split name into firstName and lastName if possible
+                  const nameParts = response.name.trim().split(' ');
+                  if (nameParts.length >= 2) {
+                    updateData.idpFirstName = nameParts[0];
+                    updateData.idpLastName = nameParts.slice(1).join(' ');
+                  } else {
+                    updateData.idpFirstName = response.name;
+                    updateData.idpLastName = ''; // Empty if no last name
                   }
+                }
 
+                if (response?.aadhaar_number || response?.aadhar_number) {
                   if (response?.date_of_birth) {
                     // Convert from DD/MM/YYYY to YYYY-MM-DD
                     const dateParts = response.date_of_birth.split('/');
@@ -292,12 +301,6 @@ const PersonalDoc = ({
           />
         </View>
       ))}
-
-      <AdditionalDocuments
-        title="Linked Entities"
-        subtitle="Upload Additional Documents for Beneficiary and Joint Partners"
-        storeKey="linkedEntitiesDocuments"
-      />
     </View>
   );
 };

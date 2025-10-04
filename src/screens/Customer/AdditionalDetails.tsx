@@ -25,8 +25,8 @@ import DateInput from '@src/common/components/DateInput';
 import { calendar1 } from '@src/common/assets/icons';
 import CurrencyInputField from '@src/common/components/CurrencyInputField';
 import DropdownWithModal from '@src/common/components/DropdownWithModalValues';
-
-
+import { logErr } from '@src/common/utils/logger';
+import { instance } from '@src/services';
 
 const AdditionalDetails = () => {
   const [clicked, setClicked] = useState(false);
@@ -36,6 +36,7 @@ const AdditionalDetails = () => {
   const [loading, setLoading] = useState(false);
 
   const custData = useSelector((state: any) => state.customer);
+  const { linkedEntitiesDocuments } = custData;
 
   const {
     nationality,
@@ -44,6 +45,8 @@ const AdditionalDetails = () => {
     placeOfBirth,
     preferredModeOfCommunicationDesc,
     maritalStatus,
+    highLevelOfEducation,
+    countryOfIssuance,
   } = custData.additionalDetails;
   const styles = createStyles(colors, isDark);
 
@@ -51,14 +54,60 @@ const AdditionalDetails = () => {
     const allowedPattern = /^[a-zA-Z0-9 .'-]*$/;
     if (!allowedPattern.test(text)) {
       text = text
-        .split("")
-        .filter((char) => /^[a-zA-Z0-9 .'-]*$/.test(char))
-        .join("");
+        .split('')
+        .filter(char => /^[a-zA-Z0-9 .'-]*$/.test(char))
+        .join('');
     }
     return text;
   };
 
-  const handleContinue = () => { };
+  const handleContinue = async () => {
+    try {
+      setLoading(true);
+
+      const { data } = await instance.post('api/v1/loans/customer/details', {
+        customerId: custData.customerId,
+        additionalDetail: {
+          nationality: nationality,
+          residency: residency,
+          placeOfBirth: placeOfBirth,
+          countryOfBirth: countryOfBirth,
+          countryOfIssuance: countryOfIssuance || '',
+          maritalStatus: maritalStatus,
+          highLevelOfEducation: highLevelOfEducation || '',
+        },
+        beneficiaries: [
+          {
+            firstName:
+              linkedEntitiesDocuments[0]?.details?.firstName ||
+              linkedEntitiesDocuments[0]?.details?.name ||
+              '',
+            lastName: linkedEntitiesDocuments[0]?.details?.lastName || '',
+            dateOfBirth: linkedEntitiesDocuments[0]?.details?.dateOfBirth,
+            mobileNumber: linkedEntitiesDocuments[0]?.details?.mobile_number,
+          },
+        ],
+        jointPartners: [
+          {
+            firstName:
+              linkedEntitiesDocuments[1]?.details?.firstName ||
+              linkedEntitiesDocuments[1]?.details?.name ||
+              '',
+            lastName: linkedEntitiesDocuments[1]?.details?.lastName || '',
+            dateOfBirth: linkedEntitiesDocuments[1]?.details?.dateOfBirth,
+            mobileNumber: linkedEntitiesDocuments[1]?.details?.mobile_number,
+          },
+        ],
+      });
+      console.log(data, 'additional details data');
+      navigation.navigate('Pep');
+    } catch (error) {
+      console.log(error, 'error');
+      logErr(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView
@@ -86,10 +135,6 @@ const AdditionalDetails = () => {
         style={styles.content}
         showsVerticalScrollIndicator={false}
       >
-
-
-
-
         <View>
           <View style={styles.dropdownContainer}>
             <DropdownWithModal
@@ -102,17 +147,17 @@ const AdditionalDetails = () => {
                       ...custData.additionalDetails,
                       nationality: desc,
                       primaryNationalityKeyId: id,
-                    }
-                  })
+                    },
+                  }),
                 );
               }}
               //placeholder={`Select Nationality 1`}
               placeholder={`SELECT NATIONALITY `}
-              header={"Nationality "}
-              style={{ fontSize: hp(1.6), fontWeight: "bold" }}
-              label={"Nationality "}
+              header={'Nationality '}
+              style={{ fontSize: hp(1.6), fontWeight: 'bold' }}
+              label={'Nationality '}
               required
-              type={"nationality"}
+              type={'nationality'}
               hasError={clicked && !nationality}
             />
           </View>
@@ -128,13 +173,13 @@ const AdditionalDetails = () => {
                       ...custData.additionalDetails,
                       residency: desc,
                       residencyKeyId: id,
-                    }
-                  })
+                    },
+                  }),
                 );
               }}
               placeholder={`SELECT RESIDENCY`}
               header="Residency"
-              style={{ fontSize: 10, fontWeight: "bold" }}
+              style={{ fontSize: 10, fontWeight: 'bold' }}
               label="Residency"
               required={true}
               type="nationality"
@@ -156,14 +201,14 @@ const AdditionalDetails = () => {
                       ...custData.additionalDetails,
                       countryOfBirth: desc,
                       countryOfBirthKeyId: id,
-                    }
-                  })
+                    },
+                  }),
                 );
               }}
               //placeholder={`Select Country of Birth`}
               placeholder={`SELECT COUNTRY OF BIRTH`}
               header="Country of Birth"
-              style={{ fontSize: 10, fontWeight: "bold" }}
+              style={{ fontSize: 10, fontWeight: 'bold' }}
               label="Country of Birth"
               required={true}
               type="birthPlace"
@@ -181,8 +226,11 @@ const AdditionalDetails = () => {
                 height: hp(5),
               }}
               header="Place of Birth"
-
-              headerStyles={{ marginBottom: 6, color: "#000", fontSize: hp(1.8) }}
+              headerStyles={{
+                marginBottom: 6,
+                color: '#000',
+                fontSize: hp(1.8),
+              }}
               placeholder="ENTER PLACE OF BIRTH"
               value={placeOfBirth}
               maxLength={75}
@@ -191,14 +239,35 @@ const AdditionalDetails = () => {
                   setState({
                     additionalDetails: {
                       ...custData.additionalDetails,
-                      placeOfBirth: validateAndSanitizeInput(text.toUpperCase()),
-                    }
-                  })
+                      placeOfBirth: validateAndSanitizeInput(
+                        text.toUpperCase(),
+                      ),
+                    },
+                  }),
                 );
               }}
               required
               submitClicked={clicked}
               missingField={!placeOfBirth}
+            />
+          </View>
+
+          <View style={{ flex: 1, gap: hp(1) }}>
+            <TextInputComponent
+              removeCharsImmediately={true}
+              header="Country of Issuance"
+              placeholder="Enter Country "
+              value={countryOfIssuance}
+              onChange={text => {
+                dispatch(
+                  setState({
+                    additionalDetails: {
+                      ...custData.additionalDetails,
+                      countryOfIssuance: text,
+                    },
+                  }),
+                );
+              }}
             />
           </View>
 
@@ -212,23 +281,21 @@ const AdditionalDetails = () => {
                       ...custData.additionalDetails,
                       preferredModeOfCommunication: id,
                       preferredModeOfCommunicationDesc: desc,
-                    }
-                  })
+                    },
+                  }),
                 );
               }}
               passIdAndDesc
               placeholder={`SELECT MODE OF COMMUNICATION`}
               header="Preferred Mode of Communication"
-              style={{ fontSize: 10, fontWeight: "bold" }}
+              style={{ fontSize: 10, fontWeight: 'bold' }}
               label="Preferred Mode of Communication"
               required={true}
               type="preferredMethodOfCommunication"
               isSearchable
               options={[]}
               showImage={false}
-              hasError={
-                clicked && !preferredModeOfCommunicationDesc
-              }
+              hasError={clicked && !preferredModeOfCommunicationDesc}
             />
           </View>
           <View style={styles.dropdownContainer}>
@@ -242,13 +309,13 @@ const AdditionalDetails = () => {
                       ...custData.additionalDetails,
                       maritalStatus: desc?.toUpperCase(),
                       maritalStatusKeyId: id,
-                    }
-                  })
+                    },
+                  }),
                 );
               }}
               placeholder={`SELECT MARITAL STATUS`}
               header="Marital Status"
-              style={{ fontSize: 10, fontWeight: "bold" }}
+              style={{ fontSize: 10, fontWeight: 'bold' }}
               label="Marital Status"
               required={true}
               type="maritalStatus"
@@ -258,13 +325,41 @@ const AdditionalDetails = () => {
               hasError={clicked && !maritalStatus}
             />
           </View>
+          <View style={styles.dropdownContainer}>
+            <DropdownWithModal
+              passIdAndDesc
+              value={highLevelOfEducation}
+              setValue={(id: string, desc?: string) => {
+                dispatch(
+                  setState({
+                    additionalDetails: {
+                      ...custData.additionalDetails,
+                      highLevelOfEducation: desc?.toUpperCase(),
+                      highLevelOfEducationKeyId: id,
+                    },
+                  }),
+                );
+              }}
+              placeholder={`SELECT HIGHEST LEVEL OF EDUCATION`}
+              header="Highest Level of Education"
+              style={{ fontSize: 10, fontWeight: 'bold' }}
+              label="Highest Level of Education"
+              required={true}
+              type="highestLevelOfEducation"
+              isSearchable
+              options={[]}
+              showImage={false}
+            />
+          </View>
         </View>
       </KeyboardAwareScrollView>
 
       <Button
         text="Continue"
         onPress={handleContinue}
-        //buttonStyle={[styles.navigationButton, styles.continueButton]}
+        buttonStyle={{
+          marginVertical: hp(2.5),
+        }}
         disabled={loading}
       />
     </SafeAreaView>
@@ -311,10 +406,8 @@ const createStyles = (colors: any, isDark: boolean) =>
     },
     dropdownContainer: {
       marginBottom: hp(2),
-      color: "#000",
+      color: '#000',
     },
-
-
   });
 
 export default AdditionalDetails;

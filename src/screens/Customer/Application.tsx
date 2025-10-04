@@ -59,93 +59,25 @@ const Application = () => {
   };
 
   const handleContinue = async () => {
-    console.log(custData.personalDocuments[0]?.doc, 'formData');
-
     try {
       setLoading(true);
-      const formData = new FormData();
-      formData.append(
-        'customerId',
-        custData.customerId || 'CUST2025100114551449',
-      );
-      formData.append('loanType', custData.loanPurpose || 'PERSONAL');
-      formData.append(
-        'requestedAmount',
-        custData.loanAmount?.replace(/[₹,]/g, '') || '100000',
-      );
-      formData.append(
-        'tenureMonths',
-        Number(parseInt(custData.loanTenure) * 12) || 12,
-      );
-      // formData.append(
-      //   'principalAmount',
-      //   custData.principalAmount?.replace(/[₹,]/g, '') || '100000',
-      // );
-      formData.append('principalAmount', '100000');
-      formData.append(
-        'totalInterest',
-        custData.totalInterest?.replace(/[₹,]/g, '') || '10500',
-      );
-      // formData.append(
-      //   'totalAmountPayable',
-      //   custData.totalAmountPayable?.replace(/[₹,]/g, '') || '110500',
-      // );
-      formData.append('totalAmountPayable', '110500');
-      formData.append(
-        'remarks',
-        'Loan application submitted through mobile app',
-      );
-      // Append all documents from personalDocuments
-      let totalDocuments = 0;
-      custData.personalDocuments?.forEach(
-        (personalDoc: any, docIndex: number) => {
-          if (personalDoc?.doc && personalDoc.doc.length > 0) {
-            personalDoc.doc.forEach((document: any, imgIndex: number) => {
-              console.log(
-                `Appending document ${docIndex + 1}_${imgIndex + 1}:`,
-                document,
-              );
-              formData.append('documents', document);
-              totalDocuments++;
-            });
-          }
-        },
-      );
-      console.log(`Total documents appended: ${totalDocuments}`);
-      console.log(formData, 'formData');
 
-      // console.log(custData.personalDocuments[0]?.doc[0], 'formData');
-      const { data } = await instance.post(
-        '/api/v1/loans/application/create',
-        formData,
+      const { data: customerData } = await instance.post(
+        '/api/v1/loans/customer/create',
         {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
+          firstName: idpFirstName,
+          lastName: idpLastName,
+          dateOfBirth: idpDateOfBirth,
+          mobileNumber: mobileNumber,
+          email: email,
+          gender: idpGender,
+          address: idpAddress,
         },
       );
-      console.log(data, 'data');
-    } catch (error) {
-      logErr(error);
-    } finally {
-      setLoading(false);
-    }
-    return;
-    try {
-      setLoading(true);
-      const { data } = await instance.post('/api/v1/loans/customer/create', {
-        firstName: idpFirstName,
-        lastName: idpLastName,
-        dateOfBirth: idpDateOfBirth,
-        mobileNumber: mobileNumber,
-        email: email,
-        gender: idpGender,
-        address: idpAddress,
-      });
 
-      console.log(data, 'data');
-      const result = data?.responseStructure?.data;
-      if (data?.status == 201) {
+      console.log(customerData, 'data');
+      const result = customerData?.responseStructure?.data;
+      if (customerData?.status == 201) {
         dispatch(
           setState({
             isMember: result?.existingCustomer,
@@ -158,7 +90,70 @@ const Application = () => {
             email: result?.email,
           }),
         );
+        const formData = new FormData();
+        formData.append('customerId', result?.customerId);
+        formData.append('loanType', custData.loanPurpose || 'PERSONAL');
+        formData.append(
+          'requestedAmount',
+          custData.loanAmount?.replace(/[₹,]/g, '') || '100000',
+        );
+        formData.append(
+          'tenureMonths',
+          Number(parseInt(custData.loanTenure) * 12) || 12,
+        );
+        // formData.append(
+        //   'principalAmount',
+        //   custData.principalAmount?.replace(/[₹,]/g, '') || '100000',
+        // );
+        formData.append(
+          'principalAmount',
+          custData.principalAmount || '100000',
+        );
+        formData.append('totalInterest', custData.totalInterest || '10500');
+        // formData.append(
+        //   'totalAmountPayable',
+        //   custData.totalAmountPayable?.replace(/[₹,]/g, '') || '110500',
+        // );
+        formData.append(
+          'totalAmountPayable',
+          custData.totalAmountPayable || '110500',
+        );
+        formData.append(
+          'remarks',
+          'Loan application submitted through mobile app',
+        );
+        // Append all documents from personalDocuments
+        let totalDocuments = 0;
+        custData.personalDocuments?.forEach(
+          (personalDoc: any, docIndex: number) => {
+            if (personalDoc?.doc && personalDoc.doc.length > 0) {
+              personalDoc.doc.forEach((document: any, imgIndex: number) => {
+                console.log(
+                  `Appending document ${docIndex + 1}_${imgIndex + 1}:`,
+                  document,
+                );
+                formData.append('documents', document);
+                totalDocuments++;
+              });
+            }
+          },
+        );
+        console.log(`Total documents appended: ${totalDocuments}`);
+        console.log(formData, 'formData');
+
+        // console.log(custData.personalDocuments[0]?.doc[0], 'formData');
+        const { data } = await instance.post(
+          '/api/v1/loans/application/create',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          },
+        );
+        console.log(data, 'data');
         logSuccess('Customer created successfully');
+        navigation.navigate('Verification');
       } else {
         dispatch(
           setState({
@@ -172,6 +167,70 @@ const Application = () => {
             email: result?.email,
           }),
         );
+
+        const formData = new FormData();
+        formData.append('customerId', result?.customerId);
+        formData.append('loanType', custData.loanPurpose || 'PERSONAL');
+        formData.append(
+          'requestedAmount',
+          custData.loanAmount?.replace(/[₹,]/g, '') || '100000',
+        );
+        formData.append(
+          'tenureMonths',
+          Number(parseInt(custData.loanTenure) * 12) || 12,
+        );
+        // formData.append(
+        //   'principalAmount',
+        //   custData.principalAmount?.replace(/[₹,]/g, '') || '100000',
+        // );
+        formData.append(
+          'principalAmount',
+          custData.principalAmount || '100000',
+        );
+        formData.append('totalInterest', custData.totalInterest || '10500');
+        // formData.append(
+        //   'totalAmountPayable',
+        //   custData.totalAmountPayable?.replace(/[₹,]/g, '') || '110500',
+        // );
+        formData.append(
+          'totalAmountPayable',
+          custData.totalAmountPayable || '110500',
+        );
+        formData.append(
+          'remarks',
+          'Loan application submitted through mobile app',
+        );
+        // Append all documents from personalDocuments
+        let totalDocuments = 0;
+        custData.personalDocuments?.forEach(
+          (personalDoc: any, docIndex: number) => {
+            if (personalDoc?.doc && personalDoc.doc.length > 0) {
+              personalDoc.doc.forEach((document: any, imgIndex: number) => {
+                console.log(
+                  `Appending document ${docIndex + 1}_${imgIndex + 1}:`,
+                  document,
+                );
+                formData.append('documents', document);
+                totalDocuments++;
+              });
+            }
+          },
+        );
+        console.log(`Total documents appended: ${totalDocuments}`);
+        console.log(formData, 'formData');
+
+        // console.log(custData.personalDocuments[0]?.doc[0], 'formData');
+        const { data } = await instance.post(
+          '/api/v1/loans/application/create',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          },
+        );
+        console.log(data, 'data');
+
         navigation.navigate('MemberDetails');
       }
     } catch (error: any) {
