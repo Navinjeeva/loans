@@ -5,7 +5,7 @@ const initialState = {
   customerId: '',
 
   // Loan Application Data
-  loanPurpose: 'Personal Loan',
+  loanPurpose: 'PERSONAL',
   isdCode: '+91',
   mobileNumber: '',
   email: '',
@@ -25,6 +25,13 @@ const initialState = {
   principalAmount: '00,00,000',
   totalInterest: '00,000',
   totalAmountPayable: '00,00,000',
+
+  // IDP Information
+  idpFirstName: '',
+  idpLastName: '',
+  idpDateOfBirth: '',
+  idpGender: '',
+  idpAddress: '',
 
   // Personal Information
   name: '',
@@ -47,6 +54,18 @@ const initialState = {
   linkedEntitiesDocuments: [
     { id: 1, name: 'Linked Identity Document 1', doc: [], details: {} },
     { id: 2, name: 'Linked Identity Document 2', doc: [], details: {} },
+  ],
+
+  // Joint Partner Documents
+  jointPartnerDocuments: [
+    { id: 1, name: 'Joint Partner Document 1', doc: [], details: {} },
+    { id: 2, name: 'Joint Partner Document 2', doc: [], details: {} },
+  ],
+
+  // Beneficiary Documents
+  beneficiaryDocuments: [
+    { id: 1, name: 'Beneficiary Document 1', doc: [], details: {} },
+    { id: 2, name: 'Beneficiary Document 2', doc: [], details: {} },
   ],
 
   // Additional Details

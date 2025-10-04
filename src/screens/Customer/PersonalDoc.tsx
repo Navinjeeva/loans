@@ -129,6 +129,9 @@ const PersonalDoc = () => {
                 return;
               }
 
+              // Process images to set proper document names
+              console.log('Original images:', images);
+
               const existingDocs = updatedDocuments[index]?.doc || [];
               const newDocs = [...existingDocs, ...images];
 
@@ -145,19 +148,73 @@ const PersonalDoc = () => {
                 const response: any = await idpExtract(images);
                 console.log(response, 'response');
 
+                // Determine document type based on IDP response and update document names
+                let documentType = 'AadhaarCard'; // default
+                if (response?.aadhaar_number || response?.aadhar_number) {
+                  documentType = 'AadhaarCard';
+                } else if (
+                  response?.pancard_number ||
+                  response?.pan_number ||
+                  response?.pan_card_number
+                ) {
+                  documentType = 'PanCard';
+                } else if (
+                  response?.passport_number ||
+                  response?.passport_no ||
+                  response?.['Passport No.']
+                ) {
+                  documentType = 'Passport';
+                } else if (
+                  response?.driving_license_number ||
+                  response?.dl_number
+                ) {
+                  documentType = 'DrivingLicense';
+                } else if (response?.voter_id || response?.voter_id_number) {
+                  documentType = 'VoterID';
+                }
+
+                console.log(`IDP detected document type: ${documentType}`);
+
+                // Update document names based on IDP response
+                let updatedDocumentsWithNames = [...updatedDocuments];
+                updatedDocumentsWithNames[index] = {
+                  ...updatedDocumentsWithNames[index],
+                  doc: updatedDocumentsWithNames[index].doc.map(
+                    (doc: any, docIndex: number) => {
+                      const fileExtension =
+                        doc.type?.split('/')[1] ||
+                        doc.fileName?.split('.')[1] ||
+                        'jpg';
+                      const fileName = `${documentType}${
+                        docIndex > 0 ? `_${docIndex + 1}` : ''
+                      }.${fileExtension}`;
+
+                      return {
+                        ...doc,
+                        name: fileName,
+                        fileName: fileName,
+                      };
+                    },
+                  ),
+                };
+
+                console.log(
+                  `Updated document names to: ${documentType}`,
+                  updatedDocumentsWithNames[index].doc,
+                );
+
                 const updateData: any = {};
 
                 if (response?.aadhaar_number) {
-
                   if (response?.name) {
                     updateData.name = response.name;
                     // Split name into firstName and lastName if possible
                     const nameParts = response.name.split(' ');
                     if (nameParts.length >= 2) {
-                      updateData.firstName = nameParts[0];
-                      updateData.lastName = nameParts.slice(1).join(' ');
+                      updateData.idpFirstName = nameParts[0];
+                      updateData.idpLastName = nameParts.slice(1).join(' ');
                     } else {
-                      updateData.firstName = response.name;
+                      updateData.idpFirstName = response.name;
                     }
                   }
 
@@ -166,14 +223,14 @@ const PersonalDoc = () => {
                     const dateParts = response.date_of_birth.split('/');
                     if (dateParts.length === 3) {
                       const [day, month, year] = dateParts;
-                      updateData.dateOfBirth = `${year}-${month}-${day}`;
+                      updateData.idpDateOfBirth = `${year}-${month}-${day}`;
                     } else {
-                      updateData.dateOfBirth = response.date_of_birth;
+                      updateData.idpDateOfBirth = response.date_of_birth;
                     }
                   }
 
                   if (response?.gender) {
-                    updateData.gender = response.gender.toUpperCase();
+                    updateData.idpGender = response.gender.toUpperCase();
                   }
 
                   // if (response?.mobile_number) {
@@ -189,22 +246,20 @@ const PersonalDoc = () => {
                   // }
 
                   if (response?.address) {
-                    updateData.address = response.address;
+                    updateData.idpAddress = response.address;
                   }
-
                 }
 
-                // Update document details
-                let latestDocuments = [...updatedDocuments];
-                latestDocuments[index] = {
-                  ...latestDocuments[index],
+                // Update document details with the renamed documents
+                updatedDocumentsWithNames[index] = {
+                  ...updatedDocumentsWithNames[index],
                   details: response || {},
                 };
 
                 dispatch(
                   setState({
                     ...updateData,
-                    personalDocuments: [...latestDocuments],
+                    personalDocuments: [...updatedDocumentsWithNames],
                   }),
                 );
               } catch (error) {
@@ -217,8 +272,6 @@ const PersonalDoc = () => {
           />
         </View>
       ))}
-
-
 
       {/* Linked Identities Documents */}
       <AdditionalDocuments

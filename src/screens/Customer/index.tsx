@@ -41,6 +41,7 @@ import Header from '@src/common/components/Header';
 import AdditionalDetails from './AdditionalDetails';
 import Pep from './Pep';
 import Fatca from './Fatca';
+import DocumentHolderVerification from './DocumentHolderVerification';
 
 const Stack = createNativeStackNavigator();
 
@@ -62,6 +63,10 @@ export const CustomerStack = () => {
       <Stack.Screen name="AdditionalDetails" component={AdditionalDetails} />
       <Stack.Screen name="Pep" component={Pep} />
       <Stack.Screen name="Fatca" component={Fatca} />
+      <Stack.Screen
+        name="DocumentHolderVerification"
+        component={DocumentHolderVerification}
+      />
     </Stack.Navigator>
   );
 };
@@ -175,9 +180,10 @@ const Customer = () => {
           {/* Purpose of Loan */}
           <DropdownWithModal
             options={[
-              { label: 'Personal Loan', value: 'Personal Loan' },
-              { label: 'Home Loan', value: 'Home Loan' },
-              { label: 'Car Loan', value: 'Car Loan' },
+              { label: 'Personal Loan', value: 'PERSONAL' },
+              { label: 'Home Loan', value: 'HOME' },
+              { label: 'Vehicle Loan', value: 'VEHICLE' },
+              { label: 'Education Loan', value: 'EDUCATION' },
             ]}
             value={loanPurpose}
             setValue={value => dispatch(setState({ loanPurpose: value }))}
@@ -342,7 +348,7 @@ const Customer = () => {
         <Button
           text="Proceed"
           onPress={() => {
-            navigation.navigate('Signature' as never);
+            navigation.navigate('Application' as never);
           }}
           buttonStyle={styles.proceedButton}
         />

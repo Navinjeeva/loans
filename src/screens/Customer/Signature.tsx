@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Button from '@src/common/components/Button';
 import Loader from '@src/common/components/Loader';
 import KeyboardAwareScrollView from '@src/common/components/KeyboardAwareScrollView';
@@ -24,11 +24,11 @@ import Header from '@src/common/components/Header';
 
 const Signature = () => {
   const { colors, isDark } = useTheme();
+  const { signatureImage } = useRoute().params as any;
   const styles = createStyles(colors, isDark);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   const [fetchedImageSign, setFetchedImageSign] = useState(null);
-  const [capturedSignature, setCapturedSignature] = useState<any>(null);
   const [signatureVisible, setSignatureVisible] = useState(false);
   const [pin, setPin] = useState<string | null>(null);
 
@@ -87,9 +87,9 @@ const Signature = () => {
               alignItems: 'center',
             }}
           >
-            {capturedSignature ? (
+            {signatureImage ? (
               <Image
-                source={{ uri: capturedSignature }}
+                source={{ uri: signatureImage }}
                 style={styles.imagePreview}
               />
             ) : (
@@ -135,45 +135,8 @@ const Signature = () => {
           marginVertical: hp(3),
         }}
         text="Continue"
-        onPress={() => { }}
+        onPress={() => {}}
       />
-      <Modal
-        visible={signatureVisible}
-        animationType="slide"
-        onRequestClose={() => setSignatureVisible(false)}
-        testID="camera-modal"
-      >
-        <View style={{ flex: 1, marginTop: hp(6), backgroundColor: "#000" }}>
-          <SignatureScreen
-            webStyle={`
-            .m-signature-pad {
-              position: fixed;
-              margin:auto; 
-              top: 0;
-              width:100%;
-              height:100vw;
-            }
-            body,html { 
-              position:relative; 
-            }
-          `}
-            onClear={() => {
-              setSignatureVisible(false);
-            }}
-            androidHardwareAccelerationDisabled={true}
-            onOK={async (image) => {
-              await setCapturedSignature(String(image));
-              setSignatureVisible(false);
-            }}
-            descriptionText="Member Signature"
-            penColor="white"
-            backgroundColor="black"
-            clearText="Close"
-            confirmText="Confirm"
-            imageType="image/jpeg"
-          />
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 };

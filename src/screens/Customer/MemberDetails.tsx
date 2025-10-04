@@ -58,54 +58,54 @@ const MemberDetails = () => {
               <View style={{}}>
                 <TextInputComponent
                   header="Member Name"
-                  value={'John'}
+                  value={custData.firstName}
                   //inputStyles={{ width: '48%' }}
-                  onChange={() => { }}
+                  onChange={() => {}}
                   isEditable={false}
                 />
                 <TextInputComponent
                   header="Member Number"
-                  value={'Doe'}
+                  value={custData.lastName}
                   //inputStyles={{ width: '48%' }}
-                  onChange={() => { }}
+                  onChange={() => {}}
                   isEditable={false}
                 />
               </View>
 
               <TextInputComponent
                 header="Email"
-                value={'john.doe@test.com'}
-                onChange={() => { }}
+                value={custData.email}
+                onChange={() => {}}
                 isEditable={false}
               />
 
               <View style={{ gap: hp(0.4) }}>
                 <Text>Mobile Number</Text>
                 <MobileNumberInputComponent
-                  mobileNumber="9999999999"
+                  mobileNumber={custData.mobileNumber}
                   isdCode={'91'}
-                  onChangeMobileNumber={() => { }}
-                  onChangeIsdCode={() => { }}
+                  onChangeMobileNumber={() => {}}
+                  onChangeIsdCode={() => {}}
                   isEditable={false}
                 />
                 <TextInputComponent
                   header="Address"
-                  value={'123, Sample Street, Test City'}
-                  onChange={() => { }}
+                  value={custData.address}
+                  onChange={() => {}}
                   isEditable={false}
                 />
               </View>
             </View>
-            {extraDocuments && extraDocuments.length > 0
-              ? extraDocuments.map((item: any, index: number) => (
-                <ImageContainer
-                  key={index}
-                  imageUrl={
-                    item.doc && item.doc.length > 0 ? item.doc[0].uri : ''
-                  }
-                  title={item.name || item.documentName || 'Document'}
-                />
-              ))
+            {personalDocuments && personalDocuments.length > 0
+              ? personalDocuments.map((item: any, index: number) => (
+                  <ImageContainer
+                    key={index}
+                    imageUrl={
+                      item.doc && item.doc.length > 0 ? item.doc[0].uri : ''
+                    }
+                    title={item.name || item.documentName || 'Document'}
+                  />
+                ))
               : null}
           </>
         ) : (
@@ -116,14 +116,14 @@ const MemberDetails = () => {
                   header="Member Name"
                   value={custData.firstName}
                   //inputStyles={{ width: '48%' }}
-                  onChange={() => { }}
+                  onChange={() => {}}
                   isEditable={false}
                 />
                 <TextInputComponent
                   header="Member Number"
                   value={'Doe'}
                   //inputStyles={{ width: '48%' }}
-                  onChange={() => { }}
+                  onChange={() => {}}
                   isEditable={false}
                 />
               </View>
@@ -131,7 +131,7 @@ const MemberDetails = () => {
               <TextInputComponent
                 header="Email"
                 value={custData.email}
-                onChange={() => { }}
+                onChange={() => {}}
                 isEditable={false}
               />
 
@@ -140,28 +140,28 @@ const MemberDetails = () => {
                 <MobileNumberInputComponent
                   mobileNumber={custData.mobileNumber}
                   isdCode={custData.isdCode}
-                  onChangeMobileNumber={() => { }}
-                  onChangeIsdCode={() => { }}
+                  onChangeMobileNumber={() => {}}
+                  onChangeIsdCode={() => {}}
                   isEditable={false}
                 />
                 <TextInputComponent
                   header="Address"
                   value={custData.address}
-                  onChange={() => { }}
+                  onChange={() => {}}
                   isEditable={false}
                 />
               </View>
             </View>
             {personalDocuments && personalDocuments.length > 0
               ? personalDocuments.map((item: any, index: number) => (
-                <ImageContainer
-                  key={index}
-                  imageUrl={
-                    item.doc && item.doc.length > 0 ? item.doc[0].uri : ''
-                  }
-                  title={item.name || item.documentName || 'Document'}
-                />
-              ))
+                  <ImageContainer
+                    key={index}
+                    imageUrl={
+                      item.doc && item.doc.length > 0 ? item.doc[0].uri : ''
+                    }
+                    title={item.name || item.documentName || 'Document'}
+                  />
+                ))
               : null}
           </>
         )}

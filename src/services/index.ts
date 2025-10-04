@@ -288,13 +288,14 @@ export const DROPDOWNS = async (
     let url = '';
 
     if (subtype) {
-      url = `api/v1/kym/drop-downs/search?type=${type}&searchKey=${search}&subtype=${subtype}`;
+      url = `api/v1/loans/customer/drop-downs/search?type=${type}&searchKey=${search}&subtype=${subtype}`;
     } else {
-      url = `api/v1/kym/drop-downs/search?type=${type}&searchKey=${search}`;
+      url = `api/v1/loans/customer/drop-downs/search?type=${type}&searchKey=${search}`;
     }
 
     const response = await instance.get(url);
-    return response.data.data.payload;
+    console.log(response, 'url');
+    return response.data.responseStructure.data;
   } catch (error) {
     console.log(error);
     return [];

@@ -16,9 +16,9 @@ interface AdditionalDocumentsProps {
   title: string;
   subtitle: string;
   storeKey:
-  | 'jointPartnerDocuments'
-  | 'beneficiaryDocuments'
-  | 'linkedEntitiesDocuments';
+    | 'jointPartnerDocuments'
+    | 'beneficiaryDocuments'
+    | 'linkedEntitiesDocuments';
 }
 
 const AdditionalDocuments = ({
@@ -26,7 +26,7 @@ const AdditionalDocuments = ({
   subtitle,
   storeKey,
 }: AdditionalDocumentsProps) => {
-  const documents = useSelector((state: any) => state.customer[storeKey]);
+  const documents = useSelector((state: any) => state.customer[storeKey]) || [];
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const { colors, isDark } = useTheme();
@@ -34,7 +34,7 @@ const AdditionalDocuments = ({
 
   const updateDocument = async (index: number, images: any[]) => {
     setLoading(true);
-    let updatedDocuments = [...documents];
+    let updatedDocuments = [...(documents || [])];
 
     if (images.length == 0) {
       updatedDocuments[index] = {
@@ -62,7 +62,7 @@ const AdditionalDocuments = ({
       console.log(response, 'IDP response');
 
       // Update with IDP details
-      let latestDocuments = [...documents];
+      let latestDocuments = [...(documents || [])];
       latestDocuments[index] = {
         ...latestDocuments[index],
         doc: images,
