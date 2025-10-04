@@ -348,7 +348,7 @@ const Customer = () => {
         <Button
           text="Proceed"
           onPress={() => {
-            navigation.navigate('Application' as never);
+            navigation.navigate('DocumentHolderVerification' as never);
           }}
           buttonStyle={styles.proceedButton}
         />
