@@ -668,72 +668,77 @@ const CustomUploadButton = ({
                   />
                 )}
               </TouchableOpacity>
-
-              {/* Document Details and Actions */}
-              <View style={styles.detailsInfo}>
-                <View style={styles.detailsTextContainer}>
-                  {details?.name && (
-                    <Text style={[styles.detailsName, { color: colors.text }]}>
-                      Name: {details.name}
-                    </Text>
-                  )}
-                  {details?.card_type && (
-                    <Text style={[styles.detailsType, { color: colors.text }]}>
-                      {details.card_type}
-                    </Text>
-                  )}
-                </View>
-
-                {/* Action Buttons */}
-                <View style={styles.detailsActions}>
-                  {/* Preview Button */}
-                  <TouchableOpacity
-                    onPress={() => {
-                      setPreviewData({
-                        title: `Document ${index + 1}`,
-                        details: details || {},
-                      });
-                      setShowPreviewModal(true);
-                    }}
-                    style={[
-                      styles.detailsActionButton,
-                      {
-                        backgroundColor: colors.surface,
-                        borderColor: colors.border,
-                      },
-                    ]}
-                  >
-                    <Text style={{ fontSize: hp(2.5) }}>👁️</Text>
-                  </TouchableOpacity>
-
-                  {/* Delete Button */}
-                  {!disabled && (
-                    <TouchableOpacity
-                      onPress={() => {
-                        logAlert(
-                          'Are you sure you want to remove this document?',
-                          () => {
-                            setImages(images.filter((_, i) => i !== index));
-                          },
-                          () => {},
-                        );
-                      }}
-                      style={[
-                        styles.detailsActionButton,
-                        { backgroundColor: '#fee', borderColor: '#fcc' },
-                      ]}
-                    >
-                      <Image
-                        source={closeIcon}
-                        style={{ width: wp(5), height: wp(5) }}
-                        tintColor={colors.error}
-                      />
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
             </View>
           ))}
+          {/* Document Details and Actions */}
+          <View style={styles.detailsInfo}>
+            <View style={styles.detailsTextContainer}>
+              {details?.name && (
+                <Text style={[styles.detailsName, { color: colors.text }]}>
+                  Name: {details.name}
+                </Text>
+              )}
+              {details?.card_type && (
+                <Text style={[styles.detailsType, { color: colors.text }]}>
+                  {details.card_type}
+                </Text>
+              )}
+            </View>
+
+            {/* Action Buttons */}
+            <View style={styles.detailsActions}>
+              {/* Preview Button */}
+              <TouchableOpacity
+                onPress={() => {
+                  setPreviewData({
+                    title: header,
+                    details: details || {},
+                  });
+                  setShowPreviewModal(true);
+                }}
+                style={[
+                  styles.detailsActionButton,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <Text style={{ fontSize: hp(2.5) }}>👁️</Text>
+              </TouchableOpacity>
+
+              {/* Delete Button */}
+              {!disabled && (
+                <TouchableOpacity
+                  onPress={() => {
+                    logAlert(
+                      'Are you sure you want to remove this document?',
+                      () => {
+                        // If limit is 2 and we have 2 images, delete both together
+                        if (limit === 2 && images.length === 2) {
+                          setImages([]);
+                        } else {
+                          // For single documents, delete all images (since we're in details view)
+                          setImages([]);
+                        }
+                      },
+                      () => {},
+                    );
+                  }}
+                  style={[
+                    styles.detailsActionButton,
+                    { backgroundColor: '#fee', borderColor: '#fcc' },
+                  ]}
+                >
+                  <Image
+                    source={closeIcon}
+                    style={{ width: wp(5), height: wp(5) }}
+                    tintColor={colors.error}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
         </View>
       ) : (
         <View
@@ -765,8 +770,13 @@ const CustomUploadButton = ({
                 <TouchableOpacity
                   disabled={disabled}
                   onPress={() => {
+                    const message =
+                      limit === 2 && images.length === 2
+                        ? 'Are you sure you want to remove both documents?'
+                        : 'Are you sure you want to remove the uploaded documents?';
+
                     logAlert(
-                      'Are you sure you want to remove the uploaded documents?',
+                      message,
                       () => {
                         setImages([]);
                       },
