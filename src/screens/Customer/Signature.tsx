@@ -27,11 +27,13 @@ import { instance } from '@src/services';
 
 const Signature = () => {
   const { colors, isDark } = useTheme();
-  const { signatureImage } = useRoute().params as any;
+  const { signatureImage, memberPicture } = useRoute().params as any;
   const styles = createStyles(colors, isDark);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   const [fetchedImageSign, setFetchedImageSign] = useState(null);
+  const [fetchedImagePicture, setFetchedImagePicture] = useState(null);
+  const [capturedImage, setCapturedImage] = useState(null);
   const [signatureVisible, setSignatureVisible] = useState(false);
   const [pin, setPin] = useState<string | null>(null);
   const custData = useSelector((state: any) => state.customer);
@@ -155,7 +157,7 @@ const Signature = () => {
               borderColor: '#000',
               borderWidth: 1,
               borderStyle: 'dashed',
-              borderRadius: 10,
+              borderRadius: hp(2),
               justifyContent: 'center',
               alignItems: 'center',
             }}
@@ -170,6 +172,88 @@ const Signature = () => {
             )}
           </TouchableOpacity>
         </View>
+
+        <View>
+          <Text
+            style={{
+              marginHorizontal: wp(5),
+              marginVertical: hp(2),
+              color: '#000',
+              fontSize: hp(2),
+              fontWeight: 'bold',
+            }}
+          >
+            Member Picture
+            {/* {percentageMatch > 50 ? (
+            <Text
+              style={{
+                color: "green",
+              }}
+            >
+              {percentageMatch} % Match
+            </Text>
+          ) : (
+            <Text
+              style={{
+                color: "red",
+              }}
+            >
+              {percentageMatch} % Match
+            </Text>
+          )} */}
+          </Text>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              //marginHorizontal: wp(5),
+              gap: 20,
+            }}
+          >
+            <View
+              style={{
+                height: hp(20),
+                flex: 1,
+                borderColor: '#000',
+                borderWidth: 1,
+                borderRadius: hp(2),
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {fetchedImagePicture ? (
+                <Image
+                  source={{ uri: fetchedImagePicture }}
+                  style={styles.imagePreview}
+                />
+              ) : (
+                <Text style={styles.uploadText}>Loading...</Text>
+              )}
+            </View>
+
+            <View
+              style={{
+                flex: 1,
+                height: hp(20),
+                backgroundColor: '#000',
+                borderRadius: 10,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {memberPicture ? (
+                <Image
+                  source={{ uri: memberPicture }}
+                  style={styles.imagePreview}
+                />
+              ) : (
+                <Text style={styles.uploadText}>{`Click To\nCapture`}</Text>
+              )}
+            </View>
+          </View>
+        </View>
+
         <View
           style={{
             paddingHorizontal: wp(4.5),

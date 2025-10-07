@@ -7,7 +7,17 @@ import {
   SafeAreaView,
   Image,
   Modal,
+  Alert,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
+import {
+  launchCamera,
+  launchImageLibrary,
+  ImagePickerResponse,
+  MediaType,
+} from 'react-native-image-picker';
+//import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
@@ -24,7 +34,7 @@ import { logAlert } from '@src/common/utils/logger';
 // Define the navigation types
 type RootStackParamList = {
   DocumentHolderVerification: undefined;
-  Signature: { signatureImage: string };
+  Signature: { signatureImage: string; memberPicture: string };
 };
 
 const DocumentHolderVerification = () => {
@@ -41,15 +51,103 @@ const DocumentHolderVerification = () => {
     null,
   );
   const [isConfirmed, setIsConfirmed] = useState(false);
-
-  // Sample member picture - in real app this would come from props or state
-  const memberPicture = {
+  const [memberPicture, setMemberPicture] = useState({
     uri: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=300&fit=crop&crop=face',
-  };
+  });
+  const [isDefaultImage, setIsDefaultImage] = useState(true);
 
   const handleSignatureCapture = useCallback((signature: string) => {
     setCapturedSignature(signature);
     setSignatureVisible(false);
+  }, []);
+
+  const requestCameraPermission = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: 'Camera Permission',
+            message: 'App needs access to your camera to take photos',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } catch (err) {
+        console.warn(err);
+        return false;
+      }
+    }
+    return true; // iOS permissions are handled by the library
+  };
+
+  const handleImagePicker = useCallback(async () => {
+    Alert.alert(
+      'Select Image',
+      'Choose an option',
+      [
+        {
+          text: 'Camera',
+          onPress: async () => {
+            const hasPermission = await requestCameraPermission();
+            if (!hasPermission) {
+              Alert.alert(
+                'Permission Denied',
+                'Camera permission is required to take photos',
+              );
+              return;
+            }
+
+            const options = {
+              mediaType: 'photo' as MediaType,
+              includeBase64: false,
+              maxHeight: 2000,
+              maxWidth: 2000,
+              saveToPhotos: false,
+            };
+
+            launchCamera(options, (response: ImagePickerResponse) => {
+              if (response.didCancel) {
+                console.log('User cancelled camera');
+              } else if (response.errorCode) {
+                console.log('Camera Error: ', response.errorMessage);
+                Alert.alert(
+                  'Error',
+                  response.errorMessage || 'Failed to open camera',
+                );
+              } else if (response.assets && response.assets[0]) {
+                setMemberPicture({ uri: response.assets[0].uri || '' });
+                setIsDefaultImage(false);
+              }
+            });
+          },
+        },
+        {
+          text: 'Gallery',
+          onPress: () => {
+            const options = {
+              mediaType: 'photo' as MediaType,
+              includeBase64: false,
+              maxHeight: 2000,
+              maxWidth: 2000,
+            };
+            launchImageLibrary(options, (response: ImagePickerResponse) => {
+              if (response.assets && response.assets[0]) {
+                setMemberPicture({ uri: response.assets[0].uri || '' });
+                setIsDefaultImage(false);
+              }
+            });
+          },
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ],
+      { cancelable: true },
+    );
   }, []);
 
   const handleProceed = useCallback(() => {
@@ -58,11 +156,12 @@ const DocumentHolderVerification = () => {
       logAlert('Please capture the signature and confirm the documents');
       return;
     }
-    // Navigate to Signature screen with the captured signature
+    // Navigate to Signature screen with the captured signature and member picture
     navigation.navigate('Signature', {
       signatureImage: capturedSignature,
+      memberPicture: memberPicture.uri,
     });
-  }, [capturedSignature, isConfirmed, navigation]);
+  }, [capturedSignature, isConfirmed, navigation, memberPicture]);
 
   return (
     <SafeAreaView
@@ -117,27 +216,31 @@ const DocumentHolderVerification = () => {
         </View>
 
         {/* Member Picture Section */}
-        {/* <View style={styles.section}>
+        <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Member Picture
           </Text>
 
-          <View
-            style={[
-              styles.pictureContainer,
-              { backgroundColor: colors.surface },
-            ]}
-          >
-            <Image
-              source={memberPicture}
-              style={styles.memberPicture}
-              resizeMode="cover"
-            />
-            <Text style={[styles.pictureLabel, { color: colors.text }]}>
-              Picture
-            </Text>
+          <View style={styles.centeredContainer}>
+            <TouchableOpacity
+              style={styles.pictureWithIconContainer}
+              onPress={handleImagePicker}
+            >
+              <Image
+                source={memberPicture}
+                style={styles.memberPicture}
+                resizeMode="contain"
+              />
+              {isDefaultImage && (
+                <View style={styles.cameraIconContainer}>
+                  <Text style={[styles.pictureLabel, { color: colors.text }]}>
+                    📷
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
           </View>
-        </View> */}
+        </View>
 
         {/* Confirmation Checkbox */}
         <View style={styles.confirmationSection}>
@@ -268,12 +371,29 @@ const createStyles = (colors: any, isDark: boolean) =>
       height: wp(40),
       borderRadius: wp(2),
       borderWidth: 2,
-      borderColor: colors.primary,
+      borderColor: '#808080',
     },
     pictureLabel: {
-      fontSize: hp(1.6),
+      fontSize: hp(2.4),
       marginTop: hp(1),
-      fontWeight: '500',
+      fontWeight: '800',
+    },
+    centeredContainer: {
+      alignItems: 'center',
+    },
+    pictureWithIconContainer: {
+      position: 'relative',
+    },
+    cameraIconContainer: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      justifyContent: 'center',
+      alignItems: 'center',
+      //backgroundColor: 'rgba(0, 0, 0, 0.6)',
+      borderRadius: wp(2),
     },
     confirmationSection: {
       marginTop: hp(2),

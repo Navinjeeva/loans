@@ -424,7 +424,7 @@ const Customer = () => {
         <Button
           text="Proceed"
           onPress={() => {
-            navigation.navigate('FinalScreen' as never);
+            navigation.navigate('DocumentHolderVerification' as never);
           }}
           buttonStyle={styles.proceedButton}
         />
