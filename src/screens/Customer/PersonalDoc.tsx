@@ -147,7 +147,6 @@ const PersonalDoc = ({
               dispatch(setState({ personalDocuments: [...updatedDocuments] }));
 
               try {
-                setLoading(true);
                 const response: any = await idpExtract(images);
                 console.log(response, 'response');
 
@@ -295,7 +294,6 @@ const PersonalDoc = ({
                 console.log(error, 'error');
                 logErr(error);
               } finally {
-                setLoading(false);
               }
             }}
           />

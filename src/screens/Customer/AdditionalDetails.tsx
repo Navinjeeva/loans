@@ -100,7 +100,7 @@ const AdditionalDetails = () => {
         ],
       });
       console.log(data, 'additional details data');
-      navigation.navigate('Pep');
+      navigation.navigate('AddBeneficiary');
     } catch (error) {
       console.log(error, 'error');
       logErr(error);

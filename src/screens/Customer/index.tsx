@@ -42,6 +42,7 @@ import AdditionalDetails from './AdditionalDetails';
 import Pep from './Pep';
 import Fatca from './Fatca';
 import DocumentHolderVerification from './DocumentHolderVerification';
+import AddBeneficiary from './AddBeneficiary';
 
 const Stack = createNativeStackNavigator();
 
@@ -67,6 +68,7 @@ export const CustomerStack = () => {
         name="DocumentHolderVerification"
         component={DocumentHolderVerification}
       />
+      <Stack.Screen name="AddBeneficiary" component={AddBeneficiary} />
     </Stack.Navigator>
   );
 };
@@ -173,11 +175,7 @@ const Customer = () => {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <Loader loading={loading} />
-      <Header
-        title={'Loan Calculator'}
-        subTitle={'Calculate your EMI and get personalised offers'}
-      />
-      ?
+      <Header title={'Loan Calculator'} />?
       <KeyboardAwareScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}

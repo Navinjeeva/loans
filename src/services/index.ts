@@ -20,7 +20,7 @@ let urls: {
     ENVIROMENT: 'QA',
     ANDROID_VERSION_NAME: '2.2.9',
     IDP_BASE_URL: 'http://3.146.230.106:8000/',
-    APP_BASE_URL: 'http://10.0.3.196:8080/',
+    APP_BASE_URL: 'http://10.0.3.171:8080/',
     AUTH_BASE_URL: 'http://10.0.3.196:8071/',
   },
 };

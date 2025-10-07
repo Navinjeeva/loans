@@ -71,6 +71,14 @@ const initialState = {
     { id: 2, name: 'Beneficiary Document 2', doc: [], details: {} },
   ],
 
+  additionalBeneficiary: [
+    { id: 1, name: 'Beneficiary Document', doc: [], details: {} },
+  ],
+
+  additionalJointPartner: [
+    { id: 1, name: 'Joint Partner Document', doc: [], details: {} },
+  ],
+
   // Additional Details
   additionalDetails: {
     nationality: '',
