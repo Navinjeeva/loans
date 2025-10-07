@@ -10,27 +10,32 @@ interface HeaderProps {
   title: string;
   subTitle?: string;
   onHelpPress?: () => void;
+  showBackButton?: boolean;
 }
 
-const Header = ({ title, subTitle, onHelpPress }: HeaderProps) => {
+const Header = ({
+  title,
+  subTitle,
+  onHelpPress,
+  showBackButton = true,
+}: HeaderProps) => {
   const { colors, isDark } = useTheme();
   const styles = createStyles(colors, isDark);
   const navigation = useNavigation();
 
   return (
     <View style={styles.header}>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
-      </TouchableOpacity>
+      {showBackButton && (
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
+        </TouchableOpacity>
+      )}
       <View style={styles.headerContent}>
         <Text style={[styles.headerTitle, { color: colors.text }]}>
           {title}
-        </Text>
-        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-          {subTitle}
         </Text>
       </View>
       {onHelpPress && (
@@ -59,7 +64,7 @@ const createStyles = (colors: any, isDark: boolean) =>
     },
     backButton: {
       marginRight: wp(4),
-      marginTop: hp(0.5),
+      //marginTop: hp(0.5),
     },
     backIcon: {
       fontSize: hp(3),
@@ -67,11 +72,12 @@ const createStyles = (colors: any, isDark: boolean) =>
     },
     headerContent: {
       flex: 1,
+      alignItems: 'center',
     },
     headerTitle: {
-      fontSize: hp(2.8),
+      fontSize: hp(2.4),
       fontWeight: 'bold',
-      marginBottom: hp(0.5),
+      textAlign: 'center',
     },
     headerSubtitle: {
       fontSize: hp(1.6),
@@ -84,7 +90,7 @@ const createStyles = (colors: any, isDark: boolean) =>
       backgroundColor: colors.primary + '20',
       justifyContent: 'center',
       alignItems: 'center',
-      marginTop: hp(0.5),
+      //marginTop: hp(0.5),
     },
     helpIcon: {
       fontSize: hp(2.5),

@@ -55,8 +55,7 @@ const initialState = {
 
   // Linked Entities Documents (2 documents)
   linkedEntitiesDocuments: [
-    { id: 1, name: 'Beneficiary Document', doc: [], details: {} },
-    { id: 2, name: 'Joint Partner Document', doc: [], details: {} },
+    { id: 1, name: 'Linked Entities Document', doc: [], details: {} },
   ],
 
   // Joint Partner Documents
@@ -126,6 +125,17 @@ const initialState = {
     documentType: '',
     fatcaDocument: [],
     referenceLetter: [],
+  },
+
+  finalScreen: {
+    memberName: '',
+    loanId: '',
+    loanType: '',
+    loanAmount: '',
+    tentativeEmi: '',
+    installmentStartDate: '',
+    maturityDate: '',
+    tenureInMonths: '',
   },
 };
 export const customerSlice = createSlice({

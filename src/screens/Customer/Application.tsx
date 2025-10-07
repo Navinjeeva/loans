@@ -19,7 +19,7 @@ import {
 import PersonalDoc from './PersonalDoc';
 import LoanDoc from './LoanDoc';
 import Button from '@src/common/components/Button';
-import { logErr, logSuccess } from '@src/common/utils/logger';
+import { logAlert, logErr, logSuccess } from '@src/common/utils/logger';
 import { instance } from '@src/services';
 import { useDispatch, useSelector } from 'react-redux';
 import { setState } from '@src/store/customer';
@@ -35,6 +35,7 @@ const Application = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showPersonalModal, setShowPersonalModal] = useState(false);
   const [showLoanModal, setShowLoanModal] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
   const dispatch = useDispatch();
 
   const styles = createStyles(colors, isDark);
@@ -59,21 +60,18 @@ const Application = () => {
   };
 
   const handleContinue = async () => {
-    try {
-      setLoading(true);
-      console.log({
-        firstName: idpFirstName,
-        lastName: idpLastName,
-        dateOfBirth: idpDateOfBirth,
-        mobileNumber: mobileNumber,
-        email: email,
-        gender: idpGender,
-        address: idpAddress,
-      });
-
-      const { data: customerData } = await instance.post(
-        '/api/v1/loans/customer/create',
-        {
+    if (currentStep === 0) {
+      setCurrentStep(1);
+    } else if (currentStep === 1) {
+      setCurrentStep(2);
+    } else if (currentStep === 2) {
+      if (!isConfirmed) {
+        logAlert('Please confirm the documents');
+        return;
+      }
+      try {
+        setLoading(true);
+        console.log({
           firstName: idpFirstName,
           lastName: idpLastName,
           dateOfBirth: idpDateOfBirth,
@@ -81,48 +79,61 @@ const Application = () => {
           email: email,
           gender: idpGender,
           address: idpAddress,
-        },
-      );
+        });
 
-      console.log(customerData, 'data');
-      const result = customerData?.responseStructure?.data;
-      if (customerData?.status == 201) {
-        dispatch(
-          setState({
-            isMember: result?.existingCustomer,
-            customerId: result?.customerId,
-            firstName: result?.firstName,
-            lastName: result?.lastName,
-            dateOfBirth: result?.dateOfBirth,
-            gender: result?.gender,
-            address: result?.address,
-            email: result?.email,
-          }),
+        const { data: customerData } = await instance.post(
+          '/api/v1/loans/customer/create',
+          {
+            firstName: idpFirstName,
+            lastName: idpLastName,
+            dateOfBirth: idpDateOfBirth,
+            mobileNumber: mobileNumber,
+            email: email,
+            gender: idpGender,
+            address: idpAddress,
+          },
         );
 
-        logSuccess('Customer created successfully');
-        navigation.navigate('Verification');
-      } else {
-        dispatch(
-          setState({
-            isMember: result?.existingCustomer,
-            customerId: result?.customerId,
-            firstName: result?.firstName,
-            lastName: result?.lastName,
-            dateOfBirth: result?.dateOfBirth,
-            gender: result?.gender,
-            address: result?.address,
-            email: result?.email,
-          }),
-        );
+        console.log(customerData, 'data');
+        const result = customerData?.responseStructure?.data;
+        if (customerData?.status == 201) {
+          dispatch(
+            setState({
+              isMember: result?.existingCustomer,
+              customerId: result?.customerId,
+              firstName: result?.firstName,
+              lastName: result?.lastName,
+              dateOfBirth: result?.dateOfBirth,
+              gender: result?.gender,
+              address: result?.address,
+              email: result?.email,
+            }),
+          );
 
-        navigation.navigate('MemberDetails');
+          logSuccess('Customer created successfully');
+          navigation.navigate('Verification');
+        } else {
+          dispatch(
+            setState({
+              isMember: result?.existingCustomer,
+              customerId: result?.customerId,
+              firstName: result?.firstName,
+              lastName: result?.lastName,
+              dateOfBirth: result?.dateOfBirth,
+              gender: result?.gender,
+              address: result?.address,
+              email: result?.email,
+            }),
+          );
+
+          navigation.navigate('MemberDetails');
+        }
+      } catch (error: any) {
+        console.log(error?.response, 'error');
+        logErr(error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error: any) {
-      console.log(error?.response, 'error');
-      logErr(error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -132,11 +143,7 @@ const Application = () => {
     >
       <Loader loading={loading} />
 
-      <Header
-        title={'Upload Documents'}
-        subTitle={'Submit require document to complete Your loan application'}
-        onHelpPress={handleHelpPress}
-      />
+      <Header title={'Upload Documents'} onHelpPress={handleHelpPress} />
       <Stepper
         steps={['Personal Documents', 'Linked Entities', 'Loan Documents']}
         onClick={(index: number) => {
@@ -152,6 +159,28 @@ const Application = () => {
         {currentStep === 1 && <LinkedEntities setLoading={setLoading} />}
         {currentStep === 2 && <LoanDoc setLoading={setLoading} />}
       </KeyboardAwareScrollView>
+      {currentStep === 2 && (
+        <TouchableOpacity
+          style={styles.checkboxContainer}
+          onPress={() => setIsConfirmed(!isConfirmed)}
+        >
+          <View
+            style={[
+              styles.checkbox,
+              {
+                backgroundColor: isConfirmed ? colors.primary : colors.surface,
+                borderColor: colors.primary,
+              },
+            ]}
+          >
+            {isConfirmed && <Text style={styles.checkmark}>✓</Text>}
+          </View>
+          <Text style={[styles.checkboxLabel, { color: colors.text }]}>
+            I confirm all the above documents are correct and authorise the bank
+            to proceed.
+          </Text>
+        </TouchableOpacity>
+      )}
       <Button
         buttonStyle={{
           marginVertical: hp(3),
@@ -399,5 +428,27 @@ const createStyles = (colors: any, isDark: boolean) =>
       height: '100%',
       borderRadius: hp(3) - hp(2),
       objectFit: 'contain',
+    },
+    checkboxContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginHorizontal: wp(4),
+    },
+    checkbox: {
+      width: wp(5),
+      height: wp(5),
+      borderWidth: 2,
+      borderRadius: wp(1),
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    checkmark: {
+      color: 'white',
+      fontSize: hp(1.8),
+      fontWeight: 'bold',
+    },
+    checkboxLabel: {
+      fontSize: hp(1.6),
+      marginLeft: wp(2),
     },
   });

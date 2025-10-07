@@ -114,10 +114,7 @@ const Signature = () => {
     >
       <Loader loading={loading} />
 
-      <Header
-        title="Document Holder Verification"
-        subTitle="Complete signature and passcode verification"
-      />
+      <Header title="Document Holder Verification" />
       <KeyboardAwareScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}

@@ -73,36 +73,9 @@ const PersonalDoc = ({
               Additional Document {` ${index + 1}`}
             </Text>
 
-            <View
-              style={{
-                flexDirection: 'row',
-                gap: wp(4),
-              }}
-            >
-              {index !== 0 && (
-                <Pressable
-                  onPress={() => removeDocument(index)}
-                  style={({ pressed }) => [
-                    {
-                      opacity: pressed ? 0.5 : 1.0,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                    },
-                  ]}
-                >
-                  {/* <Image
-                    source={eyeIcons}
-                    style={{
-                      height: hp(2),
-                      width: wp(4),
-                    }}
-                  /> */}
-                  <Text style={{ color: 'red' }}> Remove</Text>
-                </Pressable>
-              )}
-
+            {index !== 0 && (
               <Pressable
-                onPress={addDocument}
+                onPress={() => removeDocument(index)}
                 style={({ pressed }) => [
                   {
                     opacity: pressed ? 0.5 : 1.0,
@@ -111,10 +84,16 @@ const PersonalDoc = ({
                   },
                 ]}
               >
-                {/* <Image source={eyeIcons} /> */}
-                <Text style={{ color: '#E3781C' }}> Add</Text>
+                {/* <Image
+                  source={eyeIcons}
+                  style={{
+                    height: hp(2),
+                    width: wp(4),
+                  }}
+                /> */}
+                <Text style={{ color: 'red' }}> Remove</Text>
               </Pressable>
-            </View>
+            )}
           </View>
 
           <DocumentUpload
@@ -127,8 +106,15 @@ const PersonalDoc = ({
               let updatedDocuments = [...docs];
 
               if (images.length == 0) {
-                updatedDocuments.splice(index, 1);
-                dispatch(setState({ personalDocuments: updatedDocuments }));
+                // Don't remove the document, just clear it
+                updatedDocuments[index] = {
+                  ...updatedDocuments[index],
+                  doc: [],
+                  details: {},
+                };
+                dispatch(
+                  setState({ personalDocuments: [...updatedDocuments] }),
+                );
                 return;
               }
 
@@ -143,6 +129,17 @@ const PersonalDoc = ({
                 doc: newDocs,
                 details: updatedDocuments[index]?.details || {},
               };
+
+              // Automatically add an empty document if this is the last document and it has content
+              const lastDocumentIndex = updatedDocuments.length - 1;
+              if (index === lastDocumentIndex && images.length > 0) {
+                updatedDocuments.push({
+                  id: updatedDocuments.length + 1,
+                  name: '',
+                  doc: [],
+                  details: {},
+                });
+              }
 
               dispatch(setState({ personalDocuments: [...updatedDocuments] }));
 

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   widthPercentageToDP as wp,
@@ -24,21 +24,29 @@ const LinkedEntities = ({
   const documents =
     doc.length > 0
       ? doc
-      : [
-          { id: 1, name: 'Beneficiary Document', doc: [], details: {} },
-          { id: 2, name: 'Joint Partner Document', doc: [], details: {} },
-        ];
+      : [{ id: 1, name: 'Beneficiary Document', doc: [], details: {} }];
 
   const dispatch = useDispatch();
   const { colors, isDark } = useTheme();
   const styles = createStyles(colors, isDark);
 
+  const removeDocument = (index: number) => {
+    let updatedDocuments = [...documents];
+    updatedDocuments.splice(index, 1);
+    dispatch(setState({ linkedEntitiesDocuments: updatedDocuments }));
+  };
+
   const updateDocument = async (index: number, images: any[]) => {
     let updatedDocuments = [...(documents || [])];
 
     if (images.length == 0) {
-      updatedDocuments.splice(index, 1);
-      dispatch(setState({ linkedEntitiesDocuments: updatedDocuments }));
+      // Don't remove the document, just clear it
+      updatedDocuments[index] = {
+        ...updatedDocuments[index],
+        doc: [],
+        details: {},
+      };
+      dispatch(setState({ linkedEntitiesDocuments: [...updatedDocuments] }));
       return;
     }
 
@@ -53,6 +61,17 @@ const LinkedEntities = ({
       doc: newDocs,
       details: updatedDocuments[index]?.details || {},
     };
+
+    // Automatically add an empty document if this is the last document and it has content
+    const lastDocumentIndex = updatedDocuments.length - 1;
+    if (index === lastDocumentIndex && images.length > 0) {
+      updatedDocuments.push({
+        id: updatedDocuments.length + 1,
+        name: 'Linked Entities Document',
+        doc: [],
+        details: {},
+      });
+    }
 
     dispatch(setState({ linkedEntitiesDocuments: [...updatedDocuments] }));
 
@@ -216,9 +235,24 @@ const LinkedEntities = ({
       {documents.map((item: any, index: number) => (
         <View key={index} style={styles.documentContainer}>
           <View style={styles.documentHeader}>
-            {/* <Text style={[styles.documentTitle, { color: colors.text }]}>
-              {item.name}
-            </Text> */}
+            <Text style={[styles.documentTitle, { color: colors.text }]}>
+              {item.name} {index + 1}
+            </Text>
+
+            {index !== 0 && (
+              <Pressable
+                onPress={() => removeDocument(index)}
+                style={({ pressed }) => [
+                  {
+                    opacity: pressed ? 0.5 : 1.0,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  },
+                ]}
+              >
+                <Text style={{ color: 'red' }}> Remove</Text>
+              </Pressable>
+            )}
           </View>
 
           <DocumentUpload
@@ -253,6 +287,9 @@ const createStyles = (colors: any, isDark: boolean) =>
     },
     documentHeader: {
       marginBottom: hp(1),
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
     },
     documentTitle: {
       fontSize: hp(1.8),

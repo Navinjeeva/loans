@@ -16,80 +16,60 @@ const Stepper = ({
   onClick?: (index: number) => void;
 }) => {
   const { colors } = useTheme();
+
   return (
-    <View style={styles.stepper}>
-      <View style={styles.container}>
-        <View style={styles.stepContainer}>
-          {steps.map((step: string, index: number) => (
-            <TouchableOpacity
-              onPress={() => onClick(index)}
-              key={index}
+    <View style={[styles.stepper, { backgroundColor: colors.background }]}>
+      {steps.map((step: string, index: number) => (
+        <React.Fragment key={index}>
+          <TouchableOpacity
+            onPress={() => onClick(index)}
+            style={styles.stepButton}
+          >
+            <Text
               style={[
-                styles.textView,
+                styles.stepText,
                 {
-                  backgroundColor:
-                    index == currentStep ? colors.primary : 'transparent',
-                  borderRadius: wp(15),
-                  minHeight: 47,
+                  color:
+                    index === currentStep ? colors.primary : colors.textMuted,
                 },
               ]}
             >
-              <Text
-                style={[
-                  styles.textContainer,
-                  {
-                    fontSize: hp(1.2),
-                    color: index == currentStep ? '#fff' : '#000',
-                  },
-                ]}
-              >
-                {step.split('_').join(' ')}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+              {step.split('_').join(' ')}
+            </Text>
+          </TouchableOpacity>
+          {index < steps.length - 1 && (
+            <Text style={[styles.separator, { color: colors.textMuted }]}>
+              ›
+            </Text>
+          )}
+        </React.Fragment>
+      ))}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  stepContainer: {
-    marginVertical: hp(0.5),
-    flexDirection: 'row',
-    width: wp(88),
-    justifyContent: 'space-between',
-  },
   stepper: {
-    backgroundColor: '#FFF9F0',
-    borderStyle: 'dashed',
-    borderWidth: 1,
-    borderColor: '#FF9C47',
-    marginHorizontal: wp(5),
-    borderRadius: wp(10),
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: hp(1),
-    // paddingHorizontal:wp(4),
-    // paddingVertical : hp(2)
-  },
-  textView: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: wp(0.5),
+    paddingVertical: hp(1.5),
+    paddingHorizontal: wp(5),
+    marginTop: hp(0.5),
+    marginHorizontal: wp(5),
   },
-  textContainer: {
-    alignItems: 'center',
-    paddingVertical: hp(1.3),
-    paddingHorizontal: wp(1),
-
+  stepButton: {
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+  },
+  stepText: {
+    fontSize: hp(1.4),
+    fontWeight: 'bold',
     textAlign: 'center',
+  },
+  separator: {
+    fontSize: hp(2),
+    marginHorizontal: wp(1),
   },
 });
 

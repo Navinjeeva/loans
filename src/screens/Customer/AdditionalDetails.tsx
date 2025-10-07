@@ -27,6 +27,7 @@ import CurrencyInputField from '@src/common/components/CurrencyInputField';
 import DropdownWithModal from '@src/common/components/DropdownWithModalValues';
 import { logErr } from '@src/common/utils/logger';
 import { instance } from '@src/services';
+import Header from '@src/common/components/Header';
 
 const AdditionalDetails = () => {
   const [clicked, setClicked] = useState(false);
@@ -113,23 +114,7 @@ const AdditionalDetails = () => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Member Onboarding
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.helpButton}>
-          <Text style={[styles.helpIcon, { color: colors.text }]}>?</Text>
-        </TouchableOpacity>
-      </View>
+      <Header title="Additional Details" />
 
       <KeyboardAwareScrollView
         style={styles.content}
@@ -371,34 +356,6 @@ const createStyles = (colors: any, isDark: boolean) =>
     container: {
       flex: 1,
       paddingTop: hp(5),
-    },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: wp(4),
-      paddingVertical: hp(2),
-    },
-    backButton: {
-      marginRight: wp(4),
-    },
-    backIcon: {
-      fontSize: hp(3),
-      fontWeight: 'bold',
-    },
-    headerContent: {
-      flex: 1,
-      alignItems: 'center',
-    },
-    headerTitle: {
-      fontSize: hp(2.8),
-      fontWeight: 'bold',
-    },
-    helpButton: {
-      marginLeft: wp(4),
-    },
-    helpIcon: {
-      fontSize: hp(2.5),
-      fontWeight: 'bold',
     },
     content: {
       flex: 1,

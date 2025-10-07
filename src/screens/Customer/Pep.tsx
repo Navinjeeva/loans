@@ -89,7 +89,9 @@ const Pep = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <Header title="Pep" subTitle="Pep" />
       <KeyboardAwareScrollView
         style={styles.content}
@@ -350,6 +352,11 @@ const Pep = () => {
 
 const createStyles = (colors: any, isDark: boolean) =>
   StyleSheet.create({
+    container: {
+      flex: 1,
+      marginTop: hp(5),
+      backgroundColor: '#FFFFFF',
+    },
     content: {
       flex: 1,
       paddingHorizontal: wp(4),

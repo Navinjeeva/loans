@@ -8,3 +8,4 @@ export const pdf = require('./pdf.png');
 
 export const calendar1 = require('./calendar1.png');
 export const refresh = require('./refresh.png');
+export const finalSuccess = require('./success-icon.png');

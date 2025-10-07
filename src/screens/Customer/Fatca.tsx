@@ -114,7 +114,9 @@ const Fatca = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <Header title="Fatca" subTitle="Fatca" />
       <KeyboardAwareScrollView
         style={styles.content}
@@ -268,6 +270,11 @@ const Fatca = () => {
 
 const createStyles = (colors: any, isDark: boolean) =>
   StyleSheet.create({
+    container: {
+      flex: 1,
+      //marginTop: hp(5),
+      backgroundColor: '#FFFFFF',
+    },
     content: {
       flex: 1,
       paddingHorizontal: wp(4),

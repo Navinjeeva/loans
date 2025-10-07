@@ -43,6 +43,7 @@ import Pep from './Pep';
 import Fatca from './Fatca';
 import DocumentHolderVerification from './DocumentHolderVerification';
 import AddBeneficiary from './AddBeneficiary';
+import FinalScreen from './FinalScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -69,6 +70,7 @@ export const CustomerStack = () => {
         component={DocumentHolderVerification}
       />
       <Stack.Screen name="AddBeneficiary" component={AddBeneficiary} />
+      <Stack.Screen name="FinalScreen" component={FinalScreen} />
     </Stack.Navigator>
   );
 };
@@ -175,7 +177,7 @@ const Customer = () => {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <Loader loading={loading} />
-      <Header title={'Loan Calculator'} />?
+      <Header title={'Loan Calculator'} showBackButton={false} />
       <KeyboardAwareScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
@@ -422,7 +424,7 @@ const Customer = () => {
         <Button
           text="Proceed"
           onPress={() => {
-            navigation.navigate('Application' as never);
+            navigation.navigate('FinalScreen' as never);
           }}
           buttonStyle={styles.proceedButton}
         />
@@ -462,13 +464,14 @@ const createStyles = (colors: any, isDark: any) =>
   StyleSheet.create({
     container: {
       flex: 1,
+      marginTop: hp(5),
       backgroundColor: '#FFFFFF',
     },
     header: {
       flexDirection: 'row',
       alignItems: 'flex-start',
       paddingHorizontal: wp(4),
-      paddingTop: hp(2),
+      paddingTop: hp(5),
       paddingBottom: hp(1),
     },
     backButton: {

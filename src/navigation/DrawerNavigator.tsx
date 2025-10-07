@@ -62,7 +62,10 @@ const DrawerNavigator = () => {
         screenOptions={{
           headerShown: false,
           unmountOnBlur: true,
+          tabBarStyle: { display: 'none' },
+          tabBarVisible: false,
         }}
+        tabBar={() => null}
       >
         {/* <Tab.Screen
           name="DASHBOARD"
@@ -88,9 +91,9 @@ const DrawerNavigator = () => {
                 style={{ width: 24, height: 24 }}
               />
             ),
+            tabBarStyle: { display: 'none' },
           }}
         />
-
       </Tab.Navigator>
     </>
   );
