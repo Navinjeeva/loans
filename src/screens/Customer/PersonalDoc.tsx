@@ -13,6 +13,7 @@ import TextInputComponent from '@src/common/components/TextInputComponent';
 import { idpExtract } from '@src/common/utils/idp';
 import { logErr } from '@src/common/utils/logger';
 import AdditionalDocuments from './AdditionalDocuments';
+import TextHeader from '@src/common/components/TextHeader';
 
 const PersonalDoc = ({
   setLoading,
@@ -61,6 +62,10 @@ const PersonalDoc = ({
 
   return (
     <View>
+      <TextHeader
+        title="Personal Documents"
+        subtitle="Upload required personal documents."
+      />
       {docs.map((item: any, index: number) => (
         <View key={index} style={{ marginVertical: hp(2) }}>
           <View

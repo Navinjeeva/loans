@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { logErr } from '@src/common/utils/logger';
 import DocumentUpload from '@src/common/components/DocumentUpload';
 import { idpExtract } from '@src/common/utils/idp';
+import TextHeader from '@src/common/components/TextHeader';
 
 const LinkedEntities = ({
   setLoading,
@@ -232,6 +233,10 @@ const LinkedEntities = ({
 
   return (
     <View style={styles.section}>
+      <TextHeader
+        title="Linked Entities"
+        subtitle="Upload ID documents for the beneficiary and joint partners."
+      />
       {documents.map((item: any, index: number) => (
         <View key={index} style={styles.documentContainer}>
           <View style={styles.documentHeader}>

@@ -28,6 +28,7 @@ import DropdownWithModal from '@src/common/components/DropdownWithModalValues';
 import { logErr } from '@src/common/utils/logger';
 import { instance } from '@src/services';
 import Header from '@src/common/components/Header';
+import TextHeader from '@src/common/components/TextHeader';
 
 const AdditionalDetails = () => {
   const [clicked, setClicked] = useState(false);
@@ -121,6 +122,10 @@ const AdditionalDetails = () => {
         showsVerticalScrollIndicator={false}
       >
         <View>
+          <TextHeader
+            title="Additional Information"
+            subtitle="Complete the member's additional info"
+          />
           <View style={styles.dropdownContainer}>
             <DropdownWithModal
               passIdAndDesc

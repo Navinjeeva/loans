@@ -20,6 +20,7 @@ import { useNavigation } from '@react-navigation/native';
 import { instance } from '@src/services';
 import { logErr } from '@src/common/utils/logger';
 import Button from '@src/common/components/Button';
+import TextHeader from '@src/common/components/TextHeader';
 
 const Pep = () => {
   const navigation = useNavigation();
@@ -97,6 +98,10 @@ const Pep = () => {
         style={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        <TextHeader
+          title="Politically Exposed Person"
+          subtitle="Declare PEP status for member/relations."
+        />
         <View
           style={{
             flex: 1,

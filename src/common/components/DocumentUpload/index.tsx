@@ -13,7 +13,13 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
-import { cameraIcon, download, fileIcon, pdf } from '@src/common/assets/icons';
+import {
+  cameraIcon,
+  documentHeader,
+  download,
+  fileIcon,
+  pdf,
+} from '@src/common/assets/icons';
 import { Portal } from 'react-native-paper';
 import { pick, types } from '@react-native-documents/picker';
 import { logAlert } from '../../utils/logger';
@@ -545,9 +551,16 @@ const CustomUploadButton = ({
           <View
             style={{
               flexDirection: 'row',
-              justifyContent: 'space-between',
+              //justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: wp(2),
             }}
           >
+            <Image
+              source={documentHeader}
+              style={{ width: wp(6), height: hp(3) }}
+              resizeMode="contain"
+            />
             <View
               style={{
                 flexDirection: 'row',

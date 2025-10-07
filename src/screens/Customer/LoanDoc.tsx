@@ -12,6 +12,7 @@ import { useState } from 'react';
 import TextInputComponent from '@src/common/components/TextInputComponent';
 import { idpExtract } from '@src/common/utils/idp';
 import { logErr } from '@src/common/utils/logger';
+import TextHeader from '@src/common/components/TextHeader';
 
 const loanDoc = ({
   setLoading,
@@ -60,6 +61,10 @@ const loanDoc = ({
 
   return (
     <View>
+      <TextHeader
+        title="Loan Documents"
+        subtitle="Upload Loan documents to proceed the application."
+      />
       {docs.map((item: any, index: number) => (
         <View key={index} style={{ marginVertical: hp(2) }}>
           <View

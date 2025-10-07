@@ -23,6 +23,7 @@ import { OtpInput } from 'react-native-otp-entry';
 import Header from '@src/common/components/Header';
 import { instance } from '@src/services';
 import { logErr, logSuccess } from '@src/common/utils/logger';
+import TextHeader from '@src/common/components/TextHeader';
 
 const Verification = () => {
   const navigation = useNavigation() as any;
@@ -181,6 +182,10 @@ const Verification = () => {
         style={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        <TextHeader
+          title="Contact Information"
+          subtitle="Verify your mobile, WhatsApp, or email with a 6-digit OTP"
+        />
         {/* Contact Number Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>

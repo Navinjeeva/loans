@@ -19,6 +19,7 @@ import DropdownWithModal from '@src/common/components/DropdownWithModal';
 import DocumentUpload from '@src/common/components/DocumentUpload';
 import { setState } from '@src/store/customer';
 import { idpExtract } from '@src/common/utils/idp';
+import TextHeader from '@src/common/components/TextHeader';
 
 const AddBeneficiary = () => {
   const { colors, isDark } = useTheme();
@@ -142,6 +143,10 @@ const AddBeneficiary = () => {
         showsVerticalScrollIndicator={false}
       >
         <View>
+          <TextHeader
+            title="Beneficiary & Joint Details"
+            subtitle="Provide beneficiary and joint partner details"
+          />
           <DropdownWithModal
             header="Beneficiary"
             options={beneficiaryOptions}

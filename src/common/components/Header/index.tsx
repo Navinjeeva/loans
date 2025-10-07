@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
+import { backIcon } from '@src/common/assets/icons';
 import { useTheme } from '@src/common/utils/ThemeContext';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -30,7 +31,7 @@ const Header = ({
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
+          <Image source={backIcon} style={styles.backIcon} />
         </TouchableOpacity>
       )}
       <View style={styles.headerContent}>
@@ -63,12 +64,18 @@ const createStyles = (colors: any, isDark: boolean) =>
       paddingBottom: hp(1),
     },
     backButton: {
-      marginRight: wp(4),
+      alignItems: 'center',
+      justifyContent: 'center',
+      //marginRight: wp(4),
       //marginTop: hp(0.5),
     },
     backIcon: {
-      fontSize: hp(3),
+      width: wp(8),
+      height: wp(8),
+
       fontWeight: 'bold',
+      //paddingBottom: hp(0.5),
+      //backgroundColor: 'red',
     },
     headerContent: {
       flex: 1,

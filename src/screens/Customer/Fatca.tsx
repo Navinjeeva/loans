@@ -17,6 +17,7 @@ import { logAlert, logErr } from '@src/common/utils/logger';
 import { useNavigation } from '@react-navigation/native';
 import { instance } from '@src/services';
 import Button from '@src/common/components/Button';
+import TextHeader from '@src/common/components/TextHeader';
 
 const Fatca = () => {
   const navigation = useNavigation();
@@ -123,6 +124,10 @@ const Fatca = () => {
         showsVerticalScrollIndicator={false}
       >
         <>
+          <TextHeader
+            title="Tax Residency & U.S. Person Status"
+            subtitle="Confirm U.S. status and add tax IDs."
+          />
           <View
             style={{
               flexDirection: 'row',

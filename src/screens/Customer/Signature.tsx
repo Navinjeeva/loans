@@ -39,10 +39,9 @@ const Signature = () => {
   const custData = useSelector((state: any) => state.customer);
 
   const handleContinue = async () => {
-    // if (!pin) {
-    //   logAlert('Please enter the passcode');
-    //   return;
-    // }
+    if (!pin || pin.length !== 6) {
+      return logAlert('Please enter the passcode');
+    }
     try {
       setLoading(true);
       const formData = new FormData();
@@ -116,182 +115,188 @@ const Signature = () => {
     >
       <Loader loading={loading} />
 
-      <Header title="Document Holder Verification" />
+      <Header title="Member Verification" showBackButton={true} />
       <KeyboardAwareScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            gap: 20,
-          }}
-        >
-          <View
-            style={{
-              height: hp(20),
-              flex: 1,
-              borderColor: '#000',
-              borderWidth: 1,
-              borderRadius: 10,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            {fetchedImageSign ? (
-              <Image
-                source={{ uri: fetchedImageSign }}
-                style={styles.imagePreview}
-              />
-            ) : (
-              <Text style={styles.uploadText}>{`No Signature\nPresent`}</Text>
-            )}
-          </View>
-
-          <TouchableOpacity
-            onPressIn={() => setSignatureVisible(true)}
-            style={{
-              flex: 1,
-              height: hp(20),
-              borderColor: '#000',
-              borderWidth: 1,
-              borderStyle: 'dashed',
-              borderRadius: hp(2),
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            {signatureImage ? (
-              <Image
-                source={{ uri: signatureImage }}
-                style={styles.imagePreview}
-              />
-            ) : (
-              <Text style={styles.uploadText}>{`Click To\nCapture`}</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        <View>
-          <Text
-            style={{
-              marginHorizontal: wp(5),
-              marginVertical: hp(2),
-              color: '#000',
-              fontSize: hp(2),
-              fontWeight: 'bold',
-            }}
-          >
-            Member Picture
-            {/* {percentageMatch > 50 ? (
-            <Text
-              style={{
-                color: "green",
-              }}
-            >
-              {percentageMatch} % Match
-            </Text>
-          ) : (
-            <Text
-              style={{
-                color: "red",
-              }}
-            >
-              {percentageMatch} % Match
-            </Text>
-          )} */}
+        {/* Member Signature Section */}
+        <View style={styles.verificationSection}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Member Signature
           </Text>
 
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              //marginHorizontal: wp(5),
-              gap: 20,
-            }}
-          >
-            <View
-              style={{
-                height: hp(20),
-                flex: 1,
-                borderColor: '#000',
-                borderWidth: 1,
-                borderRadius: hp(2),
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              {fetchedImagePicture ? (
-                <Image
-                  source={{ uri: fetchedImagePicture }}
-                  style={styles.imagePreview}
-                />
-              ) : (
-                <Text style={styles.uploadText}>Loading...</Text>
-              )}
-            </View>
+          <View style={styles.cardsContainer}>
+            {/* Specimen Signature Card */}
 
-            <View
-              style={{
-                flex: 1,
-                height: hp(20),
-                backgroundColor: '#000',
-                borderRadius: 10,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
+            {custData.isMember && (
+              <View style={[styles.card, { borderColor: '#FF9800' }]}>
+                <View
+                  style={[
+                    styles.imageContainer,
+                    { backgroundColor: '#FFF3E0' },
+                  ]}
+                >
+                  {fetchedImageSign ? (
+                    <Image
+                      source={{ uri: fetchedImageSign }}
+                      style={styles.cardImage}
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    <Text
+                      style={[
+                        styles.placeholderText,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      No Signature Present
+                    </Text>
+                  )}
+                </View>
+              </View>
+            )}
+
+            {/* Current Capture Card */}
+            <TouchableOpacity
+              onPressIn={() => setSignatureVisible(true)}
+              style={[styles.card, { borderColor: '#4CAF50' }]}
             >
-              {memberPicture ? (
-                <Image
-                  source={{ uri: memberPicture }}
-                  style={styles.imagePreview}
-                />
-              ) : (
-                <Text style={styles.uploadText}>{`Click To\nCapture`}</Text>
-              )}
-            </View>
+              <View
+                style={[styles.imageContainer, { backgroundColor: '#E8F5E8' }]}
+              >
+                {signatureImage ? (
+                  <Image
+                    source={{ uri: signatureImage }}
+                    style={styles.cardImage}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <Text
+                    style={[
+                      styles.placeholderText,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Click To Capture
+                  </Text>
+                )}
+              </View>
+            </TouchableOpacity>
           </View>
+
+          {/* Signature Confidence Level */}
+          {custData.isMember && (
+            <Text style={[styles.confidenceLevel, { color: '#4CAF50' }]}>
+              Signature Confidence level 100%
+            </Text>
+          )}
         </View>
 
-        <View
-          style={{
-            paddingHorizontal: wp(4.5),
-            position: 'absolute',
-            bottom: hp(2),
-          }}
-        >
-          <Text style={[styles.modalTitle, { color: colors.text }]}>
+        {/* Member Picture Section */}
+        <View style={styles.verificationSection}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Member Picture
+          </Text>
+
+          <View style={styles.cardsContainer}>
+            {/* Existing Record Card */}
+            {custData.isMember && (
+              <View style={[styles.card, { borderColor: '#FF9800' }]}>
+                <View
+                  style={[
+                    styles.imageContainer,
+                    { backgroundColor: '#FFF3E0' },
+                  ]}
+                >
+                  {fetchedImagePicture ? (
+                    <Image
+                      source={{ uri: fetchedImagePicture }}
+                      style={styles.cardImage}
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    <Text
+                      style={[
+                        styles.placeholderText,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      No Picture Present
+                    </Text>
+                  )}
+                </View>
+              </View>
+            )}
+
+            {/* Current Capture Card */}
+            <View style={[styles.card, { borderColor: '#4CAF50' }]}>
+              <View
+                style={[styles.imageContainer, { backgroundColor: '#E8F5E8' }]}
+              >
+                {memberPicture ? (
+                  <Image
+                    source={{ uri: memberPicture }}
+                    style={styles.cardImage}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <Text
+                    style={[
+                      styles.placeholderText,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Click To Capture
+                  </Text>
+                )}
+              </View>
+            </View>
+          </View>
+
+          {/* Picture Confidence Level */}
+          {custData.isMember && (
+            <Text style={[styles.confidenceLevel, { color: '#4CAF50' }]}>
+              Picture Confidence level 99%
+            </Text>
+          )}
+        </View>
+
+        {/* Passcode Verification Section */}
+        <View style={styles.passcodeSection}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Passcode Verification
           </Text>
-          <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
+
+          <Text
+            style={[styles.instructionText, { color: colors.textSecondary }]}
+          >
             Please enter the 6-digit code to confirm this transaction.
           </Text>
 
-          <OtpInput
-            // secureTextEntry={visible}
-            numberOfDigits={6}
-            focusColor="orange"
-            focusStickBlinkingDuration={500}
-            onTextChange={text => setPin(text)}
-            // onFilled={handleFilled}
-            theme={{
-              containerStyle: styles.otpContainer,
-              inputsContainerStyle: styles.inputsContainer,
-              pinCodeContainerStyle: styles.pinCodeContainer,
-              pinCodeTextStyle: styles.pinCodeText,
-              focusStickStyle: styles.focusStick,
-              focusedPinCodeContainerStyle: styles.activePinCodeContainer,
-            }}
-          />
+          <View style={styles.otpContainer}>
+            <OtpInput
+              numberOfDigits={6}
+              focusColor="#9C27B0"
+              focusStickBlinkingDuration={500}
+              onTextChange={text => setPin(text)}
+              theme={{
+                containerStyle: styles.otpWrapper,
+                inputsContainerStyle: styles.inputsContainer,
+                pinCodeContainerStyle: styles.pinCodeContainer,
+                pinCodeTextStyle: styles.pinCodeText,
+                focusStickStyle: styles.focusStick,
+                focusedPinCodeContainerStyle: styles.activePinCodeContainer,
+              }}
+            />
+          </View>
         </View>
       </KeyboardAwareScrollView>
 
       <Button
-        buttonStyle={{
-          marginVertical: hp(3),
-        }}
-        text="Continue"
+        buttonStyle={[styles.verifyButton, { backgroundColor: '#9C27B0' }]}
+        text="Verify"
+        textStyle={styles.verifyButtonText}
         onPress={handleContinue}
       />
     </SafeAreaView>
@@ -304,86 +309,108 @@ const createStyles = (colors: any, isDark: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      paddingTop: hp(5),
-    },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      paddingHorizontal: wp(4),
-      paddingTop: hp(2),
-      paddingBottom: hp(1),
-    },
-    backButton: {
-      marginRight: wp(4),
-      marginTop: hp(0.5),
-    },
-    backIcon: {
-      fontSize: hp(3),
-      fontWeight: 'bold',
-    },
-    headerContent: {
-      flex: 1,
-    },
-    headerTitle: {
-      fontSize: hp(2.8),
-      fontWeight: 'bold',
-      marginBottom: hp(0.5),
-    },
-    headerSubtitle: {
-      fontSize: hp(1.6),
-      lineHeight: hp(2.2),
+      marginTop: hp(5),
     },
     content: {
       flex: 1,
       paddingHorizontal: wp(4),
     },
-    imagePreview: {
+    verificationSection: {
+      marginBottom: hp(3),
+    },
+    sectionTitle: {
+      fontSize: hp(2.2),
+      fontWeight: '600',
+      marginBottom: hp(2),
+    },
+    cardsContainer: {
+      flexDirection: 'row',
+      gap: wp(4),
+      marginBottom: hp(1.5),
+    },
+    card: {
+      flex: 1,
+      borderWidth: 1,
+      borderRadius: wp(2),
+      padding: wp(3),
+      alignItems: 'center',
+    },
+    imageContainer: {
+      width: '100%',
+      height: hp(15),
+      borderRadius: wp(1.5),
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: hp(1),
+    },
+    cardImage: {
       width: '100%',
       height: '100%',
-      borderRadius: 10,
-      resizeMode: 'contain',
-      backgroundColor: '#000',
+      borderRadius: wp(1.5),
     },
-    uploadText: {
-      color: '#000',
-      fontSize: 16,
-      fontWeight: 'bold',
+    placeholderText: {
+      fontSize: hp(1.6),
       textAlign: 'center',
+    },
+    confidenceLevel: {
+      fontSize: hp(1.8),
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+    passcodeSection: {
+      marginBottom: hp(3),
+    },
+    instructionText: {
+      fontSize: hp(1.8),
+      marginBottom: hp(3),
+      textAlign: 'center',
+      lineHeight: hp(2.4),
     },
     otpContainer: {
       alignItems: 'center',
-      justifyContent: 'center',
+      marginBottom: hp(2),
+    },
+    otpWrapper: {
+      alignItems: 'center',
     },
     inputsContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
+      gap: wp(2),
     },
     pinCodeContainer: {
-      width: wp(10),
-      height: hp(5),
+      width: wp(12),
+      height: hp(6),
       borderWidth: 1,
-      borderColor: '#000',
+      borderColor: '#E0E0E0',
+      borderRadius: wp(1),
       justifyContent: 'center',
       alignItems: 'center',
+      backgroundColor: '#F5F5F5',
     },
     pinCodeText: {
-      fontSize: 18,
-      color: '#000',
+      fontSize: hp(2.4),
+      fontWeight: '600',
+      color: colors.text,
     },
     focusStick: {
-      backgroundColor: 'orange',
+      backgroundColor: '#9C27B0',
+      width: wp(2),
     },
     activePinCodeContainer: {
-      borderColor: 'orange',
+      borderColor: '#9C27B0',
+      backgroundColor: '#FFFFFF',
     },
-    modalTitle: {
-      fontSize: hp(2.6),
-      marginTop: hp(1),
+    verifyButton: {
+      marginHorizontal: wp(4),
+      marginVertical: hp(2),
+      borderRadius: wp(2),
+      paddingVertical: hp(2),
     },
-    modalSubtitle: {
-      fontSize: hp(1.8),
-      marginTop: hp(1),
-      marginBottom: hp(1),
+    verifyButtonText: {
+      color: '#FFFFFF',
+      fontSize: hp(2.2),
+      fontWeight: '600',
     },
     signatureHeader: {
       flexDirection: 'row',
