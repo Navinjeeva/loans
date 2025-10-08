@@ -62,10 +62,10 @@ const AddBeneficiary = () => {
 
         const [beneficiaries, jointPartners]: any = await Promise.all([
           instance.get(
-            `api/v1/loans/customer/beneficiaries?customerId=${custData.customerId}`,
+            `api/v1/loans/customer/linked-customers?customerId=${custData.customerId}`,
           ),
           instance.get(
-            `api/v1/loans/customer/joint-partners?customerId=${custData.customerId}`,
+            `api/v1/loans/customer/linked-customers?customerId=${custData.customerId}`,
           ),
         ]);
         const beneficiaryData =
@@ -76,13 +76,13 @@ const AddBeneficiary = () => {
         setBeneficiaryOptions(
           beneficiaryData.map((item: any) => ({
             label: String(item?.fullName ?? '').trim(),
-            value: String(item?.id ?? ''),
+            value: String(item?.linkedCustomerId ?? ''),
           })),
         );
         setJointPartnerOptions(
           jointPartnerData.map((item: any) => ({
             label: String(item?.fullName ?? '').trim(),
-            value: String(item?.id ?? ''),
+            value: String(item?.linkedCustomerId ?? ''),
           })),
         );
       } catch (error) {
@@ -95,41 +95,41 @@ const AddBeneficiary = () => {
   }, [isFocused]);
 
   const handleContinue = async () => {
-    try {
-      setLoading(true);
-      const { data } = await instance.post(
-        'api/v1/loans/customer/linked-entity',
-        {
-          customerId: custData.customerId,
-          beneficiaries: {
-            firstName:
-              additionalBeneficiary[0]?.details?.name.split(' ')[0] ||
-              additionalBeneficiary[0]?.details?.firstName,
-            lastName:
-              additionalBeneficiary[0]?.details?.name.split(' ')[1] ||
-              additionalBeneficiary[0]?.details?.lastName,
-            dateOfBirth: custData.dateOfBirth,
-            emailId: custData.email,
-            mobileNumber: custData.mobileNumber,
-          },
-          jointPartners: {
-            firstName:
-              additionalJointPartner[0]?.details?.name.split(' ')[0] ||
-              additionalJointPartner[0]?.details?.firstName ||
-              selectedJointPartnerName.split(' ')[0],
-            lastName: selectedJointPartnerName.split(' ')[1] || '',
-            dateOfBirth: custData.dateOfBirth,
-            emailId: custData.email,
-            mobileNumber: custData.mobileNumber,
-          },
-        },
-      );
-    } catch (error) {
-      console.log(error, 'error');
-      logErr(error);
-    } finally {
-      setLoading(false);
-    }
+    // try {
+    //   setLoading(true);
+    //   const { data } = await instance.post(
+    //     'api/v1/loans/customer/linked-entity',
+    //     {
+    //       customerId: custData.customerId,
+    //       beneficiaries: {
+    //         firstName:
+    //           additionalBeneficiary[0]?.details?.name.split(' ')[0] ||
+    //           additionalBeneficiary[0]?.details?.firstName,
+    //         lastName:
+    //           additionalBeneficiary[0]?.details?.name.split(' ')[1] ||
+    //           additionalBeneficiary[0]?.details?.lastName,
+    //         dateOfBirth: custData.dateOfBirth,
+    //         emailId: custData.email,
+    //         mobileNumber: custData.mobileNumber,
+    //       },
+    //       jointPartners: {
+    //         firstName:
+    //           additionalJointPartner[0]?.details?.name.split(' ')[0] ||
+    //           additionalJointPartner[0]?.details?.firstName ||
+    //           selectedJointPartnerName.split(' ')[0],
+    //         lastName: selectedJointPartnerName.split(' ')[1] || '',
+    //         dateOfBirth: custData.dateOfBirth,
+    //         emailId: custData.email,
+    //         mobileNumber: custData.mobileNumber,
+    //       },
+    //     },
+    //   );
+    // } catch (error) {
+    //   console.log(error, 'error');
+    //   logErr(error);
+    // } finally {
+    //   setLoading(false);
+    // }
 
     (navigation as any).navigate('Pep');
   };

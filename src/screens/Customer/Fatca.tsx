@@ -132,6 +132,7 @@ const Fatca = () => {
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
+              marginBottom: hp(2),
             }}
           >
             <Text style={styles.switchLabels}>
@@ -153,6 +154,7 @@ const Fatca = () => {
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
+              marginBottom: hp(2),
             }}
           >
             <Text style={styles.switchLabels}>
@@ -175,6 +177,7 @@ const Fatca = () => {
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
+              marginBottom: hp(2),
             }}
           >
             <Text style={styles.switchLabels}>
@@ -199,6 +202,7 @@ const Fatca = () => {
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
+              marginBottom: hp(2),
             }}
           >
             <Text style={styles.switchLabels}>

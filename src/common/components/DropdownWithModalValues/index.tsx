@@ -288,7 +288,7 @@ const DropdownWithModal = ({
                   fontSize: hp(2),
                   fontWeight: '600',
                   color: '#fff',
-                  backgroundColor: '#E3781C',
+                  backgroundColor: '#6C4FF7',
                   textAlign: 'center',
                   paddingVertical: hp(1.5),
                 }}

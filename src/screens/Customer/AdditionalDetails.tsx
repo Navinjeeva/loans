@@ -78,7 +78,7 @@ const AdditionalDetails = () => {
           maritalStatus: maritalStatus,
           highLevelOfEducation: highLevelOfEducation || '',
         },
-        beneficiaries: [
+        linkedCustomers: [
           {
             firstName:
               linkedEntitiesDocuments[0]?.details?.firstName ||
@@ -88,8 +88,6 @@ const AdditionalDetails = () => {
             dateOfBirth: linkedEntitiesDocuments[0]?.details?.dateOfBirth,
             mobileNumber: linkedEntitiesDocuments[0]?.details?.mobile_number,
           },
-        ],
-        jointPartners: [
           {
             firstName:
               linkedEntitiesDocuments[1]?.details?.firstName ||
