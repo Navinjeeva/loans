@@ -127,6 +127,9 @@ const initialState = {
     referenceLetter: [],
   },
 
+  selectedBeneficiaries: {},
+  selectedJointPartner: {},
+
   finalScreen: {
     memberName: '',
     loanId: '',

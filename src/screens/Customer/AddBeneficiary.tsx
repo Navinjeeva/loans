@@ -20,6 +20,7 @@ import DocumentUpload from '@src/common/components/DocumentUpload';
 import { setState } from '@src/store/customer';
 import { idpExtract } from '@src/common/utils/idp';
 import TextHeader from '@src/common/components/TextHeader';
+import MultiSelectDropdownModal from '@src/common/components/MultiSelectDropdownModal';
 
 const AddBeneficiary = () => {
   const { colors, isDark } = useTheme();
@@ -33,18 +34,32 @@ const AddBeneficiary = () => {
   const [beneficiaryOptions, setBeneficiaryOptions] = useState<any[]>([]);
   const [jointPartnerOptions, setJointPartnerOptions] = useState<any[]>([]);
 
-  const [selectedBeneficiaryId, setSelectedBeneficiaryId] = useState('');
-  const [selectedBeneficiaryName, setSelectedBeneficiaryName] = useState('');
-  const [selectedJointPartnerId, setSelectedJointPartnerId] = useState('');
-  const [selectedJointPartnerName, setSelectedJointPartnerName] = useState('');
   const [showBeneficiaryDocuments, setShowBeneficiaryDocuments] =
     useState(false);
   const [showJointPartnerDocuments, setShowJointPartnerDocuments] =
     useState(false);
 
-  const { additionalBeneficiary, additionalJointPartner } = useSelector(
-    (state: any) => state.customer,
-  );
+  const {
+    additionalBeneficiary,
+    additionalJointPartner,
+    selectedBeneficiaries,
+    selectedJointPartner,
+  } = useSelector((state: any) => state.customer);
+
+  const getSelectedBeneficiaryIds = () => {
+    return Object.keys(selectedBeneficiaries).filter(
+      key => selectedBeneficiaries[key] === true,
+    );
+  };
+
+  const getSelectedJointPartnerIds = () => {
+    return Object.keys(selectedJointPartner).filter(
+      key => selectedJointPartner[key] === true,
+    );
+  };
+
+  console.log(getSelectedBeneficiaryIds());
+  console.log(getSelectedJointPartnerIds());
 
   const beneficiaryDocuments =
     additionalBeneficiary.length > 0
@@ -60,18 +75,11 @@ const AddBeneficiary = () => {
       try {
         setLoading(true);
 
-        const [beneficiaries, jointPartners]: any = await Promise.all([
-          instance.get(
-            `api/v1/loans/customer/linked-customers?customerId=${custData.customerId}`,
-          ),
-          instance.get(
-            `api/v1/loans/customer/linked-customers?customerId=${custData.customerId}`,
-          ),
-        ]);
-        const beneficiaryData =
-          beneficiaries?.data?.responseStructure?.data ?? [];
-        const jointPartnerData =
-          jointPartners?.data?.responseStructure?.data ?? [];
+        const { data }: any = await instance.get(
+          `api/v1/loans/customer/linked-customers?customerId=${'CUST2025100818064009'}`,
+        );
+        const beneficiaryData = data?.responseStructure?.data ?? [];
+        const jointPartnerData = data?.responseStructure?.data ?? [];
 
         setBeneficiaryOptions(
           beneficiaryData.map((item: any) => ({
@@ -147,17 +155,37 @@ const AddBeneficiary = () => {
             title="Beneficiary & Joint Details"
             subtitle="Provide beneficiary and joint partner details"
           />
-          <DropdownWithModal
-            header="Beneficiary"
-            options={beneficiaryOptions}
-            value={selectedBeneficiaryName}
-            passIdAndDesc
-            setValue={(id: string, desc?: string) => {
-              setSelectedBeneficiaryId(String(id ?? ''));
-              setSelectedBeneficiaryName(String(desc ?? ''));
+          <MultiSelectDropdownModal
+            value={selectedBeneficiaries}
+            setValue={(id: string, desc: string) => {
+              if (selectedBeneficiaries[id]) {
+                dispatch(
+                  setState({
+                    selectedBeneficiaries: {
+                      ...selectedBeneficiaries,
+                      [desc]: id,
+                      [id]: false,
+                    },
+                  }),
+                );
+              } else {
+                dispatch(
+                  setState({
+                    selectedBeneficiaries: {
+                      ...selectedBeneficiaries,
+                      [desc]: id,
+                      [id]: true,
+                    },
+                  }),
+                );
+              }
             }}
-            label="Beneficiary"
             placeholder="Select Beneficiary"
+            header="Beneficiary"
+            label="Beneficiary"
+            isSearchable={true}
+            options={beneficiaryOptions}
+            showImage={false}
           />
           {/* <Button
             buttonStyle={{
@@ -371,17 +399,37 @@ const AddBeneficiary = () => {
                 }}
               />
             ))}
-          <DropdownWithModal
-            header="Joint Partner"
-            options={jointPartnerOptions}
-            value={selectedJointPartnerName}
-            passIdAndDesc
-            setValue={(id: string, desc?: string) => {
-              setSelectedJointPartnerId(String(id ?? ''));
-              setSelectedJointPartnerName(String(desc ?? ''));
+          <MultiSelectDropdownModal
+            value={selectedJointPartner}
+            setValue={(id: string, desc: string) => {
+              if (selectedJointPartner[id]) {
+                dispatch(
+                  setState({
+                    selectedJointPartner: {
+                      ...selectedJointPartner,
+                      [desc]: id,
+                      [id]: false,
+                    },
+                  }),
+                );
+              } else {
+                dispatch(
+                  setState({
+                    selectedJointPartner: {
+                      ...selectedJointPartner,
+                      [desc]: id,
+                      [id]: true,
+                    },
+                  }),
+                );
+              }
             }}
-            label="Joint Partner"
             placeholder="Select Joint Partner"
+            header="Joint Partner"
+            label="Joint Partner"
+            isSearchable={true}
+            options={jointPartnerOptions}
+            showImage={false}
           />
           {/* <Button
             buttonStyle={{

@@ -427,7 +427,7 @@ const Customer = () => {
         <Button
           text="Proceed"
           onPress={() => {
-            navigation.navigate('Application' as never);
+            navigation.navigate('AddBeneficiary' as never);
           }}
           buttonStyle={styles.proceedButton}
         />
