@@ -77,7 +77,7 @@ const LinkedEntities = ({
     dispatch(setState({ linkedEntitiesDocuments: [...updatedDocuments] }));
 
     try {
-      setLoading(true);
+      //setLoading(true);
       const response: any = await idpExtract(images);
       console.log(response, 'response');
 
@@ -227,7 +227,7 @@ const LinkedEntities = ({
       console.log(error, 'error');
       logErr(error);
     } finally {
-      setLoading(false);
+      //setLoading(false);
     }
   };
 

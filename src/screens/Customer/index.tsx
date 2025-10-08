@@ -328,6 +328,9 @@ const Customer = () => {
                 value={tentativeInterestRate}
                 required
                 caps
+                headerStyles={{
+                  marginBottom: hp(1.2),
+                }}
                 customStyles={{
                   flex: 1,
                 }}

@@ -78,7 +78,7 @@ const PersonalDoc = ({
               Additional Document {` ${index + 1}`}
             </Text>
 
-            {index !== 0 && (
+            {/* {index !== 0 && (
               <Pressable
                 onPress={() => removeDocument(index)}
                 style={({ pressed }) => [
@@ -89,16 +89,10 @@ const PersonalDoc = ({
                   },
                 ]}
               >
-                {/* <Image
-                  source={eyeIcons}
-                  style={{
-                    height: hp(2),
-                    width: wp(4),
-                  }}
-                /> */}
+
                 <Text style={{ color: 'red' }}> Remove</Text>
               </Pressable>
-            )}
+            )} */}
           </View>
 
           <DocumentUpload

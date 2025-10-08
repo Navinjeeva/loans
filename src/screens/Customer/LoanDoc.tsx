@@ -77,7 +77,7 @@ const loanDoc = ({
               Additional Document {` ${index + 1}`}
             </Text>
 
-            {index !== 0 && (
+            {/*{index !== 0 && (
               <Pressable
                 onPress={() => removeDocument(index)}
                 style={({ pressed }) => [
@@ -90,7 +90,7 @@ const loanDoc = ({
               >
                 <Text style={{ color: 'red' }}> Remove</Text>
               </Pressable>
-            )}
+            )}*/}
           </View>
 
           <DocumentUpload
@@ -136,7 +136,7 @@ const loanDoc = ({
               dispatch(setState({ loanDocuments: [...updatedDocuments] }));
 
               try {
-                setLoading(true);
+                //setLoading(true);
                 const response = await idpExtract(images);
                 console.log(response, 'response');
 
@@ -151,7 +151,7 @@ const loanDoc = ({
                 console.log(error, 'error');
                 logErr(error);
               } finally {
-                setLoading(false);
+                //setLoading(false);
               }
             }}
           />

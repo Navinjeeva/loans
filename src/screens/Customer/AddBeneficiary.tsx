@@ -159,13 +159,13 @@ const AddBeneficiary = () => {
             label="Beneficiary"
             placeholder="Select Beneficiary"
           />
-          <Button
+          {/* <Button
             buttonStyle={{
               marginVertical: hp(3),
             }}
             text="Upload beneficiary documents"
             onPress={() => setShowBeneficiaryDocuments(true)}
-          />
+          /> */}
           {showBeneficiaryDocuments &&
             beneficiaryDocuments.map((item: any, index: number) => (
               <DocumentUpload
@@ -383,13 +383,13 @@ const AddBeneficiary = () => {
             label="Joint Partner"
             placeholder="Select Joint Partner"
           />
-          <Button
+          {/* <Button
             buttonStyle={{
               marginVertical: hp(3),
             }}
             text="Upload joint partner documents"
             onPress={() => setShowJointPartnerDocuments(true)}
-          />
+          /> */}
           {showJointPartnerDocuments &&
             jointPartnerDocuments.map((item: any, index: number) => (
               <DocumentUpload

@@ -124,7 +124,7 @@ const UploadDoc = () => {
                       gap: wp(4),
                     }}
                   >
-                    {index !== 0 && (
+                    {/*{index !== 0 && (
                       <Pressable
                         onPress={() => removeDocument(index)}
                         style={({ pressed }) => [
@@ -144,7 +144,7 @@ const UploadDoc = () => {
                         />
                         <Text style={{ color: 'red' }}> Remove</Text>
                       </Pressable>
-                    )}
+                    )}*/}
 
                     <Pressable
                       onPress={addDocument}
@@ -175,14 +175,14 @@ const UploadDoc = () => {
                     'Mobile Number': '864-9031',
                   }}
                   setImages={async (images: any) => {
-                    setLoading(true);
+                    //setLoading(true);
                     let updatedDocuments = [...docs];
 
                     if (images.length == 0) {
                       let updatedDocuments = [...docs];
                       updatedDocuments.splice(index, 1);
                       dispatch(setState({ extraDocuments: updatedDocuments }));
-                      setLoading(false);
+                      //setLoading(false);
                       return;
                     }
 
@@ -206,7 +206,7 @@ const UploadDoc = () => {
                     dispatch(
                       setState({ extraDocuments: [...updatedDocuments] }),
                     );
-                    setLoading(false);
+                    //setLoading(false);
                   }}
                 />
               </View>

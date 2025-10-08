@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Allow cleartext (HTTP) traffic for specific domains -->
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- IDP API Server -->
+        <domain includeSubdomains="true">3.146.230.106</domain>
+        <!-- App API Server -->
+        <domain includeSubdomains="true">10.0.3.171</domain>
+        <!-- Auth API Server -->
+        <domain includeSubdomains="true">10.0.3.196</domain>
+        <!-- Localhost for development -->
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>
+
