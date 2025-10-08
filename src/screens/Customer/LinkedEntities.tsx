@@ -266,6 +266,17 @@ const LinkedEntities = ({
             limit={2}
             images={item?.doc || []}
             details={item?.details || {}}
+            showDocument={true}
+            onDetailsUpdate={updatedDetails => {
+              let updatedDocuments = [...documents];
+              updatedDocuments[index] = {
+                ...updatedDocuments[index],
+                details: updatedDetails,
+              };
+              dispatch(
+                setState({ linkedEntitiesDocuments: [...updatedDocuments] }),
+              );
+            }}
             setImages={(images: any[]) => updateDocument(index, images)}
           />
         </View>

@@ -7,6 +7,7 @@ import {
   Modal,
   Pressable,
   Platform,
+  TextInput,
 } from 'react-native';
 import React from 'react';
 import {
@@ -34,6 +35,40 @@ import { useTheme } from '@src/common/utils/ThemeContext';
 import { closeIcon } from '@src/common/assets';
 import { ScrollView } from 'react-native';
 
+/**
+ * DocumentUpload Component
+ *
+ * Usage Example:
+ *
+ * // Basic usage
+ * <DocumentUpload
+ *   header="Beneficiary Documents"
+ *   images={uploadedImages}
+ *   details={documentDetails}
+ *   setImages={setUploadedImages}
+ * />
+ *
+ * // With details for manual preview (click eye icon to view)
+ * <DocumentUpload
+ *   header="Beneficiary"
+ *   images={uploadedImages}
+ *   details={{
+ *     "First Name": "KEMBA N",
+ *     "Last Name": "FRANKLYN",
+ *     "Date of Birth": "08/02/1986",
+ *     "Permit Number": "19800801004",
+ *     "Date of Issue": "11/05/2009",
+ *     "Expiry Date": "17-04-2024",
+ *     "Address": "Jade Court",
+ *     "Country": "TRINIDAD & TOBAGO",
+ *     "Sex": "Female",
+ *     "Class": "3"
+ *   }}
+ *   setImages={setUploadedImages}
+ *   // Document details are always shown in preview when available
+ * />
+ */
+
 const convertContentUriToBase64 = async (
   contentUri: string,
 ): Promise<string | null> => {
@@ -52,16 +87,41 @@ const DetailsModal = ({
   onClose,
   details,
   title,
+  images = [],
+  showDocument = true,
+  onSave,
 }: {
   visible: boolean;
   onClose: () => void;
   details: Record<string, any>;
   title: string;
+  images?: any[];
+  showDocument?: boolean;
+  onSave?: (updatedDetails: Record<string, any>) => void;
 }) => {
   const { colors } = useTheme();
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editedDetails, setEditedDetails] = React.useState(details);
+
+  // Update local state when props change
+  React.useEffect(() => {
+    setEditedDetails(details);
+    setIsEditing(false);
+  }, [details, images, visible]);
 
   // Convert details object to array for better rendering
-  const detailsArray = Object.entries(details);
+  const detailsArray = Object.entries(isEditing ? editedDetails : details);
+
+  const handleSave = () => {
+    if (onSave) {
+      onSave(editedDetails);
+    }
+    setIsEditing(false);
+  };
+
+  const handleReset = () => {
+    setEditedDetails(details);
+  };
 
   return (
     <Portal>
@@ -104,11 +164,16 @@ const DetailsModal = ({
                 >
                   {title}
                 </Text>
-                <TouchableOpacity style={{ marginLeft: wp(2) }}>
-                  <Text style={{ fontSize: hp(2), color: colors.primary }}>
-                    ✏️
-                  </Text>
-                </TouchableOpacity>
+                {onSave && (
+                  <TouchableOpacity
+                    style={{ marginLeft: wp(2) }}
+                    onPress={() => setIsEditing(!isEditing)}
+                  >
+                    <Text style={{ fontSize: hp(2), color: colors.primary }}>
+                      ✏️
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
               <TouchableOpacity onPress={onClose}>
                 <Text style={{ fontSize: hp(3), color: colors.text }}>✕</Text>
@@ -121,89 +186,181 @@ const DetailsModal = ({
                 padding: wp(4),
               }}
             >
-              {/* Render in two-column layout */}
-              {Array.from({ length: Math.ceil(detailsArray.length / 2) }).map(
-                (_, rowIndex) => (
-                  <View
-                    key={rowIndex}
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      marginBottom: hp(2),
-                      gap: wp(2),
-                    }}
-                  >
-                    {/* Left Column */}
-                    {detailsArray[rowIndex * 2] && (
-                      <View style={{ flex: 1 }}>
-                        <Text
+              {/* Document Images at the top - only show if showDocument is true */}
+              {showDocument && images && images.length > 0 && (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    marginBottom: hp(3),
+                    gap: wp(2),
+                  }}
+                >
+                  {images.slice(0, 2).map((image, index) => (
+                    <View
+                      key={index}
+                      style={{
+                        width: wp(35),
+                        height: hp(20),
+                        backgroundColor: '#f5f5f5',
+                        borderRadius: wp(2),
+                        overflow: 'hidden',
+                        borderWidth: 1,
+                        borderColor: colors.border || '#e0e0e0',
+                      }}
+                    >
+                      {image.type === 'application/pdf' ? (
+                        <Image
+                          source={pdf}
                           style={{
-                            fontSize: hp(1.8),
-                            fontWeight: '600',
-                            color: colors.text,
-                            marginBottom: hp(0.5),
+                            width: '100%',
+                            height: '100%',
                           }}
-                        >
-                          {detailsArray[rowIndex * 2][0]}
-                        </Text>
-                        <View
+                          resizeMode="contain"
+                        />
+                      ) : (
+                        <Image
+                          source={{ uri: image.uri }}
                           style={{
-                            backgroundColor:
-                              colors.inputBackground || '#f5f5f5',
-                            borderRadius: wp(2),
-                            padding: wp(3),
-                            borderWidth: 1,
-                            borderColor: colors.border || '#e0e0e0',
+                            width: '100%',
+                            height: '100%',
                           }}
-                        >
-                          <Text
-                            style={{
-                              fontSize: hp(1.8),
-                              color: colors.textSecondary || '#666',
-                            }}
-                          >
-                            {detailsArray[rowIndex * 2][1]}
-                          </Text>
-                        </View>
-                      </View>
-                    )}
+                          resizeMode="cover"
+                        />
+                      )}
+                    </View>
+                  ))}
+                </View>
+              )}
 
-                    {/* Right Column */}
-                    {detailsArray[rowIndex * 2 + 1] && (
-                      <View style={{ flex: 1 }}>
-                        <Text
-                          style={{
-                            fontSize: hp(1.8),
-                            fontWeight: '600',
-                            color: colors.text,
-                            marginBottom: hp(0.5),
-                          }}
-                        >
-                          {detailsArray[rowIndex * 2 + 1][0]}
-                        </Text>
-                        <View
-                          style={{
-                            backgroundColor:
-                              colors.inputBackground || '#f5f5f5',
-                            borderRadius: wp(2),
-                            padding: wp(3),
-                            borderWidth: 1,
-                            borderColor: colors.border || '#e0e0e0',
-                          }}
-                        >
+              {/* Document Details Form - Always show if details exist */}
+              {detailsArray.length > 0 && (
+                <View style={{ marginBottom: hp(2) }}>
+                  {/* Render in two-column layout */}
+                  {Array.from({
+                    length: Math.ceil(detailsArray.length / 2),
+                  }).map((_, rowIndex) => (
+                    <View
+                      key={rowIndex}
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        marginBottom: hp(2),
+                        gap: wp(2),
+                      }}
+                    >
+                      {/* Left Column */}
+                      {detailsArray[rowIndex * 2] && (
+                        <View style={{ flex: 1 }}>
                           <Text
                             style={{
                               fontSize: hp(1.8),
-                              color: colors.textSecondary || '#666',
+                              fontWeight: '600',
+                              color: colors.text,
+                              marginBottom: hp(0.5),
                             }}
                           >
-                            {detailsArray[rowIndex * 2 + 1][1]}
+                            {detailsArray[rowIndex * 2][0]}
                           </Text>
+                          <View
+                            style={{
+                              backgroundColor:
+                                colors.inputBackground || '#f5f5f5',
+                              borderRadius: wp(2),
+                              padding: wp(3),
+                              borderWidth: 1,
+                              borderColor: colors.border || '#e0e0e0',
+                            }}
+                          >
+                            {isEditing ? (
+                              <TextInput
+                                value={String(detailsArray[rowIndex * 2][1])}
+                                onChangeText={text => {
+                                  const key = detailsArray[rowIndex * 2][0];
+                                  setEditedDetails({
+                                    ...editedDetails,
+                                    [key]: text,
+                                  });
+                                }}
+                                style={{
+                                  fontSize: hp(1.8),
+                                  color: colors.text,
+                                  padding: 0,
+                                }}
+                                placeholderTextColor={colors.textSecondary}
+                              />
+                            ) : (
+                              <Text
+                                style={{
+                                  fontSize: hp(1.8),
+                                  color: colors.textSecondary || '#666',
+                                }}
+                              >
+                                {detailsArray[rowIndex * 2][1]}
+                              </Text>
+                            )}
+                          </View>
                         </View>
-                      </View>
-                    )}
-                  </View>
-                ),
+                      )}
+
+                      {/* Right Column */}
+                      {detailsArray[rowIndex * 2 + 1] && (
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={{
+                              fontSize: hp(1.8),
+                              fontWeight: '600',
+                              color: colors.text,
+                              marginBottom: hp(0.5),
+                            }}
+                          >
+                            {detailsArray[rowIndex * 2 + 1][0]}
+                          </Text>
+                          <View
+                            style={{
+                              backgroundColor:
+                                colors.inputBackground || '#f5f5f5',
+                              borderRadius: wp(2),
+                              padding: wp(3),
+                              borderWidth: 1,
+                              borderColor: colors.border || '#e0e0e0',
+                            }}
+                          >
+                            {isEditing ? (
+                              <TextInput
+                                value={String(
+                                  detailsArray[rowIndex * 2 + 1][1],
+                                )}
+                                onChangeText={text => {
+                                  const key = detailsArray[rowIndex * 2 + 1][0];
+                                  setEditedDetails({
+                                    ...editedDetails,
+                                    [key]: text,
+                                  });
+                                }}
+                                style={{
+                                  fontSize: hp(1.8),
+                                  color: colors.text,
+                                  padding: 0,
+                                }}
+                                placeholderTextColor={colors.textSecondary}
+                              />
+                            ) : (
+                              <Text
+                                style={{
+                                  fontSize: hp(1.8),
+                                  color: colors.textSecondary || '#666',
+                                }}
+                              >
+                                {detailsArray[rowIndex * 2 + 1][1]}
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  ))}
+                </View>
               )}
 
               {/* Handle special case for Mobile Number with country code */}
@@ -265,6 +422,86 @@ const DetailsModal = ({
                       )?.[1] || '864-9031'}
                     </Text>
                   </View>
+                </View>
+              )}
+
+              {/* Action Buttons */}
+              {isEditing ? (
+                <View
+                  style={{
+                    marginTop: hp(3),
+                    marginBottom: hp(2),
+                    flexDirection: 'row',
+                    gap: wp(3),
+                  }}
+                >
+                  {/* Reset Button */}
+                  <TouchableOpacity
+                    onPress={handleReset}
+                    style={{
+                      flex: 1,
+                      backgroundColor: colors.surface,
+                      borderRadius: wp(2),
+                      paddingVertical: hp(1.5),
+                      alignItems: 'center',
+                      borderWidth: 2,
+                      borderColor: colors.primary,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: colors.primary,
+                        fontSize: hp(2),
+                        fontWeight: '600',
+                      }}
+                    >
+                      Reset
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* Save Changes Button */}
+                  <TouchableOpacity
+                    onPress={handleSave}
+                    style={{
+                      flex: 1,
+                      backgroundColor: colors.primary,
+                      borderRadius: wp(2),
+                      paddingVertical: hp(1.5),
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: colors.surface,
+                        fontSize: hp(2),
+                        fontWeight: '600',
+                      }}
+                    >
+                      Save Changes
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={{ marginTop: hp(3), marginBottom: hp(2) }}>
+                  <TouchableOpacity
+                    onPress={onClose}
+                    style={{
+                      backgroundColor: colors.primary,
+                      borderRadius: wp(2),
+                      paddingVertical: hp(1.5),
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: colors.surface,
+                        fontSize: hp(2),
+                        fontWeight: '600',
+                      }}
+                    >
+                      Ok
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               )}
             </ScrollView>
@@ -473,6 +710,8 @@ const CustomUploadButton = ({
   missing = false,
   disabled = false,
   details,
+  showDocument = false, // Controls whether document images are shown in the preview modal
+  onDetailsUpdate, // Callback when details are updated from modal
 }: {
   header?: string;
   headerDesc?: string;
@@ -485,10 +724,13 @@ const CustomUploadButton = ({
   missing?: boolean;
   disabled?: boolean;
   details?: Record<string, any>;
+  showDocument?: boolean; // Controls whether document images are shown in the preview modal
+  onDetailsUpdate?: (updatedDetails: Record<string, any>) => void;
 }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [showOptionsModal, setShowOptionsModal] = React.useState(false);
+  const [showCamera, setShowCamera] = React.useState(false);
   const [visible, setVisible] = React.useState<any>();
   const [loading, setLoading] = React.useState(false);
   const [showPreviewModal, setShowPreviewModal] = React.useState(false);
@@ -500,6 +742,16 @@ const CustomUploadButton = ({
   return (
     <View>
       <Loader loading={loading} />
+      {showCamera && (
+        <Camera
+          setVisible={setShowCamera}
+          visible={showCamera}
+          onCancelHandler={() => setShowCamera(false)}
+          limit={limit}
+          setFiles={setImages}
+          files={images}
+        />
+      )}
       {visible ? (
         visible.type == 'application/pdf' ? (
           <PdfViewer
@@ -535,6 +787,14 @@ const CustomUploadButton = ({
         onClose={() => setShowPreviewModal(false)}
         details={previewData.details}
         title={previewData.title}
+        images={images}
+        showDocument={showDocument}
+        onSave={updatedDetails => {
+          if (onDetailsUpdate) {
+            onDetailsUpdate(updatedDetails);
+          }
+          setShowPreviewModal(false);
+        }}
       />
 
       <BottomSheetOptions
@@ -602,21 +862,21 @@ const CustomUploadButton = ({
       )}
 
       {details && images.length > 0 ? (
-        // Details view - shows card for each document with name and type
-        <View style={{ gap: hp(2) }}>
-          {images.map((image, index) => (
-            <View
-              key={index}
-              style={[
-                styles.detailsCard,
-                {
-                  borderColor: missing ? colors.error : colors.border,
-                  backgroundColor: colors.surface,
-                },
-              ]}
-            >
-              {/* Document Image Preview */}
+        // Details view - shows card with document, name and actions
+        <View
+          style={[
+            styles.detailsCard,
+            {
+              borderColor: missing ? colors.error : colors.primary,
+              backgroundColor: colors.surface,
+            },
+          ]}
+        >
+          {/* Document Images */}
+          <View style={{ gap: hp(1) }}>
+            {images.map((image, index) => (
               <TouchableOpacity
+                key={index}
                 style={styles.detailsImageContainer}
                 onPress={async () => {
                   if (image.type === 'application/pdf') {
@@ -681,8 +941,9 @@ const CustomUploadButton = ({
                   />
                 )}
               </TouchableOpacity>
-            </View>
-          ))}
+            ))}
+          </View>
+
           {/* Document Details and Actions */}
           <View style={styles.detailsInfo}>
             <View style={styles.detailsTextContainer}>
@@ -913,50 +1174,154 @@ const CustomUploadButton = ({
               )}
             </View>
           ) : (
-            <TouchableOpacity
-              disabled={disabled}
-              style={[
-                {
-                  position: 'relative',
-                  justifyContent: 'center',
-                  width: '100%',
-                  height: '100%',
-                  alignItems: 'center',
-                },
-              ]}
-              onPress={async () => {
-                if (disabled) return;
-                setShowOptionsModal(true);
+            <View
+              style={{
+                position: 'relative',
+                justifyContent: 'center',
+                width: '100%',
+                height: '100%',
+                alignItems: 'center',
+                paddingVertical: hp(3),
               }}
             >
+              {/* Cloud Upload Icon */}
               <Image
                 source={download}
                 style={{
                   width: wp(20),
-                  height: hp(7),
+                  height: hp(8),
                   resizeMode: 'contain',
+                  marginBottom: hp(2),
                 }}
                 tintColor={colors.primary}
               />
+
+              {/* Upload Area Title */}
               <Text
                 style={{
                   color: colors.text,
-                  fontSize: hp(2.5),
-                  marginTop: hp(0.5),
-                  marginVertical: hp(0.5),
+                  fontSize: hp(2.8),
+                  fontWeight: '600',
+                  marginBottom: hp(0.5),
                 }}
               >
-                {title}
+                Upload Area
               </Text>
+
+              {/* Subtitle */}
               <Text
                 style={{
-                  fontSize: hp(1.4),
+                  fontSize: hp(1.6),
                   color: colors.textSecondary,
+                  marginBottom: hp(3),
                 }}
               >
-                {description}
+                Please upload a jpg, png, pdf file
               </Text>
-            </TouchableOpacity>
+
+              {/* Buttons Container */}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: wp(3),
+                  width: '80%',
+                }}
+              >
+                {/* Browse File Button */}
+                <TouchableOpacity
+                  disabled={disabled}
+                  onPress={async () => {
+                    if (disabled) return;
+                    const results = await pick({
+                      type: [types.pdf, types.images],
+                      allowMultiSelection: limit > 1,
+                    });
+
+                    if (results.length > limit) {
+                      logAlert(`You can only select ${limit} file`);
+                      return;
+                    } else {
+                      let files: any = [];
+                      for (let index = 0; index < results.length; index++) {
+                        const element = results[index];
+                        files.push({
+                          uri: element.uri,
+                          name: element.name?.replace(/[^a-zA-Z0-9. ]/g, ''),
+                          type: element.type,
+                        });
+                      }
+                      setImages(files);
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    backgroundColor: disabled
+                      ? colors.inputDisabledBackground
+                      : colors.primary,
+                    paddingVertical: hp(1.5),
+                    borderRadius: wp(2),
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: wp(2),
+                    opacity: disabled ? 0.6 : 1,
+                  }}
+                >
+                  <Image
+                    source={fileIcon}
+                    style={{
+                      width: wp(5),
+                      height: wp(5),
+                      tintColor: colors.surface,
+                    }}
+                    resizeMode="contain"
+                  />
+                  <Text
+                    style={{
+                      color: colors.surface,
+                      fontSize: hp(1.8),
+                      fontWeight: '600',
+                    }}
+                  >
+                    Browse File
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Capture Button */}
+                <TouchableOpacity
+                  disabled={disabled}
+                  onPress={() => {
+                    if (disabled) return;
+                    setShowCamera(true);
+                  }}
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.surface,
+                    paddingVertical: hp(1.5),
+                    borderRadius: wp(2),
+                    borderWidth: 2,
+                    borderColor: disabled
+                      ? colors.inputDisabledBackground
+                      : colors.primary,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: disabled ? 0.6 : 1,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: disabled
+                        ? colors.inputDisabledBackground
+                        : colors.primary,
+                      fontSize: hp(1.8),
+                      fontWeight: '600',
+                    }}
+                  >
+                    Capture
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           )}
         </View>
       )}
@@ -970,8 +1335,8 @@ const createStyles = (colors: any) =>
   StyleSheet.create({
     uploadYourDocuments: {
       backgroundColor: colors.surface,
-      height: hp(25),
-      borderRadius: wp(2),
+      height: hp(32),
+      borderRadius: wp(3),
       justifyContent: 'center',
       alignItems: 'center',
       borderWidth: 1,
