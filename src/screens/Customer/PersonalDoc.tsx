@@ -10,8 +10,8 @@ import { eyeIcons } from '@src/common/assets';
 import DocumentUpload from '@src/common/components/DocumentUpload';
 import { useState } from 'react';
 import TextInputComponent from '@src/common/components/TextInputComponent';
-import { idpExtract } from '@src/common/utils/idp';
-import { logErr } from '@src/common/utils/logger';
+import { uploadAndExtractDocument } from '@src/common/utils/idpWebSocket';
+import { logErr, logSuccess } from '@src/common/utils/logger';
 import AdditionalDocuments from './AdditionalDocuments';
 import TextHeader from '@src/common/components/TextHeader';
 
@@ -20,7 +20,8 @@ const PersonalDoc = ({
 }: {
   setLoading: (loading: boolean) => void;
 }) => {
-  const { personalDocuments } = useSelector((state: any) => state.customer);
+  const custData = useSelector((state: any) => state.customer);
+  const { personalDocuments } = custData;
   const docs =
     personalDocuments.length > 0
       ? personalDocuments
@@ -143,8 +144,27 @@ const PersonalDoc = ({
               dispatch(setState({ personalDocuments: [...updatedDocuments] }));
 
               try {
-                const response: any = await idpExtract(images);
-                console.log(response, 'response');
+                //setLoading(true);
+
+                // Get customer ID from Redux store
+                const customerId = custData.customerId || 'APP_TEST';
+
+                // Process only the first image for IDP extraction
+                const firstImage = Array.isArray(images) ? images[0] : images;
+
+                console.log('[IDP] Processing first image:', firstImage);
+
+                // IDP: Upload and extract document data
+                const response: any = await uploadAndExtractDocument(
+                  firstImage,
+                  customerId,
+                  index, // indexOfDoc
+                  'PERSONAL_DOCUMENTS',
+                  'MOBILE_DEVICE',
+                );
+
+                console.log('[IDP] Extracted data:', response);
+                //logSuccess('Document extracted successfully');
 
                 // Determine document type based on IDP response and update document names
                 let documentType = 'AadhaarCard'; // default
@@ -290,6 +310,7 @@ const PersonalDoc = ({
                 console.log(error, 'error');
                 logErr(error);
               } finally {
+                //setLoading(false);
               }
             }}
           />

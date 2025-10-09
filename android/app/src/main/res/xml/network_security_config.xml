@@ -8,6 +8,8 @@
         <domain includeSubdomains="true">10.0.3.171</domain>
         <!-- Auth API Server -->
         <domain includeSubdomains="true">10.0.3.196</domain>
+        <!-- Document Upload Server -->
+        <domain includeSubdomains="true">192.168.86.30</domain>
         <!-- Localhost for development -->
         <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">127.0.0.1</domain>
