@@ -230,7 +230,6 @@ export const uploadAndExtractDocument = async (
     console.log('[IDP] Document extracted successfully:', extractedData);
 
     return {
-      fileId,
       ...extractedData,
     };
   } catch (error: any) {
