@@ -3,7 +3,7 @@ import Loader from '@src/common/components/Loader';
 import Stepper from '@src/common/components/Stepper';
 import KeyboardAwareScrollView from '@src/common/components/KeyboardAwareScrollView';
 import { useTheme } from '@src/common/utils/ThemeContext';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -20,13 +20,14 @@ import PersonalDoc from './PersonalDoc';
 import LoanDoc from './LoanDoc';
 import Button from '@src/common/components/Button';
 import { logAlert, logErr, logSuccess } from '@src/common/utils/logger';
-import { instance } from '@src/services';
+import { authInstance, instance } from '@src/services';
 import { useDispatch, useSelector } from 'react-redux';
 import { setState } from '@src/store/customer';
 import Header from '@src/common/components/Header';
 import PersonalDocumentModal from '@src/common/components/PersonalDocumentModal';
 import LoanDocumentModal from '@src/common/components/LoanDocumentModal';
 import LinkedEntities from './LinkedEntities';
+import axios from 'axios';
 
 const Application = () => {
   const [loading, setLoading] = useState(false);
@@ -59,18 +60,265 @@ const Application = () => {
     }
   };
 
-  const handleContinue = async () => {
-    if (currentStep === 0) {
-      setCurrentStep(1);
-    } else if (currentStep === 1) {
-      setCurrentStep(2);
-    } else if (currentStep === 2) {
-      if (!isConfirmed) {
-        logAlert('Please confirm the documents');
-        return;
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       await getDocuments();
+  //     } catch (error) {
+  //       console.log(error, 'error');
+  //       logErr(error);
+  //     }
+  //   })();
+  // }, []);
+
+  const uploadPersonalDocuments = async () => {
+    try {
+      const uploadPromises: Promise<any>[] = [];
+
+      // Iterate through each personalDoc
+      custData.personalDocuments?.forEach(
+        (personalDoc: any, docIndex: number) => {
+          if (personalDoc?.doc && personalDoc.doc.length > 0) {
+            // Upload each document in the doc array separately (skip last empty document)
+
+            personalDoc.doc.forEach((document: any, imgIndex: number) => {
+              const formData = new FormData();
+
+              // Append required fields
+              formData.append('customerId', 'CUST2025100819198216');
+              formData.append('documentCategory', 'PERSONAL');
+              formData.append('file', {
+                uri: document.uri,
+                type: document.type || 'image/jpeg',
+                name:
+                  //document.fileName ||
+                  //document.name ||
+                  `PERSONAL-DOCUMENT-${docIndex + 1}.${
+                    document.type?.split('/')[1]
+                  }`,
+              } as any);
+
+              // Append metadata if available
+              if (
+                personalDoc.details &&
+                Object.keys(personalDoc.details).length > 0
+              ) {
+                formData.append(
+                  'metadata',
+                  JSON.stringify(personalDoc.details),
+                );
+              }
+              console.log(formData, 'formData');
+
+              console.log(
+                `Uploading document ${docIndex + 1}_${imgIndex + 1}:`,
+                document.fileName || document.name,
+              );
+
+              // Push the upload promise to array
+              const uploadPromise = axios.post(
+                'http://192.168.86.30:8083/api/v1/documents/upload-single',
+                formData,
+                {
+                  headers: {
+                    'Content-Type': 'multipart/form-data',
+                  },
+                },
+              );
+              uploadPromises.push(uploadPromise);
+            });
+          }
+        },
+      );
+
+      // Wait for all uploads to complete
+      if (uploadPromises.length > 0) {
+        const results = await Promise.all(uploadPromises);
+        console.log('All documents uploaded successfully:', results.length);
+        logSuccess(`${results.length} document(s) uploaded successfully`);
+        return true;
+      } else {
+        logAlert('No documents to upload');
+        return false;
       }
-      try {
+      return true;
+    } catch (error: any) {
+      console.log('Error uploading documents:', error?.response);
+      logErr(error);
+      //return false;
+      throw error;
+    }
+  };
+
+  const uploadLoanDocuments = async () => {
+    try {
+      const uploadPromises: Promise<any>[] = [];
+
+      // Iterate through each personalDoc
+      custData.loanDocuments?.forEach((loanDoc: any, docIndex: number) => {
+        if (loanDoc?.doc && loanDoc.doc.length > 0) {
+          // Upload each document in the doc array separately (skip last empty document)
+
+          loanDoc.doc.forEach((document: any, imgIndex: number) => {
+            const formData = new FormData();
+
+            // Append required fields
+            formData.append('customerId', 'CUST2025100819198216');
+            formData.append('documentCategory', 'LOAN_APPLICATION');
+            formData.append('file', {
+              uri: document.uri,
+              type: document.type || 'image/jpeg',
+              name:
+                //document.fileName ||
+                //document.name ||
+                `LOAN-DOCUMENT-${docIndex + 1}.${document.type?.split('/')[1]}`,
+            } as any);
+
+            // Append metadata if available
+            if (loanDoc.details && Object.keys(loanDoc.details).length > 0) {
+              formData.append('metadata', JSON.stringify(loanDoc.details));
+            }
+            console.log(formData, 'formData');
+
+            console.log(
+              `Uploading document ${docIndex + 1}_${imgIndex + 1}:`,
+              document.fileName || document.name,
+            );
+
+            // Push the upload promise to array
+            const uploadPromise = axios.post(
+              'http://192.168.86.30:8083/api/v1/documents/upload-single',
+              formData,
+              {
+                headers: {
+                  'Content-Type': 'multipart/form-data',
+                },
+              },
+            );
+            uploadPromises.push(uploadPromise);
+          });
+        }
+      });
+
+      // Wait for all uploads to complete
+      if (uploadPromises.length > 0) {
+        const results = await Promise.all(uploadPromises);
+        console.log('All documents uploaded successfully:', results.length);
+        logSuccess(`${results.length} document(s) uploaded successfully`);
+        return true;
+      } else {
+        logAlert('No documents to upload');
+        return false;
+      }
+      return true;
+    } catch (error: any) {
+      console.log('Error uploading documents:', error?.response);
+      logErr(error);
+      //return false;
+      throw error;
+    }
+  };
+
+  const uploadEntitiesDocuments = async () => {
+    try {
+      const uploadPromises: Promise<any>[] = [];
+
+      // Iterate through each personalDoc
+      custData.linkedEntitiesDocuments?.forEach(
+        (loanDoc: any, docIndex: number) => {
+          if (loanDoc?.doc && loanDoc.doc.length > 0) {
+            // Upload each document in the doc array separately (skip last empty document)
+
+            loanDoc.doc.forEach((document: any, imgIndex: number) => {
+              const formData = new FormData();
+
+              // Append required fields
+              formData.append('customerId', 'CUST2025100819198216');
+              formData.append('documentCategory', 'LINKED_CUSTOMER');
+              formData.append('file', {
+                uri: document.uri,
+                type: document.type || 'image/jpeg',
+                name:
+                  //document.fileName ||
+                  //document.name ||
+                  `LINKED-DOCUMENT-${docIndex + 1}.${
+                    document.type?.split('/')[1]
+                  }`,
+              } as any);
+
+              // Append metadata if available
+              if (loanDoc.details && Object.keys(loanDoc.details).length > 0) {
+                formData.append('metadata', JSON.stringify(loanDoc.details));
+              }
+              console.log(formData, 'formData');
+
+              console.log(
+                `Uploading document ${docIndex + 1}_${imgIndex + 1}:`,
+                document.fileName || document.name,
+              );
+
+              // Push the upload promise to array
+              const uploadPromise = axios.post(
+                'http://192.168.86.30:8083/api/v1/documents/upload-single',
+                formData,
+                {
+                  headers: {
+                    'Content-Type': 'multipart/form-data',
+                  },
+                },
+              );
+              uploadPromises.push(uploadPromise);
+            });
+          }
+        },
+      );
+
+      // Wait for all uploads to complete
+      if (uploadPromises.length > 0) {
+        const results = await Promise.all(uploadPromises);
+        console.log('All documents uploaded successfully:', results.length);
+        logSuccess(`${results.length} document(s) uploaded successfully`);
+        return true;
+      } else {
+        logAlert('No documents to upload');
+        return false;
+      }
+      return true;
+    } catch (error: any) {
+      console.log('Error uploading documents:', error?.response);
+      logErr(error);
+      //return false;
+      throw error;
+    }
+  };
+
+  const handleContinue = async () => {
+    try {
+      if (currentStep === 0) {
         setLoading(true);
+
+        // Upload all personal documents separately
+        try {
+          await uploadPersonalDocuments();
+        } catch (error) {
+          console.log('Failed to upload documents:', error);
+          setLoading(false);
+          return;
+        }
+
+        setLoading(false);
+        setCurrentStep(1);
+      } else if (currentStep === 1) {
+        await uploadEntitiesDocuments();
+        setCurrentStep(2);
+      } else if (currentStep === 2) {
+        if (!isConfirmed) {
+          logAlert('Please confirm the documents');
+          return;
+        }
+
+        setLoading(true);
+        await uploadLoanDocuments();
         console.log({
           firstName: idpFirstName,
           lastName: idpLastName,
@@ -128,12 +376,12 @@ const Application = () => {
 
           navigation.navigate('MemberDetails');
         }
-      } catch (error: any) {
-        console.log(error?.response, 'error');
-        logErr(error);
-      } finally {
-        setLoading(false);
       }
+    } catch (error: any) {
+      console.log(error, 'error');
+      logErr(error);
+    } finally {
+      setLoading(false);
     }
   };
 

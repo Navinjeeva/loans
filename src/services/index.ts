@@ -20,8 +20,8 @@ let urls: {
     ENVIROMENT: 'QA',
     ANDROID_VERSION_NAME: '2.2.9',
     IDP_BASE_URL: 'http://3.146.230.106:8000/',
-    APP_BASE_URL: 'http://10.0.3.171:8080/',
-    AUTH_BASE_URL: 'http://10.0.3.196:8071/',
+    APP_BASE_URL: 'http://192.168.86.30:8080/',
+    AUTH_BASE_URL: 'http://192.168.86.30:8083/',
   },
 };
 
@@ -110,7 +110,7 @@ authInstance.interceptors.request.use(
   async config => {
     const token = await getData('access_token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      //config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
