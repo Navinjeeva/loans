@@ -10,10 +10,11 @@ import { eyeIcons } from '@src/common/assets';
 import DocumentUpload from '@src/common/components/DocumentUpload';
 import { useState } from 'react';
 import TextInputComponent from '@src/common/components/TextInputComponent';
-import { uploadAndExtractDocument } from '@src/common/utils/idpWebSocket';
+import { documentUploadManager } from '@src/common/utils/documentUploadManager';
 import { logErr, logSuccess } from '@src/common/utils/logger';
 import AdditionalDocuments from './AdditionalDocuments';
 import TextHeader from '@src/common/components/TextHeader';
+import store from '@src/store';
 
 const PersonalDoc = ({
   setLoading,
@@ -144,8 +145,6 @@ const PersonalDoc = ({
               dispatch(setState({ personalDocuments: [...updatedDocuments] }));
 
               try {
-                //setLoading(true);
-
                 // Get customer ID from Redux store
                 const customerId = custData.customerId || 'APP_TEST';
 
@@ -154,163 +153,187 @@ const PersonalDoc = ({
 
                 console.log('[IDP] Processing first image:', firstImage);
 
-                // IDP: Upload and extract document data
-                const response: any = await uploadAndExtractDocument(
+                // IDP: Upload and extract document data using centralized manager
+                documentUploadManager.queueUpload(
                   firstImage,
                   customerId,
                   index, // indexOfDoc
                   'PERSONAL_DOCUMENTS',
                   'MOBILE_DEVICE',
-                );
+                  // onProgress callback
+                  progress => {
+                    console.log(
+                      `[IDP] Upload progress for doc ${index}:`,
+                      progress,
+                    );
+                    // You can add loading state updates here if needed
+                  },
+                  // onSuccess callback
+                  (response: any, taskId: string) => {
+                    console.log('[IDP] Extracted data:', response);
+                    //logSuccess('Document extracted successfully');
 
-                console.log('[IDP] Extracted data:', response);
-                //logSuccess('Document extracted successfully');
+                    // Determine document type based on IDP response and update document names
+                    let documentType = 'AadhaarCard'; // default
 
-                // Determine document type based on IDP response and update document names
-                let documentType = 'AadhaarCard'; // default
-
-                if (
-                  response?.['Card Type'] == 'National Identification Card' ||
-                  response?.['NATIONAL IDENTIFICATION CARD']
-                ) {
-                  documentType = 'NationalId';
-                } else if (response?.license_number) {
-                  documentType = 'DriversPermit';
-                } else if (
-                  response?.['Card Type'] == 'Driving License' ||
-                  response?.driver_license_number
-                ) {
-                  documentType = 'DriversPermit';
-                } else if (response?.['Card Type'] == 'Voter ID') {
-                  documentType = 'VoterID';
-                } else if (
-                  response?.pancard_number ||
-                  response?.card_type == 'Permanent Account Number Card' ||
-                  response?.panc_number
-                ) {
-                  documentType = 'PanCard';
-                } else if (
-                  response?.aadhaar_number ||
-                  response?.aadhar_number
-                ) {
-                  documentType = 'AadhaarCard';
-                } else if (
-                  response?.pancard_number ||
-                  response?.pan_number ||
-                  response?.pan_card_number
-                ) {
-                  documentType = 'PanCard';
-                } else if (
-                  response?.passport_number ||
-                  response?.passport_no ||
-                  response?.['Passport No.']
-                ) {
-                  documentType = 'Passport';
-                } else if (
-                  response?.driving_license_number ||
-                  response?.dl_number
-                ) {
-                  documentType = 'DriversPermit';
-                } else if (response?.voter_id || response?.voter_id_number) {
-                  documentType = 'VoterID';
-                }
-
-                console.log(`IDP detected document type: ${documentType}`);
-
-                // Update document names based on IDP response
-                let updatedDocumentsWithNames = [...updatedDocuments];
-                updatedDocumentsWithNames[index] = {
-                  ...updatedDocumentsWithNames[index],
-                  doc: updatedDocumentsWithNames[index].doc.map(
-                    (doc: any, docIndex: number) => {
-                      const fileExtension =
-                        doc.type?.split('/')[1] ||
-                        doc.fileName?.split('.')[1] ||
-                        'jpg';
-                      const fileName = `${documentType}${
-                        docIndex > 0 ? `_${docIndex + 1}` : ''
-                      }.${fileExtension}`;
-
-                      return {
-                        ...doc,
-                        name: fileName,
-                        fileName: fileName,
-                      };
-                    },
-                  ),
-                };
-
-                console.log(
-                  `Updated document names to: ${documentType}`,
-                  updatedDocumentsWithNames[index].doc,
-                );
-
-                const updateData: any = {};
-
-                if (response?.name) {
-                  updateData.name = response.name;
-                  console.log(response?.name, 'name from IDP');
-                  // Split name into firstName and lastName if possible
-                  const nameParts = response.name.trim().split(' ');
-                  if (nameParts.length >= 2) {
-                    updateData.idpFirstName = nameParts[0];
-                    updateData.idpLastName = nameParts.slice(1).join(' ');
-                  } else {
-                    updateData.idpFirstName = response.name;
-                    updateData.idpLastName = ''; // Empty if no last name
-                  }
-                }
-
-                if (response?.aadhaar_number || response?.aadhar_number) {
-                  if (response?.date_of_birth) {
-                    // Convert from DD/MM/YYYY to YYYY-MM-DD
-                    const dateParts = response.date_of_birth.split('/');
-                    if (dateParts.length === 3) {
-                      const [day, month, year] = dateParts;
-                      updateData.idpDateOfBirth = `${year}-${month}-${day}`;
-                    } else {
-                      updateData.idpDateOfBirth = response.date_of_birth;
+                    if (
+                      response?.['Card Type'] ==
+                        'National Identification Card' ||
+                      response?.['NATIONAL IDENTIFICATION CARD']
+                    ) {
+                      documentType = 'NationalId';
+                    } else if (response?.license_number) {
+                      documentType = 'DriversPermit';
+                    } else if (
+                      response?.['Card Type'] == 'Driving License' ||
+                      response?.driver_license_number
+                    ) {
+                      documentType = 'DriversPermit';
+                    } else if (response?.['Card Type'] == 'Voter ID') {
+                      documentType = 'VoterID';
+                    } else if (
+                      response?.pancard_number ||
+                      response?.card_type == 'Permanent Account Number Card' ||
+                      response?.panc_number
+                    ) {
+                      documentType = 'PanCard';
+                    } else if (
+                      response?.aadhaar_number ||
+                      response?.aadhar_number
+                    ) {
+                      documentType = 'AadhaarCard';
+                    } else if (
+                      response?.pancard_number ||
+                      response?.pan_number ||
+                      response?.pan_card_number
+                    ) {
+                      documentType = 'PanCard';
+                    } else if (
+                      response?.passport_number ||
+                      response?.passport_no ||
+                      response?.['Passport No.']
+                    ) {
+                      documentType = 'Passport';
+                    } else if (
+                      response?.driving_license_number ||
+                      response?.dl_number
+                    ) {
+                      documentType = 'DriversPermit';
+                    } else if (
+                      response?.voter_id ||
+                      response?.voter_id_number
+                    ) {
+                      documentType = 'VoterID';
                     }
-                  }
 
-                  if (response?.gender) {
-                    updateData.idpGender = response.gender.toUpperCase();
-                  }
+                    console.log(`IDP detected document type: ${documentType}`);
 
-                  // if (response?.mobile_number) {
-                  //   updateData.mobileNumber = response.mobile_number;
-                  // }
+                    // Get the LATEST document state from Redux store (not stale component state)
+                    const latestState = store.getState().customer;
+                    const currentDocs =
+                      latestState.personalDocuments?.length > 0
+                        ? [...latestState.personalDocuments]
+                        : [{ id: 1, name: '', doc: [], details: {} }];
 
-                  // if (response?.aadhaar_number) {
-                  //   updateData.aadhaarNumber = response.aadhaar_number;
-                  // }
+                    // Update document names based on IDP response
+                    let updatedDocumentsWithNames = [...currentDocs];
 
-                  // if (response?.vid) {
-                  //   updateData.vid = response.vid;
-                  // }
+                    // Ensure document exists at index
+                    if (!updatedDocumentsWithNames[index]) {
+                      console.warn(
+                        `Document at index ${index} not found, skipping update`,
+                      );
+                      return;
+                    }
 
-                  if (response?.address) {
-                    updateData.idpAddress = response.address;
-                  }
-                }
+                    const currentDoc = updatedDocumentsWithNames[index];
+                    const updatedDocs = (currentDoc.doc || []).map(
+                      (doc: any, docIndex: number) => {
+                        const fileExtension =
+                          doc.type?.split('/')[1] ||
+                          doc.fileName?.split('.')[1] ||
+                          'jpg';
+                        const fileName = `${documentType}${
+                          docIndex > 0 ? `_${docIndex + 1}` : ''
+                        }.${fileExtension}`;
 
-                // Update document details with the renamed documents
-                updatedDocumentsWithNames[index] = {
-                  ...updatedDocumentsWithNames[index],
-                  details: response || {},
-                };
+                        return {
+                          ...doc,
+                          name: fileName,
+                          fileName: fileName,
+                        };
+                      },
+                    );
 
-                dispatch(
-                  setState({
-                    ...updateData,
-                    personalDocuments: [...updatedDocumentsWithNames],
-                  }),
+                    updatedDocumentsWithNames[index] = {
+                      ...currentDoc,
+                      doc: updatedDocs as any,
+                    };
+
+                    console.log(
+                      `Updated document names to: ${documentType}`,
+                      updatedDocumentsWithNames[index].doc,
+                    );
+
+                    const updateData: any = {};
+
+                    if (response?.name) {
+                      updateData.name = response.name;
+                      console.log(response?.name, 'name from IDP');
+                      // Split name into firstName and lastName if possible
+                      const nameParts = response.name.trim().split(' ');
+                      if (nameParts.length >= 2) {
+                        updateData.idpFirstName = nameParts[0];
+                        updateData.idpLastName = nameParts.slice(1).join(' ');
+                      } else {
+                        updateData.idpFirstName = response.name;
+                        updateData.idpLastName = ''; // Empty if no last name
+                      }
+                    }
+
+                    if (response?.aadhaar_number || response?.aadhar_number) {
+                      if (response?.date_of_birth) {
+                        // Convert from DD/MM/YYYY to YYYY-MM-DD
+                        const dateParts = response.date_of_birth.split('/');
+                        if (dateParts.length === 3) {
+                          const [day, month, year] = dateParts;
+                          updateData.idpDateOfBirth = `${year}-${month}-${day}`;
+                        } else {
+                          updateData.idpDateOfBirth = response.date_of_birth;
+                        }
+                      }
+
+                      if (response?.gender) {
+                        updateData.idpGender = response.gender.toUpperCase();
+                      }
+
+                      if (response?.address) {
+                        updateData.idpAddress = response.address;
+                      }
+                    }
+
+                    // Update document details with the renamed documents
+                    updatedDocumentsWithNames[index] = {
+                      ...updatedDocumentsWithNames[index],
+                      details: response || {},
+                    };
+
+                    dispatch(
+                      setState({
+                        ...updateData,
+                        personalDocuments: [...updatedDocumentsWithNames],
+                      }),
+                    );
+                  },
+                  // onError callback
+                  (error: Error, taskId: string) => {
+                    console.log(error, 'error');
+                    logErr(error);
+                  },
                 );
               } catch (error) {
                 console.log(error, 'error');
                 logErr(error);
-              } finally {
-                //setLoading(false);
               }
             }}
           />

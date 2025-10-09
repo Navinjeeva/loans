@@ -10,16 +10,18 @@ import { eyeIcons } from '@src/common/assets';
 import DocumentUpload from '@src/common/components/DocumentUpload';
 import { useState } from 'react';
 import TextInputComponent from '@src/common/components/TextInputComponent';
-import { idpExtract } from '@src/common/utils/idp';
+import { documentUploadManager } from '@src/common/utils/documentUploadManager';
 import { logErr } from '@src/common/utils/logger';
 import TextHeader from '@src/common/components/TextHeader';
+import store from '@src/store';
 
 const loanDoc = ({
   setLoading,
 }: {
   setLoading: (loading: boolean) => void;
 }) => {
-  const { loanDocuments } = useSelector((state: any) => state.customer);
+  const custData = useSelector((state: any) => state.customer);
+  const { loanDocuments } = custData;
   const docs =
     loanDocuments.length > 0
       ? loanDocuments
@@ -136,22 +138,56 @@ const loanDoc = ({
               dispatch(setState({ loanDocuments: [...updatedDocuments] }));
 
               try {
-                //setLoading(true);
-                const response = await idpExtract(images);
-                console.log(response, 'response');
+                // Get customer ID from Redux store
+                const customerId = custData.customerId || 'APP_TEST';
 
-                let latestDocuments = [...updatedDocuments];
-                latestDocuments[index] = {
-                  ...latestDocuments[index],
-                  details: response || {},
-                };
+                // Process only the first image for IDP extraction
+                const firstImage = Array.isArray(images) ? images[0] : images;
 
-                dispatch(setState({ loanDocuments: [...latestDocuments] }));
+                console.log('[IDP] Processing loan document:', firstImage);
+
+                // IDP: Upload and extract document data using centralized manager
+                documentUploadManager.queueUpload(
+                  firstImage,
+                  customerId,
+                  index, // indexOfDoc
+                  'LOAN_DOCUMENTS',
+                  'MOBILE_DEVICE',
+                  // onProgress callback
+                  progress => {
+                    console.log(
+                      `[IDP] Upload progress for loan doc ${index}:`,
+                      progress,
+                    );
+                  },
+                  // onSuccess callback
+                  (response: any, taskId: string) => {
+                    console.log('[IDP] Loan document extracted:', response);
+
+                    // Get the LATEST document state from Redux store (not stale component state)
+                    const latestState = store.getState().customer;
+                    const currentDocs =
+                      latestState.loanDocuments?.length > 0
+                        ? [...latestState.loanDocuments]
+                        : [{ id: 1, name: '', doc: [], details: {} }];
+
+                    let latestDocuments = [...currentDocs];
+                    latestDocuments[index] = {
+                      ...latestDocuments[index],
+                      details: response || {},
+                    };
+
+                    dispatch(setState({ loanDocuments: [...latestDocuments] }));
+                  },
+                  // onError callback
+                  (error: Error, taskId: string) => {
+                    console.log(error, 'error');
+                    logErr(error);
+                  },
+                );
               } catch (error) {
                 console.log(error, 'error');
                 logErr(error);
-              } finally {
-                //setLoading(false);
               }
             }}
           />
