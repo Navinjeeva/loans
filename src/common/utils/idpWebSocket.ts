@@ -194,10 +194,11 @@ export const extractDocumentViaWebSocket = (
               '[IDP] Resolving with extracted data:',
               lastExtractedData,
             );
-            resolve(lastExtractedData);
+            //resolve(lastExtractedData);
 
             // Note: Connection will remain open but promise is resolved
             // WebSocket will eventually close naturally or be closed by server
+            ws.close();
             return;
           }
 
