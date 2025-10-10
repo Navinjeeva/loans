@@ -85,7 +85,7 @@ const Application = () => {
               const formData = new FormData();
 
               // Append required fields
-              formData.append('customerId', 'CUST2025100819198216');
+              formData.append('customerId', 'CUST2025101011005452');
               formData.append('documentCategory', 'PERSONAL');
               formData.append('file', {
                 uri: document.uri,
@@ -163,7 +163,7 @@ const Application = () => {
             const formData = new FormData();
 
             // Append required fields
-            formData.append('customerId', 'CUST2025100819198216');
+            formData.append('customerId', 'CUST2025101011005452');
             formData.append('documentCategory', 'LOAN_APPLICATION');
             formData.append('file', {
               uri: document.uri,
@@ -233,7 +233,7 @@ const Application = () => {
               const formData = new FormData();
 
               // Append required fields
-              formData.append('customerId', 'CUST2025100819198216');
+              formData.append('customerId', 'CUST2025101011005452');
               formData.append('documentCategory', 'LINKED_CUSTOMER');
               formData.append('file', {
                 uri: document.uri,

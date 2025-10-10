@@ -8,13 +8,14 @@ import {
 import { useTheme } from '@src/common/utils/ThemeContext';
 import { eyeIcons } from '@src/common/assets';
 import DocumentUpload from '@src/common/components/DocumentUpload';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import TextInputComponent from '@src/common/components/TextInputComponent';
 import { documentUploadManager } from '@src/common/utils/documentUploadManager';
 import { logErr, logSuccess } from '@src/common/utils/logger';
 import AdditionalDocuments from './AdditionalDocuments';
 import TextHeader from '@src/common/components/TextHeader';
 import store from '@src/store';
+import axios from 'axios';
 
 const PersonalDoc = ({
   setLoading,
@@ -29,6 +30,147 @@ const PersonalDoc = ({
       : [{ id: 1, name: '', doc: [], details: {} }];
 
   const dispatch = useDispatch();
+
+  const getDocuments = async () => {
+    const { data: documents } = await axios.get(
+      `http://192.168.86.30:8083/api/v1/documents/customer/${customerId}`,
+    );
+    console.log(documents, 'documents from API');
+
+    // Transform personalDocuments
+    const transformedPersonalDocs =
+      documents.personalDocuments?.map((doc: any, index: number) => {
+        // Determine file extension from document name
+        const fileExtension = doc.documentName.split('.').pop() || 'jpeg';
+        const mimeType =
+          fileExtension === 'pdf'
+            ? 'application/pdf'
+            : `image/${fileExtension}`;
+
+        // Convert base64 to data URI
+        const base64Data = doc.documentFile.startsWith('data:')
+          ? doc.documentFile
+          : `data:${mimeType};base64,${doc.documentFile}`;
+
+        return {
+          id: index + 1,
+          name: doc.documentName,
+          doc: [
+            {
+              uri: base64Data,
+              type: mimeType,
+              name: doc.documentName,
+              fileName: doc.documentName,
+            },
+          ],
+          details: doc.metadata || {},
+        };
+      }) || [];
+
+    // Transform linkedDocuments
+    const transformedLinkedDocs =
+      documents.linkedDocuments?.map((doc: any, index: number) => {
+        const fileExtension = doc.documentName.split('.').pop() || 'jpeg';
+        const mimeType =
+          fileExtension === 'pdf'
+            ? 'application/pdf'
+            : `image/${fileExtension}`;
+
+        const base64Data = doc.documentFile.startsWith('data:')
+          ? doc.documentFile
+          : `data:${mimeType};base64,${doc.documentFile}`;
+
+        return {
+          id: index + 1,
+          name: doc.documentName,
+          doc: [
+            {
+              uri: base64Data,
+              type: mimeType,
+              name: doc.documentName,
+              fileName: doc.documentName,
+            },
+          ],
+          details: doc.metadata || {},
+        };
+      }) || [];
+
+    // Transform loanDocuments
+    const transformedLoanDocs =
+      documents.loanDocuments?.map((doc: any, index: number) => {
+        const fileExtension = doc.documentName.split('.').pop() || 'jpeg';
+        const mimeType =
+          fileExtension === 'pdf'
+            ? 'application/pdf'
+            : `image/${fileExtension}`;
+
+        const base64Data = doc.documentFile.startsWith('data:')
+          ? doc.documentFile
+          : `data:${mimeType};base64,${doc.documentFile}`;
+
+        return {
+          id: index + 1,
+          name: doc.documentName,
+          doc: [
+            {
+              uri: base64Data,
+              type: mimeType,
+              name: doc.documentName,
+              fileName: doc.documentName,
+            },
+          ],
+          details: doc.metadata || {},
+        };
+      }) || [];
+
+    // Add empty document at the end for new uploads
+    transformedPersonalDocs.push({
+      id: transformedPersonalDocs.length + 1,
+      name: '',
+      doc: [],
+      details: {},
+    });
+
+    transformedLinkedDocs.push({
+      id: transformedLinkedDocs.length + 1,
+      name: '',
+      doc: [],
+      details: {},
+    });
+
+    transformedLoanDocs.push({
+      id: transformedLoanDocs.length + 1,
+      name: '',
+      doc: [],
+      details: {},
+    });
+
+    console.log('Transformed Personal Docs:', transformedPersonalDocs);
+    console.log('Transformed Linked Docs:', transformedLinkedDocs);
+    console.log('Transformed Loan Docs:', transformedLoanDocs);
+
+    dispatch(
+      setState({
+        personalDocuments: transformedPersonalDocs,
+        linkedEntitiesDocuments: transformedLinkedDocs,
+        loanDocuments: transformedLoanDocs,
+      }),
+    );
+  };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        await getDocuments();
+      } catch (error) {
+        console.log(error, 'error');
+        logErr(error);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const addDocument = () => {
     if (personalDocuments?.length < 10)
