@@ -104,7 +104,24 @@ const PersonalDoc = ({
             images={item?.doc}
             details={item?.details || {}}
             setImages={async (images: any) => {
-              let updatedDocuments = [...docs];
+              // CRITICAL: Always read from Redux store to get latest state
+              // This prevents using stale component state when multiple uploads happen
+              const latestState = store.getState().customer;
+              const currentDocs =
+                latestState.personalDocuments?.length > 0
+                  ? [...latestState.personalDocuments]
+                  : [{ id: 1, name: '', doc: [], details: {} }];
+              let updatedDocuments = [...currentDocs];
+
+              console.log(
+                '[IDP] setImages - Current state:',
+                currentDocs.map(
+                  (d: any, i: number) =>
+                    `${i}: hasDetails=${
+                      !!d.details && Object.keys(d.details).length > 0
+                    }`,
+                ),
+              );
 
               if (images.length == 0) {
                 // Don't remove the document, just clear it
@@ -127,7 +144,7 @@ const PersonalDoc = ({
 
               updatedDocuments[index] = {
                 ...updatedDocuments[index],
-                doc: newDocs,
+                doc: newDocs as any,
                 details: updatedDocuments[index]?.details || {},
               };
 
@@ -152,6 +169,15 @@ const PersonalDoc = ({
                 const firstImage = Array.isArray(images) ? images[0] : images;
 
                 console.log('[IDP] Processing first image:', firstImage);
+                console.log('[IDP] Queueing upload with closure index:', index);
+                console.log(
+                  '[IDP] Current array length after auto-add:',
+                  updatedDocuments.length,
+                );
+                console.log(
+                  '[IDP] Document being uploaded:',
+                  updatedDocuments[index]?.name || `unnamed (index ${index})`,
+                );
 
                 // IDP: Upload and extract document data using centralized manager
                 documentUploadManager.queueUpload(
@@ -172,6 +198,27 @@ const PersonalDoc = ({
                   (response: any, taskId: string) => {
                     console.log('[IDP] Extracted data:', response);
                     //logSuccess('Document extracted successfully');
+
+                    // Use the index from the response, or fall back to closure index
+                    const actualIndex = response?._indexOfDoc ?? index;
+                    console.log(
+                      '[IDP] Using index:',
+                      actualIndex,
+                      'Closure index:',
+                      index,
+                      'Response index:',
+                      response?._indexOfDoc,
+                    );
+
+                    // Warn if there's a mismatch
+                    if (
+                      response?._indexOfDoc !== undefined &&
+                      response._indexOfDoc !== index
+                    ) {
+                      console.warn(
+                        `[IDP] Index mismatch! Closure: ${index}, Response: ${response._indexOfDoc}`,
+                      );
+                    }
 
                     // Determine document type based on IDP response and update document names
                     let documentType = 'AadhaarCard'; // default
@@ -228,102 +275,151 @@ const PersonalDoc = ({
 
                     console.log(`IDP detected document type: ${documentType}`);
 
-                    // Get the LATEST document state from Redux store (not stale component state)
-                    const latestState = store.getState().customer;
-                    const currentDocs =
-                      latestState.personalDocuments?.length > 0
-                        ? [...latestState.personalDocuments]
-                        : [{ id: 1, name: '', doc: [], details: {} }];
+                    // CRITICAL: Use setTimeout to ensure previous Redux updates have completed
+                    // This prevents race conditions when multiple documents are extracted simultaneously
+                    setTimeout(() => {
+                      // Get the LATEST document state from Redux store (not stale component state)
+                      const latestState = store.getState().customer;
+                      const currentDocs =
+                        latestState.personalDocuments?.length > 0
+                          ? [...latestState.personalDocuments]
+                          : [{ id: 1, name: '', doc: [], details: {} }];
 
-                    // Update document names based on IDP response
-                    let updatedDocumentsWithNames = [...currentDocs];
-
-                    // Ensure document exists at index
-                    if (!updatedDocumentsWithNames[index]) {
-                      console.warn(
-                        `Document at index ${index} not found, skipping update`,
+                      console.log(
+                        '[IDP] Current documents array length:',
+                        currentDocs.length,
                       );
-                      return;
-                    }
+                      console.log(
+                        '[IDP] Updating document at actualIndex:',
+                        actualIndex,
+                      );
+                      console.log(
+                        '[IDP] Current document names:',
+                        currentDocs.map(
+                          (d: any, i: number) => `${i}: ${d.name || 'unnamed'}`,
+                        ),
+                      );
+                      console.log(
+                        '[IDP] Existing details before update:',
+                        currentDocs.map(
+                          (d: any, i: number) =>
+                            `${i}: hasDetails=${
+                              !!d.details && Object.keys(d.details).length > 0
+                            }`,
+                        ),
+                      );
 
-                    const currentDoc = updatedDocumentsWithNames[index];
-                    const updatedDocs = (currentDoc.doc || []).map(
-                      (doc: any, docIndex: number) => {
-                        const fileExtension =
-                          doc.type?.split('/')[1] ||
-                          doc.fileName?.split('.')[1] ||
-                          'jpg';
-                        const fileName = `${documentType}${
-                          docIndex > 0 ? `_${docIndex + 1}` : ''
-                        }.${fileExtension}`;
+                      // Update document names based on IDP response
+                      let updatedDocumentsWithNames = [...currentDocs];
 
-                        return {
-                          ...doc,
-                          name: fileName,
-                          fileName: fileName,
-                        };
-                      },
-                    );
-
-                    updatedDocumentsWithNames[index] = {
-                      ...currentDoc,
-                      doc: updatedDocs as any,
-                    };
-
-                    console.log(
-                      `Updated document names to: ${documentType}`,
-                      updatedDocumentsWithNames[index].doc,
-                    );
-
-                    const updateData: any = {};
-
-                    if (response?.name) {
-                      updateData.name = response.name;
-                      console.log(response?.name, 'name from IDP');
-                      // Split name into firstName and lastName if possible
-                      const nameParts = response.name.trim().split(' ');
-                      if (nameParts.length >= 2) {
-                        updateData.idpFirstName = nameParts[0];
-                        updateData.idpLastName = nameParts.slice(1).join(' ');
-                      } else {
-                        updateData.idpFirstName = response.name;
-                        updateData.idpLastName = ''; // Empty if no last name
+                      // Ensure document exists at index
+                      if (!updatedDocumentsWithNames[actualIndex]) {
+                        console.warn(
+                          `Document at index ${actualIndex} not found, skipping update`,
+                        );
+                        return;
                       }
-                    }
 
-                    if (response?.aadhaar_number || response?.aadhar_number) {
-                      if (response?.date_of_birth) {
-                        // Convert from DD/MM/YYYY to YYYY-MM-DD
-                        const dateParts = response.date_of_birth.split('/');
-                        if (dateParts.length === 3) {
-                          const [day, month, year] = dateParts;
-                          updateData.idpDateOfBirth = `${year}-${month}-${day}`;
+                      const currentDoc = updatedDocumentsWithNames[actualIndex];
+                      const updatedDocs = (currentDoc.doc || []).map(
+                        (doc: any, docIndex: number) => {
+                          const fileExtension =
+                            doc.type?.split('/')[1] ||
+                            doc.fileName?.split('.')[1] ||
+                            'jpg';
+                          const fileName = `${documentType}${
+                            docIndex > 0 ? `_${docIndex + 1}` : ''
+                          }.${fileExtension}`;
+
+                          return {
+                            ...doc,
+                            name: fileName,
+                            fileName: fileName,
+                          };
+                        },
+                      );
+
+                      updatedDocumentsWithNames[actualIndex] = {
+                        ...currentDoc,
+                        doc: updatedDocs as any,
+                      };
+
+                      console.log(
+                        `Updated document names to: ${documentType}`,
+                        updatedDocumentsWithNames[actualIndex].doc,
+                      );
+
+                      const updateData: any = {};
+
+                      if (response?.name) {
+                        updateData.name = response.name;
+                        console.log(response?.name, 'name from IDP');
+                        // Split name into firstName and lastName if possible
+                        const nameParts = response.name.trim().split(' ');
+                        if (nameParts.length >= 2) {
+                          updateData.idpFirstName = nameParts[0];
+                          updateData.idpLastName = nameParts.slice(1).join(' ');
                         } else {
-                          updateData.idpDateOfBirth = response.date_of_birth;
+                          updateData.idpFirstName = response.name;
+                          updateData.idpLastName = ''; // Empty if no last name
                         }
                       }
 
-                      if (response?.gender) {
-                        updateData.idpGender = response.gender.toUpperCase();
+                      if (response?.aadhaar_number || response?.aadhar_number) {
+                        if (response?.date_of_birth) {
+                          // Convert from DD/MM/YYYY to YYYY-MM-DD
+                          const dateParts = response.date_of_birth.split('/');
+                          if (dateParts.length === 3) {
+                            const [day, month, year] = dateParts;
+                            updateData.idpDateOfBirth = `${year}-${month}-${day}`;
+                          } else {
+                            updateData.idpDateOfBirth = response.date_of_birth;
+                          }
+                        }
+
+                        if (response?.gender) {
+                          updateData.idpGender = response.gender.toUpperCase();
+                        }
+
+                        if (response?.address) {
+                          updateData.idpAddress = response.address;
+                        }
                       }
 
-                      if (response?.address) {
-                        updateData.idpAddress = response.address;
-                      }
-                    }
+                      // Update document details with the renamed documents
+                      updatedDocumentsWithNames[actualIndex] = {
+                        ...updatedDocumentsWithNames[actualIndex],
+                        details: response || {},
+                      };
 
-                    // Update document details with the renamed documents
-                    updatedDocumentsWithNames[index] = {
-                      ...updatedDocumentsWithNames[index],
-                      details: response || {},
-                    };
+                      console.log(
+                        '[IDP] Final document details at index',
+                        actualIndex,
+                        ':',
+                        updatedDocumentsWithNames[actualIndex].details,
+                      );
+                      console.log(
+                        '[IDP] All documents after update:',
+                        updatedDocumentsWithNames.map(
+                          (d: any, i: number) =>
+                            `${i}: ${d.name || 'unnamed'} - hasDetails: ${
+                              !!d.details && Object.keys(d.details).length > 0
+                            }`,
+                        ),
+                      );
 
-                    dispatch(
-                      setState({
-                        ...updateData,
-                        personalDocuments: [...updatedDocumentsWithNames],
-                      }),
-                    );
+                      dispatch(
+                        setState({
+                          ...updateData,
+                          personalDocuments: [...updatedDocumentsWithNames],
+                        }),
+                      );
+
+                      console.log(
+                        '[IDP] Dispatched update for index',
+                        actualIndex,
+                      );
+                    }, 100); // 100ms delay to ensure Redux updates complete
                   },
                   // onError callback
                   (error: Error, taskId: string) => {

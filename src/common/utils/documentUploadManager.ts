@@ -30,9 +30,10 @@ interface ActiveUpload {
 class DocumentUploadManager {
   private queue: UploadTask[] = [];
   private activeUploads: Map<string, ActiveUpload> = new Map();
-  private maxConcurrentUploads: number = 3; // Limit concurrent uploads
+  private maxConcurrentUploads: number = 1; // Limit to 1 concurrent upload to prevent network errors
   private isProcessing: boolean = false;
   private uploadResults: Map<string, any> = new Map(); // Store results by taskId
+  private uploadDelay: number = 500; // 500ms delay between starting uploads
 
   /**
    * Generate unique task ID based on screenId and index
@@ -102,6 +103,14 @@ class DocumentUploadManager {
         const task = this.queue.shift();
         if (task) {
           this.startUpload(task);
+
+          // Add delay between starting uploads to prevent server overload
+          if (this.queue.length > 0) {
+            console.log(
+              `[UploadManager] Waiting ${this.uploadDelay}ms before next upload...`,
+            );
+            await new Promise(resolve => setTimeout(resolve, this.uploadDelay));
+          }
         }
       }
 
@@ -115,19 +124,31 @@ class DocumentUploadManager {
   }
 
   /**
-   * Start individual upload task
+   * Start individual upload task with retry logic
    */
-  private async startUpload(task: UploadTask): Promise<void> {
+  private async startUpload(
+    task: UploadTask,
+    retryCount: number = 0,
+  ): Promise<void> {
     const { id, document, applicationId, indexOfDoc, screenId, deviceId } =
       task;
+    const maxRetries = 3;
+    const retryDelay = 1000 * Math.pow(2, retryCount); // Exponential backoff: 1s, 2s, 4s
 
-    console.log(`[UploadManager] Starting upload: ${id}`);
+    console.log(
+      `[UploadManager] Starting upload: ${id}${
+        retryCount > 0 ? ` (Retry ${retryCount}/${maxRetries})` : ''
+      }`,
+    );
 
     // Notify uploading status
     if (task.onProgress) {
       task.onProgress({
         status: 'uploading',
-        message: 'Uploading document...',
+        message:
+          retryCount > 0
+            ? `Retrying upload (${retryCount}/${maxRetries})...`
+            : 'Uploading document...',
       });
     }
 
@@ -158,8 +179,43 @@ class DocumentUploadManager {
         // Remove from active uploads
         this.activeUploads.delete(id);
       })
-      .catch(error => {
+      .catch(async error => {
         console.error(`[UploadManager] Upload failed: ${id}`, error);
+
+        // Check if it's a network error and we haven't exceeded retry limit
+        const isNetworkError =
+          error.message?.includes('Network') ||
+          error.code === 'ERR_NETWORK' ||
+          error.message?.includes('timeout');
+
+        if (isNetworkError && retryCount < maxRetries) {
+          console.log(
+            `[UploadManager] Network error, retrying in ${retryDelay}ms...`,
+          );
+
+          // Notify retry status
+          if (task.onProgress) {
+            task.onProgress({
+              status: 'uploading',
+              message: `Network error. Retrying in ${retryDelay / 1000}s...`,
+            });
+          }
+
+          // Remove from active uploads before retry
+          this.activeUploads.delete(id);
+
+          // Wait before retrying
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+
+          // Retry the upload
+          return this.startUpload(task, retryCount + 1);
+        }
+
+        // Max retries reached or non-network error
+        console.error(
+          `[UploadManager] Upload permanently failed: ${id}`,
+          error,
+        );
 
         // Notify error status
         if (task.onProgress) {
@@ -241,10 +297,21 @@ class DocumentUploadManager {
   }
 
   /**
-   * Set max concurrent uploads (default: 3)
+   * Set max concurrent uploads (default: 1)
    */
   public setMaxConcurrentUploads(max: number): void {
     this.maxConcurrentUploads = Math.max(1, max);
+    console.log(
+      `[UploadManager] Max concurrent uploads set to: ${this.maxConcurrentUploads}`,
+    );
+  }
+
+  /**
+   * Set delay between starting uploads (default: 500ms)
+   */
+  public setUploadDelay(delayMs: number): void {
+    this.uploadDelay = Math.max(0, delayMs);
+    console.log(`[UploadManager] Upload delay set to: ${this.uploadDelay}ms`);
   }
 
   /**
@@ -266,6 +333,7 @@ class DocumentUploadManager {
       activeUploads: this.activeUploads.size,
       completedUploads: this.uploadResults.size,
       maxConcurrent: this.maxConcurrentUploads,
+      uploadDelay: this.uploadDelay,
     };
   }
 }

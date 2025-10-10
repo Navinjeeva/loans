@@ -102,7 +102,24 @@ const loanDoc = ({
             images={item?.doc}
             details={item?.details || {}}
             setImages={async (images: any) => {
-              let updatedDocuments = [...docs];
+              // CRITICAL: Always read from Redux store to get latest state
+              // This prevents using stale component state when multiple uploads happen
+              const latestState = store.getState().customer;
+              const currentDocs =
+                latestState.loanDocuments?.length > 0
+                  ? [...latestState.loanDocuments]
+                  : [{ id: 1, name: '', doc: [], details: {} }];
+              let updatedDocuments = [...currentDocs];
+
+              console.log(
+                '[IDP] setImages - Current state:',
+                currentDocs.map(
+                  (d: any, i: number) =>
+                    `${i}: hasDetails=${
+                      !!d.details && Object.keys(d.details).length > 0
+                    }`,
+                ),
+              );
 
               if (images.length == 0) {
                 // Don't remove the document, just clear it
@@ -120,7 +137,7 @@ const loanDoc = ({
 
               updatedDocuments[index] = {
                 ...updatedDocuments[index],
-                doc: newDocs,
+                doc: newDocs as any,
                 details: updatedDocuments[index]?.details || {},
               };
 
@@ -164,20 +181,62 @@ const loanDoc = ({
                   (response: any, taskId: string) => {
                     console.log('[IDP] Loan document extracted:', response);
 
-                    // Get the LATEST document state from Redux store (not stale component state)
-                    const latestState = store.getState().customer;
-                    const currentDocs =
-                      latestState.loanDocuments?.length > 0
-                        ? [...latestState.loanDocuments]
-                        : [{ id: 1, name: '', doc: [], details: {} }];
+                    // Use the index from the response, or fall back to closure index
+                    const actualIndex = response?._indexOfDoc ?? index;
+                    console.log(
+                      '[IDP] Using index:',
+                      actualIndex,
+                      'Closure index:',
+                      index,
+                      'Response index:',
+                      response?._indexOfDoc,
+                    );
 
-                    let latestDocuments = [...currentDocs];
-                    latestDocuments[index] = {
-                      ...latestDocuments[index],
-                      details: response || {},
-                    };
+                    // Warn if there's a mismatch
+                    if (
+                      response?._indexOfDoc !== undefined &&
+                      response._indexOfDoc !== index
+                    ) {
+                      console.warn(
+                        `[IDP] Index mismatch! Closure: ${index}, Response: ${response._indexOfDoc}`,
+                      );
+                    }
 
-                    dispatch(setState({ loanDocuments: [...latestDocuments] }));
+                    // CRITICAL: Use setTimeout to ensure previous Redux updates have completed
+                    // This prevents race conditions when multiple documents are extracted simultaneously
+                    setTimeout(() => {
+                      // Get the LATEST document state from Redux store (not stale component state)
+                      const latestState = store.getState().customer;
+                      const currentDocs =
+                        latestState.loanDocuments?.length > 0
+                          ? [...latestState.loanDocuments]
+                          : [{ id: 1, name: '', doc: [], details: {} }];
+
+                      console.log(
+                        '[IDP] Existing details before update:',
+                        currentDocs.map(
+                          (d: any, i: number) =>
+                            `${i}: hasDetails=${
+                              !!d.details && Object.keys(d.details).length > 0
+                            }`,
+                        ),
+                      );
+
+                      let latestDocuments = [...currentDocs];
+                      latestDocuments[actualIndex] = {
+                        ...latestDocuments[actualIndex],
+                        details: response || {},
+                      };
+
+                      dispatch(
+                        setState({ loanDocuments: [...latestDocuments] }),
+                      );
+
+                      console.log(
+                        '[IDP] Dispatched update for loan doc index',
+                        actualIndex,
+                      );
+                    }, 100); // 100ms delay to ensure Redux updates complete
                   },
                   // onError callback
                   (error: Error, taskId: string) => {

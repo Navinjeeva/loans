@@ -39,7 +39,24 @@ const LinkedEntities = ({
   };
 
   const updateDocument = async (index: number, images: any[]) => {
-    let updatedDocuments = [...(documents || [])];
+    // CRITICAL: Always read from Redux store to get latest state
+    // This prevents using stale component state when multiple uploads happen
+    const latestState = store.getState().customer;
+    const currentDocs =
+      latestState.linkedEntitiesDocuments?.length > 0
+        ? [...latestState.linkedEntitiesDocuments]
+        : [{ id: 1, name: 'Beneficiary Document', doc: [], details: {} }];
+    let updatedDocuments = [...currentDocs];
+
+    console.log(
+      '[IDP] updateDocument - Current state:',
+      currentDocs.map(
+        (d: any, i: number) =>
+          `${i}: hasDetails=${
+            !!d.details && Object.keys(d.details).length > 0
+          }`,
+      ),
+    );
 
     if (images.length == 0) {
       // Don't remove the document, just clear it
@@ -60,7 +77,7 @@ const LinkedEntities = ({
 
     updatedDocuments[index] = {
       ...updatedDocuments[index],
-      doc: newDocs,
+      doc: newDocs as any,
       details: updatedDocuments[index]?.details || {},
     };
 
@@ -103,6 +120,27 @@ const LinkedEntities = ({
         // onSuccess callback
         (response: any, taskId: string) => {
           console.log(response, 'response');
+
+          // Use the index from the response, or fall back to closure index
+          const actualIndex = response?._indexOfDoc ?? index;
+          console.log(
+            '[IDP] Using index:',
+            actualIndex,
+            'Closure index:',
+            index,
+            'Response index:',
+            response?._indexOfDoc,
+          );
+
+          // Warn if there's a mismatch
+          if (
+            response?._indexOfDoc !== undefined &&
+            response._indexOfDoc !== index
+          ) {
+            console.warn(
+              `[IDP] Index mismatch! Closure: ${index}, Response: ${response._indexOfDoc}`,
+            );
+          }
 
           // Determine document type based on IDP response and update document names
           let documentType = 'AadhaarCard'; // default
@@ -149,80 +187,106 @@ const LinkedEntities = ({
 
           console.log(`IDP detected document type: ${documentType}`);
 
-          // Get the LATEST document state from Redux store (not stale component state)
-          const latestState = store.getState().customer;
-          const currentDocs =
-            latestState.linkedEntitiesDocuments?.length > 0
-              ? [...latestState.linkedEntitiesDocuments]
-              : [{ id: 1, name: 'Beneficiary Document', doc: [], details: {} }];
+          // CRITICAL: Use setTimeout to ensure previous Redux updates have completed
+          // This prevents race conditions when multiple documents are extracted simultaneously
+          setTimeout(() => {
+            // Get the LATEST document state from Redux store (not stale component state)
+            const latestState = store.getState().customer;
+            const currentDocs =
+              latestState.linkedEntitiesDocuments?.length > 0
+                ? [...latestState.linkedEntitiesDocuments]
+                : [
+                    {
+                      id: 1,
+                      name: 'Beneficiary Document',
+                      doc: [],
+                      details: {},
+                    },
+                  ];
 
-          // Update document names based on IDP response
-          let updatedDocumentsWithNames = [...currentDocs];
-          updatedDocumentsWithNames[index] = {
-            ...updatedDocumentsWithNames[index],
-            doc: updatedDocumentsWithNames[index].doc.map(
-              (doc: any, docIndex: number) => {
-                const fileExtension =
-                  doc.type?.split('/')[1] ||
-                  doc.fileName?.split('.')[1] ||
-                  'jpg';
-                const fileName = `${documentType}${
-                  docIndex > 0 ? `_${docIndex + 1}` : ''
-                }.${fileExtension}`;
+            console.log(
+              '[IDP] Existing details before update:',
+              currentDocs.map(
+                (d: any, i: number) =>
+                  `${i}: hasDetails=${
+                    !!d.details && Object.keys(d.details).length > 0
+                  }`,
+              ),
+            );
 
-                return {
-                  ...doc,
-                  name: fileName,
-                  fileName: fileName,
-                };
+            // Update document names based on IDP response
+            let updatedDocumentsWithNames = [...currentDocs];
+            updatedDocumentsWithNames[actualIndex] = {
+              ...updatedDocumentsWithNames[actualIndex],
+              doc: (updatedDocumentsWithNames[actualIndex].doc || []).map(
+                (doc: any, docIndex: number) => {
+                  const fileExtension =
+                    doc.type?.split('/')[1] ||
+                    doc.fileName?.split('.')[1] ||
+                    'jpg';
+                  const fileName = `${documentType}${
+                    docIndex > 0 ? `_${docIndex + 1}` : ''
+                  }.${fileExtension}`;
+
+                  return {
+                    ...doc,
+                    name: fileName,
+                    fileName: fileName,
+                  };
+                },
+              ) as any,
+            };
+
+            console.log(
+              `Updated document names to: ${documentType}`,
+              updatedDocumentsWithNames[actualIndex].doc,
+            );
+
+            const updateData: any = {};
+
+            if (response?.name) {
+              // Split name into firstName and lastName if possible
+              const nameParts = response.name.trim().split(' ');
+              if (nameParts.length >= 2) {
+                updateData.firstName = nameParts[0];
+                updateData.lastName = nameParts.slice(1).join(' ');
+              } else {
+                updateData.firstName = response.name;
+                updateData.lastName = ''; // Empty if no last name
+              }
+            }
+
+            if (response?.date_of_birth) {
+              // Convert from DD/MM/YYYY to YYYY-MM-DD
+              const dateParts = response.date_of_birth.split('/');
+              if (dateParts.length === 3) {
+                const [day, month, year] = dateParts;
+                updateData.dateOfBirth = `${year}-${month}-${day}`;
+              } else {
+                updateData.dateOfBirth = response.date_of_birth;
+              }
+            }
+
+            // Update document details with the renamed documents and split names
+            updatedDocumentsWithNames[actualIndex] = {
+              ...updatedDocumentsWithNames[actualIndex],
+              details: {
+                ...response,
+                ...updateData, // Include firstName and lastName
               },
-            ),
-          };
+            };
 
-          console.log(
-            `Updated document names to: ${documentType}`,
-            updatedDocumentsWithNames[index].doc,
-          );
+            dispatch(
+              setState({
+                linkedEntitiesDocuments: [...updatedDocumentsWithNames],
+              }),
+            );
 
-          const updateData: any = {};
-
-          if (response?.name) {
-            // Split name into firstName and lastName if possible
-            const nameParts = response.name.trim().split(' ');
-            if (nameParts.length >= 2) {
-              updateData.firstName = nameParts[0];
-              updateData.lastName = nameParts.slice(1).join(' ');
-            } else {
-              updateData.firstName = response.name;
-              updateData.lastName = ''; // Empty if no last name
-            }
-          }
-
-          if (response?.date_of_birth) {
-            // Convert from DD/MM/YYYY to YYYY-MM-DD
-            const dateParts = response.date_of_birth.split('/');
-            if (dateParts.length === 3) {
-              const [day, month, year] = dateParts;
-              updateData.dateOfBirth = `${year}-${month}-${day}`;
-            } else {
-              updateData.dateOfBirth = response.date_of_birth;
-            }
-          }
-
-          // Update document details with the renamed documents and split names
-          updatedDocumentsWithNames[index] = {
-            ...updatedDocumentsWithNames[index],
-            details: {
-              ...response,
-              ...updateData, // Include firstName and lastName
-            },
-          };
-
-          dispatch(
-            setState({
-              linkedEntitiesDocuments: [...updatedDocumentsWithNames],
-            }),
-          );
+            console.log(
+              '[IDP] Dispatched update for linked entity doc index',
+              actualIndex,
+            );
+          }, 100); // 100ms delay to ensure Redux updates complete
         },
         // onError callback
         (error: Error, taskId: string) => {

@@ -142,10 +142,69 @@ export const extractDocumentViaWebSocket = (
           const extractedData = JSON.parse(event.data);
           console.log(`[IDP] Parsed message ${messageCount}:`, extractedData);
 
-          // Store the latest data (will be the last one when connection closes)
-          lastExtractedData = extractedData?.result?.data;
+          // Check if this is an error event
+          if (extractedData.event === 'error') {
+            console.error('[IDP] Error event received:', extractedData);
 
-          // Reset the inactivity timer - close if no more messages come
+            // Clean up timeouts
+            if (inactivityTimeout) {
+              clearTimeout(inactivityTimeout);
+            }
+            if (globalTimeout) {
+              clearTimeout(globalTimeout);
+            }
+
+            // Close WebSocket
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.close();
+            }
+
+            // Reject with detailed error message
+            const errorMessage =
+              extractedData.error?.message ||
+              extractedData.message ||
+              'Document extraction failed';
+            reject(new Error(errorMessage));
+            return;
+          }
+
+          // Check if this is the extraction_complete event
+          if (extractedData.event === 'extraction_complete') {
+            console.log('[IDP] Extraction complete event received');
+            console.log('[IDP] Event indexOfDoc:', extractedData.indexOfDoc);
+            console.log('[IDP] Requested indexOfDoc:', indexOfDoc);
+
+            // Store the extracted data with index information
+            lastExtractedData = {
+              ...extractedData?.result?.data,
+              _indexOfDoc: extractedData.indexOfDoc, // Include the index from the event
+              _requestedIndex: indexOfDoc, // Include the requested index for comparison
+            };
+
+            // Clean up timeouts
+            if (inactivityTimeout) {
+              clearTimeout(inactivityTimeout);
+            }
+            if (globalTimeout) {
+              clearTimeout(globalTimeout);
+            }
+
+            // Resolve the promise with the extracted data
+            console.log(
+              '[IDP] Resolving with extracted data:',
+              lastExtractedData,
+            );
+            resolve(lastExtractedData);
+
+            // Note: Connection will remain open but promise is resolved
+            // WebSocket will eventually close naturally or be closed by server
+            return;
+          }
+
+          // For other events, just log them
+          console.log('[IDP] Received event:', extractedData.event);
+
+          // Reset the inactivity timer for non-complete events
           resetInactivityTimer();
         } catch (error) {
           console.error('[IDP] Error parsing extraction result:', error);
@@ -217,6 +276,14 @@ export const uploadAndExtractDocument = async (
     );
 
     console.log('[IDP] File uploaded, file_id:', fileId);
+
+    // CRITICAL: Wait for server to process the uploaded file
+    // Without this delay, "File ID not found" errors occur
+    const processingDelay = 2500; // 1.5 seconds
+    console.log(
+      `[IDP] Waiting ${processingDelay}ms for server to process uploaded file...`,
+    );
+    await new Promise(resolve => setTimeout(resolve, processingDelay));
 
     // Step 2: Extract data
     const extractedData = await extractDocumentViaWebSocket(
