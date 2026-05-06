@@ -1,0 +1,397 @@
+import { useNavigation } from "@react-navigation/native";
+import Button from "@src/components/Button";
+import ImageViewer from "@src/components/imageViewer";
+import Loader from "@src/common/components/Loader";
+import KeyboardAwareScrollView from "@src/common/LoanComponents/KeyboardAwareScrollView";
+import { useState } from "react";
+import {
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+import { useSelector } from "react-redux";
+import { useTheme } from "@src/common/ThemeContext";
+import Header from "@src/common/LoanComponents/Header";
+import { TextInputComponent } from "@src/common";
+import MobileNumberInputComponent from "@src/common/components/MobileNumberComponent";
+
+const MemberDetails = () => {
+  const [loading, setLoading] = useState(false);
+  const { extraDocuments, personalDocuments } = useSelector(
+    (state: any) => state.customer
+  );
+  const custData = useSelector((state: any) => state.customer);
+  const navigation = useNavigation();
+  const { colors, isDark } = useTheme();
+
+  const styles = createStyles(colors, isDark);
+
+  return (
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <Loader loading={loading} />
+
+      <Header
+        title="Member Details"
+        subTitle="Review and verify member information"
+      />
+
+      <KeyboardAwareScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Upload Section */}
+
+        <>
+          <View style={styles.uploadSection}>
+            <View style={{}}>
+              <TextInputComponent
+                header="Member Name"
+                value={custData.firstName + " " + custData.lastName}
+                //inputStyles={{ width: '48%' }}
+                onChange={() => {}}
+                isEditable={false}
+              />
+              {/* <TextInputComponent
+                header="Member Number"
+                value={custData.lastName}
+                //inputStyles={{ width: '48%' }}
+                onChange={() => {}}
+                isEditable={false}
+              /> */}
+            </View>
+
+            <TextInputComponent
+              header="Email"
+              value={custData.email}
+              onChange={() => {}}
+              isEditable={false}
+            />
+
+            <View style={{ gap: hp(0.4) }}>
+              <Text>Mobile Number</Text>
+              <MobileNumberInputComponent
+                mobileNumber={custData.mobileNumber}
+                isdCode={custData.isdCode}
+                onChangeMobileNumber={() => {}}
+                onChangeIsdCode={() => {}}
+                isEditable={false}
+              />
+              {custData.address && (
+                <TextInputComponent
+                  header="Address"
+                  value={custData.address}
+                  onChange={() => {}}
+                  isEditable={false}
+                />
+              )}
+            </View>
+          </View>
+          {personalDocuments && personalDocuments.length > 0
+            ? personalDocuments.flatMap((item: any, index: number) => {
+                // If item has multiple documents, display each one separately
+                if (item.doc && item.doc.length > 0) {
+                  return item.doc.map((docItem: any, docIndex: number) => (
+                    <ImageContainer
+                      key={`${index}-${docIndex}`}
+                      imageUrl={docItem.uri || ""}
+                      title={
+                        item.doc.length > 1
+                          ? `${item.name || item.documentName || "Document"} (${
+                              docIndex + 1
+                            })`
+                          : item.name || item.documentName || "Document"
+                      }
+                    />
+                  ));
+                }
+                return [];
+              })
+            : null}
+        </>
+      </KeyboardAwareScrollView>
+
+      <Button
+        buttonStyle={{
+          marginVertical: hp(2.5),
+        }}
+        text="Next"
+        click={() => {
+          navigation.navigate("LoanApplication");
+        }}
+      />
+    </SafeAreaView>
+  );
+};
+
+export const ImageContainer = ({ imageUrl, title }: any) => {
+  const [showDoc, setShowDoc] = useState(false);
+  const { colors, isDark } = useTheme();
+  const styles = createStyles(colors, isDark);
+
+  return (
+    <View
+      style={{
+        marginVertical: hp(2),
+        gap: hp(1),
+        position: "relative",
+      }}
+    >
+      <ImageViewer
+        image={imageUrl}
+        visible={showDoc}
+        setVisible={setShowDoc}
+        header={title}
+      />
+
+      <Text style={styles.text}>{title}</Text>
+
+      <TouchableOpacity
+        onPress={() => setShowDoc(true)}
+        style={styles.Imagecontainer}
+      >
+        <Image
+          source={{ uri: imageUrl }}
+          style={[styles.image]}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+export default MemberDetails;
+
+const createStyles = (colors: any, isDark: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      paddingHorizontal: wp(4),
+      paddingTop: hp(2),
+      paddingBottom: hp(1),
+    },
+    backButton: {
+      marginRight: wp(4),
+      marginTop: hp(0.5),
+    },
+    backIcon: {
+      fontSize: hp(3),
+      fontWeight: "bold",
+    },
+    headerContent: {
+      flex: 1,
+    },
+    headerTitle: {
+      fontSize: hp(2.8),
+      fontWeight: "bold",
+      marginBottom: hp(0.5),
+    },
+    headerSubtitle: {
+      fontSize: hp(1.6),
+      lineHeight: hp(2.2),
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: wp(4),
+    },
+    uploadSection: {
+      marginTop: hp(3),
+    },
+    sectionHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: hp(2),
+    },
+    iconContainer: {
+      width: wp(8),
+      height: wp(8),
+      borderRadius: wp(4),
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: wp(3),
+    },
+    cardIcon: {
+      fontSize: hp(2),
+    },
+    sectionTitle: {
+      fontSize: hp(2.2),
+      fontWeight: "600",
+    },
+    fieldLabel: {
+      fontSize: hp(1.8),
+      fontWeight: "500",
+      marginBottom: hp(1),
+    },
+    infoCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      padding: wp(4),
+      marginTop: hp(2),
+      marginBottom: hp(3),
+    },
+    infoHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: hp(1.5),
+    },
+    warningIcon: {
+      fontSize: hp(2),
+      marginRight: wp(2),
+    },
+    infoTitle: {
+      fontSize: hp(1.8),
+      fontWeight: "600",
+    },
+    infoList: {
+      gap: hp(1),
+    },
+    bottomContainer: {
+      paddingHorizontal: wp(4),
+      paddingVertical: hp(2),
+    },
+    proceedButton: {
+      borderRadius: 12,
+      paddingVertical: hp(2),
+      alignItems: "center",
+    },
+    proceedButtonText: {
+      color: "white",
+      fontSize: hp(2),
+      fontWeight: "600",
+    },
+    // Modal styles
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.35)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: wp(6),
+    },
+    modalCard: {
+      width: "100%",
+      borderRadius: 20,
+      paddingVertical: hp(3),
+      paddingHorizontal: wp(5),
+    },
+    modalClose: {
+      position: "absolute",
+      right: wp(4),
+      top: hp(1.5),
+      zIndex: 1,
+    },
+    modalTitle: {
+      textAlign: "center",
+      fontSize: hp(2.6),
+      fontWeight: "700",
+      marginTop: hp(1),
+    },
+    modalSubtitle: {
+      textAlign: "center",
+      fontSize: hp(1.8),
+      marginTop: hp(1),
+      marginBottom: hp(2),
+    },
+    otpBoxesRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      width: "100%",
+      marginVertical: hp(1),
+    },
+    otpBox: {
+      width: wp(12),
+      height: wp(12),
+      borderRadius: 12,
+      backgroundColor: "rgba(0,0,0,0.05)",
+      justifyContent: "center",
+      alignItems: "center",
+      borderColor: "#000000",
+      borderWidth: hp(0.05),
+    },
+    otpDigit: {
+      fontSize: hp(2.4),
+      fontWeight: "600",
+    },
+    hiddenOtpInput: {
+      position: "absolute",
+      opacity: 0,
+      width: 1,
+      height: 1,
+    },
+    resendText: {
+      textAlign: "center",
+      color: "#3B45AC",
+      fontWeight: "600",
+      marginTop: hp(1.5),
+      marginBottom: hp(2.5),
+    },
+    doneButton: {
+      borderRadius: 14,
+      paddingVertical: hp(1.8),
+    },
+    otpContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    inputsContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    pinCodeContainer: {
+      width: wp(10),
+      height: hp(5),
+      borderWidth: 1,
+      borderColor: "#000",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    pinCodeText: {
+      fontSize: 18,
+      color: "#000",
+    },
+    focusStick: {
+      backgroundColor: "orange",
+    },
+    activePinCodeContainer: {
+      borderColor: "orange",
+    },
+    text: {
+      color: "#585858",
+      fontSize: hp(1.2),
+    },
+    Imagecontainer: {
+      borderRadius: hp(0.4),
+      backgroundColor: "#E4E4E4",
+      alignItems: "center",
+      justifyContent: "center",
+      height: hp(30),
+      padding: hp(1),
+      shadowColor: "#000",
+      overflow: "hidden",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 8,
+    },
+    image: {
+      width: "100%",
+      height: "100%",
+      borderRadius: hp(3) - hp(2),
+      objectFit: "contain",
+    },
+  });
