@@ -39,10 +39,8 @@ let urls: {
     AUTH_BASE_URL: "https://dev-api-iam.impactodigifin.xyz",
     KYC_AML_URL: "https://dev-api-kyc.impactodigifin.xyz",
     ONESIGNAL_ID: "bd28081a-518b-4761-93d0-6280f1853d55",
-    // LOAN_URL: "https://dev-api-los-service.impactodigifin.xyz",
-     LOAN_DOC_UPLOAD_URL: "https://dev-api-doc.impactodigifin.xyz",
-    LOAN_URL: "http://10.0.3.187:8081",
-    //LOAN_DOC_UPLOAD_URL: "http://10.0.3.187:8081",
+    LOAN_URL: "https://dev-api-los-service.impactodigifin.xyz",
+    LOAN_DOC_UPLOAD_URL: "https://dev-api-doc.impactodigifin.xyz",
     LOANS_IDP_BASE_URL: "http://3.146.230.106:8000",
   },
   QA: {
@@ -54,10 +52,8 @@ let urls: {
     AUTH_BASE_URL: "https://qa-api-iam.impactodigifin.xyz",
     KYC_AML_URL: "https://qa-api-kyc.impactodigifin.xyz",
     ONESIGNAL_ID: "bd28081a-518b-4761-93d0-6280f1853d55",
-    // LOAN_URL: "https://dev-api-los-service.impactodigifin.xyz",
-    // LOAN_DOC_UPLOAD_URL: "https://dev-api-doc.impactodigifin.xyz",
-    LOAN_URL: "http://10.0.3.46:8080",
-    LOAN_DOC_UPLOAD_URL: "http://10.0.3.46:8083",
+    LOAN_URL: "https://dev-api-los-service.impactodigifin.xyz",
+    LOAN_DOC_UPLOAD_URL: "https://dev-api-doc.impactodigifin.xyz",
     LOANS_IDP_BASE_URL: "http://3.146.230.106:8000",
   },
   UAT: {
@@ -127,8 +123,11 @@ export const LOAN_DOC_UPLOAD_URL = urls[ENVIROMENT].LOAN_DOC_UPLOAD_URL;
 export const LOANS_IDP_BASE_URL = urls[ENVIROMENT].LOANS_IDP_BASE_URL;
 
 const logApiDuration = (config: any, startTime: number) => {
-  const duration = Date.now() - startTime;
-  console.log(`[API] ${config.method?.toUpperCase()} ${config.url} — ${duration}ms`);
+  const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+  const method = config.method?.toUpperCase() || "UNKNOWN";
+  const url = config.url || "UNKNOWN";
+  const baseURL = config.baseURL || "";
+  console.log(`[API Timer] ${method} ${baseURL}${url} - ${duration}s`);
 };
 
 let refreshTimer: NodeJS.Timeout | null = null;
@@ -784,6 +783,84 @@ LOSInstance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+loanInstance.interceptors.request.use(
+  async (config) => {
+    config.metadata = { startTime: Date.now() };
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+loanInstance.interceptors.response.use(
+  (response) => {
+    if (response.config.metadata?.startTime) {
+      logApiDuration(response.config, response.config.metadata.startTime);
+    }
+    return response;
+  },
+  async (error) => {
+    if (error.config?.metadata?.startTime) {
+      logApiDuration(error.config, error.config.metadata.startTime);
+    }
+    return Promise.reject(error);
+  }
+);
+
+loanDocumentInstance.interceptors.request.use(
+  async (config) => {
+    config.metadata = { startTime: Date.now() };
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+loanDocumentInstance.interceptors.response.use(
+  (response) => {
+    if (response.config.metadata?.startTime) {
+      logApiDuration(response.config, response.config.metadata.startTime);
+    }
+    return response;
+  },
+  async (error) => {
+    if (error.config?.metadata?.startTime) {
+      logApiDuration(error.config, error.config.metadata.startTime);
+    }
+    return Promise.reject(error);
+  }
+);
+
+loanIdpInstance.interceptors.request.use(
+  async (config) => {
+    config.metadata = { startTime: Date.now() };
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+loanIdpInstance.interceptors.response.use(
+  (response) => {
+    if (response.config.metadata?.startTime) {
+      logApiDuration(response.config, response.config.metadata.startTime);
+    }
+    return response;
+  },
+  async (error) => {
+    if (error.config?.metadata?.startTime) {
+      logApiDuration(error.config, error.config.metadata.startTime);
+    }
+    return Promise.reject(error);
+  }
+);
+
+
+
 
 const setupAxiosInstances = () => {
   const currentUrls = urls[ENVIROMENT];

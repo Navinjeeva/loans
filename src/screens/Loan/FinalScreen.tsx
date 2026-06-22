@@ -66,16 +66,14 @@ const FinalScreen = () => {
           logAlert(
             "Are you sure you want to go to home?",
             () => {
+              dispatch(resetState());
+              dispatch(resetLoansState());
               navigation.reset({
                 index: 0,
-                routes: [
-                  {
-                    name: "More" as never,
-                  },
-                ],
+                routes: [{ name: "LoanCustomer" as never }],
               });
             },
-            () => {}
+            () => {},
           )
         }
       />

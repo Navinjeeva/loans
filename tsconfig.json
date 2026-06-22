@@ -2,6 +2,7 @@
   "extends": "@react-native/typescript-config/tsconfig.json",
   "compilerOptions": {
     "skipLibCheck": true,
+    "baseUrl": ".",
     "paths": {
       "@assets/*": ["./assets/*"],
       "@src/*": ["./src/*"],

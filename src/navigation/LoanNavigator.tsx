@@ -1,6 +1,8 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
+import SelectProduct from "@src/screens/SelectProduct";
+import CorporateNavigator from "@src/screens/CorporateCustomer/CorporateNavigator";
 import Customer from "@src/screens/Loan/index";
 import Application from "@src/screens/Loan/Application";
 import Verification from "@src/screens/Loan/Verification";
@@ -20,8 +22,10 @@ const LoanNavigator = () => {
   return (
     <Stack.Navigator
       screenOptions={{ headerShown: false }}
-      initialRouteName="LoanCustomer"
+      initialRouteName="SelectProduct"
     >
+      <Stack.Screen name="SelectProduct" component={SelectProduct} />
+      <Stack.Screen name="CorporateFlow" component={CorporateNavigator} />
       <Stack.Screen name="LoanCustomer" component={Customer} />
       <Stack.Screen name="LoanApplication" component={Application} />
       <Stack.Screen name="LoanVerification" component={Verification} />

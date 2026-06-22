@@ -61,13 +61,13 @@ const createStyles = (colors: any, isDark: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      paddingTop: hp(5),
+      //paddingTop: hp(5),
     },
     header: {
       flexDirection: "row",
       alignItems: "flex-start",
       paddingHorizontal: wp(4),
-      paddingTop: (Platform.OS === "android" ? StatusBar.currentHeight ?? 0 : 0) + hp(2),
+      paddingTop: (Platform.OS === "android" ? StatusBar.currentHeight ?? 0 : 0) + hp(0),
       paddingBottom: hp(1),
     },
     backButton: {

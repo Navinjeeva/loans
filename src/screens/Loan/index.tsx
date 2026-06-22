@@ -4,13 +4,16 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  StatusBar,
   TextInput,
   ScrollView,
   Platform,
   KeyboardAvoidingView,
+  Keyboard,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import KeyboardAwareScrollView from "@src/common/LoanComponents/KeyboardAwareScrollView";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import useHideBottomBar from "@src/components/useHideBottomBar";
 
 import { useNavigation } from "@react-navigation/native";
@@ -40,6 +43,32 @@ const Customer = () => {
   useHideBottomBar();
   const navigation = useNavigation();
   const { colors, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
+  const scrollViewRef = useRef<ScrollView>(null);
+  const focusedViewRef = useRef<View | null>(null);
+  const loanAmountRef = useRef<View>(null);
+  const tenorRowRef = useRef<View>(null);
+  const moratoriumRowRef = useRef<View>(null);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  const scrollToFocused = () => {
+    if (!focusedViewRef.current || !scrollViewRef.current) return;
+    focusedViewRef.current.measureLayout(
+      scrollViewRef.current as any,
+      (_x, y) => { scrollViewRef.current?.scrollTo({ y: y - hp(10), animated: true }); },
+      () => {}
+    );
+  };
+
+  useEffect(() => {
+    const show = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardVisible(true);
+      scrollToFocused();
+    });
+    const hide = Keyboard.addListener("keyboardDidHide", () => setKeyboardVisible(false));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
+
   const [loading, setLoading] = useState(false);
   const [steps, setSteps] = useState(1);
   const dispatch = useDispatch();
@@ -176,9 +205,7 @@ const Customer = () => {
   const handleProceed = async () => {
     try {
       setLoading(true);
-      const { data: customerData } = await loanInstance.post(
-        "/api/v1/loans/customer/create",
-        {
+      const req = {
           firstName: name.includes(" ") ? name.split(" ")[0] : name,
           lastName: name.includes(" ") ? name.split(" ")[1] : "",
           dateOfBirth: null,
@@ -190,6 +217,10 @@ const Customer = () => {
           gender: "",
           address: "",
         }
+        console.log("Request payload for customer creation:", req);
+      const { data: customerData } = await loanInstance.post(
+        "/api/v1/loans/customer/create",
+        req
       );
 
       console.log("Customer data:", customerData?.responseStructure?.data);
@@ -259,10 +290,15 @@ const Customer = () => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
+      <StatusBar
+        translucent={false}
+        backgroundColor={colors.background}
+        barStyle={isDark ? "light-content" : "dark-content"}
+      />
       <Loader loading={loading} />
       <Header
         title={"Loan Application"}
-        showBackButton={steps !== 1}
+        //showBackButton={steps !== 1}
         onBackPress={() => {
           if (steps == 2) {
             setSteps(1);
@@ -273,14 +309,14 @@ const Customer = () => {
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: colors.background }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
         {/* Scrollable Content */}
         <ScrollView
+          ref={scrollViewRef}
           style={[styles.content, { backgroundColor: colors.background }]}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingBottom: steps == 1 ? hp(10) : hp(2),
+            paddingBottom: steps == 1 ? hp(14) + insets.bottom : hp(2),
             flexGrow: 1,
             backgroundColor: colors.background,
           }}
@@ -420,7 +456,7 @@ const Customer = () => {
                 />
 
                 {/* Custom Loan Amount Input */}
-                <View style={{ marginVertical: hp(1) }}>
+                <View ref={loanAmountRef} collapsable={false} style={{ marginVertical: hp(1) }}>
                   <View style={{ flexDirection: "row", marginBottom: 5 }}>
                     <Text
                       style={{
@@ -457,6 +493,7 @@ const Customer = () => {
                       onChangeText={(value) =>
                         dispatch(setState({ loanAmount: value }))
                       }
+                      onFocus={() => { focusedViewRef.current = loanAmountRef.current; }}
                       placeholder="Enter monthly income"
                       placeholderTextColor={colors.inputPlaceholder}
                       keyboardType="numeric"
@@ -473,7 +510,7 @@ const Customer = () => {
                 </View>
 
                 {/* Loan Tenor and Tenor Duration Row */}
-                <View style={styles.rowContainer}>
+                <View ref={tenorRowRef} collapsable={false} style={styles.rowContainer}>
                   <View style={styles.halfWidth}>
                     <DropdownWithModal
                       options={[
@@ -499,6 +536,7 @@ const Customer = () => {
                       onChange={(value) =>
                         dispatch(setState({ tenorDuration: value }))
                       }
+                      onFocus={() => { focusedViewRef.current = tenorRowRef.current; }}
                       inputStyles={{ flex: 1, width: "100%" }}
                       keyboardType="numeric"
                       regex={/^[0-9]*$/}
@@ -509,7 +547,7 @@ const Customer = () => {
                 </View>
 
                 {/* Moratorium and Interest Rate Row */}
-                <View style={styles.rowContainer}>
+                <View ref={moratoriumRowRef} collapsable={false} style={styles.rowContainer}>
                   <View style={styles.halfWidth}>
                     <TextInputComponent
                       header="Moratorium"
@@ -519,6 +557,7 @@ const Customer = () => {
                       onChange={(value) =>
                         dispatch(setState({ moratorium: value }))
                       }
+                      onFocus={() => { focusedViewRef.current = moratoriumRowRef.current; }}
                       inputStyles={{ flex: 1, width: "100%" }}
                       keyboardType="numeric"
                       regex={/^[0-9]*$/}
@@ -540,6 +579,7 @@ const Customer = () => {
                       placeholder="Enter Interest Rate"
                       header="Interest Rate (Annually)"
                       keyboardType="numeric"
+                      onFocus={() => { focusedViewRef.current = moratoriumRowRef.current; }}
                       regex={/^[0-9.]*$/}
                       missingField={!tentativeInterestRate}
                     />
@@ -673,8 +713,8 @@ const Customer = () => {
         </ScrollView>
 
         {/* Fixed Button at Bottom - Only visible in step 1 */}
-        {steps == 1 && !animationLoading && (
-          <View style={[styles.fixedButtonContainer]}>
+        {steps == 1 && !animationLoading && !keyboardVisible && (
+          <View style={[styles.fixedButtonContainer, { paddingBottom: insets.bottom || hp(2) }]}>
             <Button
               text="Calculate Monthly EMI"
               click={calculateEMI}
@@ -960,12 +1000,8 @@ const createStyles = (colors: any, isDark: any) =>
       opacity: 1,
     },
     fixedButtonContainer: {
-      position: "absolute",
-      bottom: 0,
-      left: 0,
-      right: 0,
       backgroundColor: colors.background,
       paddingHorizontal: wp(4),
-      paddingVertical: hp(2),
+      paddingTop: hp(2),
     },
   });

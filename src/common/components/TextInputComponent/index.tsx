@@ -40,6 +40,7 @@ interface TextInputComponentProps {
   submitClicked?: boolean;
   multiline?: boolean;
   numberOfLines?: number;
+  onFocus?: () => void;
 }
 
 const TextInputComponent: React.FC<TextInputComponentProps> = ({
@@ -68,6 +69,7 @@ const TextInputComponent: React.FC<TextInputComponentProps> = ({
   submitClicked = false,
   multiline = false,
   numberOfLines = 1,
+  onFocus,
 }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -189,12 +191,13 @@ const TextInputComponent: React.FC<TextInputComponentProps> = ({
           secureTextEntry={secureTextEntry}
           // keyboardType={keyboardType}
           keyboardType={
-            keyboardType === "default" ? "visible-password" : keyboardType
+            keyboardType === "default" || keyboardType === "email-address" ? "visible-password" : keyboardType
           }
           editable={isEditable} // Control editability
           autoCapitalize={autocapitalize}
           autoFocus={autoFocus}
           multiline={multiline}
+          onFocus={onFocus}
           autoCorrect={false}
           spellCheck={false}
           // importantForAutofill="no"

@@ -3,7 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { Provider } from "react-redux";
 import { PaperProvider } from "react-native-paper";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native";
 
 import store from "@src/store";
@@ -20,7 +20,9 @@ const App = () => {
             <SafeAreaProvider>
               <NavigationContainer>
                 <AlertProvider>
-                  <LoanNavigator />
+                  <SafeAreaView style={styles.root}>
+                    <LoanNavigator />
+                  </SafeAreaView>
                 </AlertProvider>
               </NavigationContainer>
             </SafeAreaProvider>
