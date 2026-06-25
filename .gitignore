@@ -12,3 +12,6 @@ ios/Pods/
 npm-debug.log
 yarn-error.log
 .DS_Store
+.vscode/*
+!.vscode/settings.json
+.yarn/install-state.gz

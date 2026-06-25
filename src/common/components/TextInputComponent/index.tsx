@@ -136,18 +136,14 @@ const TextInputComponent: React.FC<TextInputComponentProps> = ({
 
   return (
     <View style={[styles.container, customStyles]}>
-      {/* Optional Header */}
+      {/* Optional Header — render inline so a long header can't clip the * */}
       {header ? (
-        <View
-          style={{
-            flexDirection: "row",
-          }}
-        >
-          <Text style={[styles.header, { color: colors.text }, headerStyles]}>
-            {header}
-          </Text>
-          {required && <Text style={{ color: colors.error }}> *</Text>}
-        </View>
+        <Text style={[styles.header, { color: colors.text }, headerStyles]}>
+          {header}
+          {required ? (
+            <Text style={{ color: colors.error }}> *</Text>
+          ) : null}
+        </Text>
       ) : null}
 
       {/* Input Field */}

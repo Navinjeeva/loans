@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
   StyleSheet,
 } from "react-native";
@@ -13,47 +12,17 @@ import {
 import { useTheme } from "@src/common/ThemeContext";
 import {
   TextInputComponent,
-  DropdownWithModal,
   CurrencyInput,
 } from "@src/common";
-import Button from "@src/components/Button";
 import { useDispatch, useSelector } from "react-redux";
-import StepHeader from "./StepHeader";
-import { setLoan } from "@src/store/corporate";
-
-const BRAND = "#F97316";
-
-const CATEGORIES = [
-  { label: "Secured Term Loan", value: "Secured Term Loan" },
-  { label: "Unsecured Term Loan", value: "Unsecured Term Loan" },
-  { label: "Working Capital - Cash Credit", value: "Working Capital - Cash Credit" },
-  { label: "Working Capital - Overdraft", value: "Working Capital - Overdraft" },
-];
-
-const PRODUCTS = [
-  { label: "Corporate Business Loan", value: "Corporate Business Loan" },
-  { label: "Working Capital Loan", value: "Working Capital Loan" },
-  { label: "Business Expansion Loan", value: "Business Expansion Loan" },
-  { label: "Corporate Unsecured Loan", value: "Corporate Unsecured Loan" },
-];
-
-const PURPOSES = [
-  { label: "Business expansion", value: "Business expansion" },
-  { label: "Working capital", value: "Working capital" },
-  { label: "Equipment purchase", value: "Equipment purchase" },
-  { label: "Infrastructure development", value: "Infrastructure development" },
-  { label: "Technology upgrade", value: "Technology upgrade" },
-  { label: "Debt consolidation", value: "Debt consolidation" },
-  { label: "Trade finance", value: "Trade finance" },
-];
-
-const MORATORIUM_OPTIONS = [
-  { label: "0 months", value: "0" },
-  { label: "1 month", value: "1" },
-  { label: "2 months", value: "2" },
-  { label: "3 months", value: "3" },
-  { label: "6 months", value: "6" },
-];
+import { setLoan, setDisbursement, setCollateral, Disbursement } from "@src/store/corporate";
+import type { RootState } from "@src/store";
+import ScreenHeader from "@src/common/components/ScreenHeader";
+import DropDownModal from "@src/common/components/DropDownModal";
+import DisbursementSection from "@src/common/components/DisbursementSection";
+import EMICalculator from "@src/common/components/EMICalculator";
+import CollateralSection from "@src/common/components/CollateralSection";
+import BottomButton from "@src/common/components/BottomButton";
 
 function computeEMI(
   amount: number,
@@ -80,11 +49,21 @@ function inrFmt(n: number) {
 const LoanScreen = ({ navigation }: any) => {
   const { colors } = useTheme();
   const dispatch = useDispatch();
-  const l = useSelector((state: any) => state.corporate.loan);
+
+  const l = useSelector((state: RootState) => state.corporate.loan);
+
+  // Catalog / reference data — comes from API later, lives in catalogs slice
+  const CATEGORIES = useSelector((s: RootState) => s.catalogs.loanCategory);
+  const PRODUCTS = useSelector((s: RootState) => s.catalogs.loanProducts);
+  const PURPOSES = useSelector((s: RootState) => s.catalogs.purposeOfLoans);
+  const MORATORIUM_OPTIONS = useSelector((s: RootState) => s.catalogs.mortariumOptions);
+  const LINKED_ACCOUNTS = useSelector((s: RootState) => s.catalogs.linkedBankAccounts);
+
   const set = (k: string, v: any) => dispatch(setLoan({ [k]: v }));
   const [calcState, setCalcState] = useState<"idle" | "calculating" | "done">(
     l.emiCalculated ? "done" : "idle"
   );
+  const collateral = useSelector((s: RootState) => s.corporate.collateral);
 
   const isTermLoan = /term loan/i.test(l.category || "");
   const amt = Number(l.amount) || 0;
@@ -117,56 +96,80 @@ const LoanScreen = ({ navigation }: any) => {
     }
   };
 
+  const setDisb = (k: keyof Disbursement, v: any) => dispatch(setDisbursement({ [k]: v }));
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <StepHeader
+
+      <ScreenHeader
         step={3}
+        showSteps
         title="Loan details"
-        onBack={() => navigation.goBack()}
+        onPress={() => navigation.goBack()}
         onSaveExit={() => navigation.navigate("CorporateHome")}
-        colors={colors}
       />
 
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+
+
         {/* Loan information panel */}
         <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.panelHeader}>
-            <Text style={{ fontSize: 16 }}>📋</Text>
+            <Text style={{ fontSize: 16 }}></Text>
             <Text style={[styles.panelTitle, { color: colors.text }]}>Loan information</Text>
           </View>
 
-          <DropdownWithModal
-            options={CATEGORIES}
-            value={l.category}
-            setValue={(v) => set("category", v)}
-            placeholder="Select category"
+          <DropDownModal
+            data={CATEGORIES}
+            selected={l.category}
+            onChange={(v) => set("category", v)}
+            placeholder="Select Category"
             header="Loan Category"
-            label="Loan category"
-            required
-            isSearchable={false}
+            label="Select category"
+            required={true}
+            style={{marginBottom : 12}}
           />
 
-          <DropdownWithModal
-            options={PRODUCTS}
-            value={l.product}
-            setValue={(v) => set("product", v)}
+         <DropDownModal
+            data={PRODUCTS}
+            selected={l.product}
+            onChange={(v) => set("product", v)}
             placeholder="Select product"
             header="Loan Product"
-            label="Loan product"
-            required
-            isSearchable={false}
+            label="Select product"
+            required={true}
+            style={{marginBottom : 12}}
           />
+
+
+          <DropDownModal
+            data={PRODUCTS}
+            selected={l.schema}
+            onChange={(v) => set("schema", v)}
+            placeholder="Select Schema"
+            header="Loan Schema"
+            label="Select Schema"
+            required={true}
+            isSearchable={true}
+            style={{marginBottom : 12}}
+          />
+
+          <Text style={{fontSize : 12, color : colors.text, marginBottom : 12}}> 
+            Government or special lending scheme this loan is availed under. Choose 'Standard' if none applies.
+          </Text>
 
           <CurrencyInput
             label="Loan amount"
             value={l.amount ? Number(l.amount) : null}
-            onChangeText={(v: number | null) => {
-              onLoanChange("amount", v );
-            }}
+            onChangeText={(v: number | null) => { onLoanChange("amount", v )}}
             lableimp
             prefix="₹"
-            placeholder="0"
+            placeholder=""
           />
+
+          <Text style={{fontSize : 12, color : colors.text, marginBottom : 12}}> 
+            Principal you wish to borrow
+          </Text>
 
           {isTermLoan && (
             <>
@@ -185,28 +188,34 @@ const LoanScreen = ({ navigation }: any) => {
                   />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <DropdownWithModal
-                    options={MORATORIUM_OPTIONS}
-                    value={l.moratorium || "0"}
-                    setValue={(v) => onLoanChange("moratorium", v)}
+                  <DropDownModal
+                    data={MORATORIUM_OPTIONS}
+                    selected={l.moratorium || "0"}
+                    onChange={(v) => onLoanChange("moratorium", v)}
                     placeholder="Select"
                     header="Moratorium"
                     label="Moratorium"
                     isSearchable={false}
                   />
                 </View>
+                
+
               </View>
+              <Text style={{fontSize : 12, color : colors.text, marginBottom : 18}}> 
+                Repayment starts after the moratorium period.
+              </Text>
             </>
           )}
 
-          <DropdownWithModal
-            options={PURPOSES}
-            value={l.purpose}
-            setValue={(v) => set("purpose", v)}
+          <DropDownModal
+            data={PURPOSES}
+            selected={l.purpose}
+            onChange={(v) => set("purpose", v)}
             placeholder="Select purpose"
             header="Purpose of Loan"
             label="Purpose of loan"
             required
+            style={{marginBottom : 12}}
           />
 
           <TextInputComponent
@@ -220,119 +229,42 @@ const LoanScreen = ({ navigation }: any) => {
           />
         </View>
 
-        {/* EMI Calculator (term loans only) */}
-        {isTermLoan && (
-          <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={styles.panelHeader}>
-              <Text style={{ fontSize: 16 }}>🧮</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.panelTitle, { color: colors.text }]}>EMI calculator</Text>
-                <Text style={[styles.panelSubtitle, { color: colors.textSecondary }]}>
-                  Estimate your monthly repayment instantly
-                </Text>
-              </View>
-            </View>
+        {/* disbursement account  */}
+        <DisbursementSection
+          mode={l.disbMode}
+          onModeChange={(m) => set("disbMode", m)}
+          accounts={LINKED_ACCOUNTS}
+          values={l.disbursement}
+          onChange={setDisb}
+        />
 
-            {calcState !== "done" ? (
-              <View>
-                <View style={[styles.emiPreview, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                  <View style={[styles.emiPreviewRow, { borderBottomColor: colors.borderLight }]}>
-                    <Text style={[styles.emiPreviewLabel, { color: colors.textSecondary }]}>Amount</Text>
-                    <Text style={[styles.emiPreviewValue, { color: colors.text }]}>
-                      {amt > 0 ? inrFmt(amt) : "—"}
-                    </Text>
-                  </View>
-                  <View style={[styles.emiPreviewRow, { borderBottomColor: colors.borderLight }]}>
-                    <Text style={[styles.emiPreviewLabel, { color: colors.textSecondary }]}>Tenure</Text>
-                    <Text style={[styles.emiPreviewValue, { color: colors.text }]}>
-                      {ten > 0 ? `${ten} months` : "—"}
-                    </Text>
-                  </View>
-                  <View style={[styles.emiPreviewRow, { borderBottomWidth: 0 }]}>
-                    <Text style={[styles.emiPreviewLabel, { color: colors.textSecondary }]}>Rate</Text>
-                    <Text style={[styles.emiPreviewValue, { color: colors.text }]}>12.5% p.a.</Text>
-                  </View>
-                </View>
-                <TouchableOpacity
-                  onPress={calculate}
-                  disabled={!amt || !ten || calcState === "calculating"}
-                  style={[
-                    styles.calcBtn,
-                    {
-                      backgroundColor: !amt || !ten ? colors.surface : "#FFF4EC",
-                      borderColor: !amt || !ten ? colors.border : "#F4CBA9",
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.calcBtnText,
-                      { color: !amt || !ten ? colors.textMuted : BRAND },
-                    ]}
-                  >
-                    {calcState === "calculating" ? "Calculating…" : "Calculate EMI"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View>
-                <View
-                  style={[styles.emiResult, { backgroundColor: "#FFF4EC", borderColor: "#F4CBA9" }]}
-                >
-                  <Text style={[styles.emiResultLabel, { color: BRAND }]}>Monthly EMI</Text>
-                  <Text style={[styles.emiResultValue, { color: colors.text }]}>
-                    ₹{Math.round(emiResult.emi).toLocaleString("en-IN")}
-                  </Text>
-                  <Text style={[styles.emiResultSub, { color: colors.textSecondary }]}>
-                    For {ten - mor} months @ 12.5% p.a.
-                  </Text>
-                </View>
-                <View style={[styles.emiBreakdown, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                  <View style={[styles.emiBreakdownRow, { borderBottomColor: colors.borderLight }]}>
-                    <Text style={[styles.emiBreakdownLabel, { color: colors.textSecondary }]}>Principal</Text>
-                    <Text style={[styles.emiBreakdownValue, { color: colors.text }]}>{inrFmt(amt)}</Text>
-                  </View>
-                  <View style={[styles.emiBreakdownRow, { borderBottomColor: colors.borderLight }]}>
-                    <Text style={[styles.emiBreakdownLabel, { color: colors.textSecondary }]}>Total interest</Text>
-                    <Text style={[styles.emiBreakdownValue, { color: colors.text }]}>
-                      {inrFmt(emiResult.totalInterest)}
-                    </Text>
-                  </View>
-                  <View style={[styles.emiBreakdownRow, { borderBottomWidth: 0 }]}>
-                    <Text style={[styles.emiBreakdownLabel, { color: colors.textSecondary }]}>Total payable</Text>
-                    <Text style={[styles.emiBreakdownValue, { color: colors.text, fontWeight: "700" }]}>
-                      {inrFmt(emiResult.totalPayable)}
-                    </Text>
-                  </View>
-                </View>
-                <TouchableOpacity
-                  onPress={() => {
-                    dispatch(setLoan({ emiCalculated: false }));
-                    setCalcState("idle");
-                  }}
-                  style={styles.recalcBtn}
-                >
-                  <Text style={[styles.recalcText, { color: colors.textSecondary }]}>🔄 Recalculate</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        )}
+        {/* EMI calculator */}
+        <View style={{ marginTop: 12 }}>
+          <EMICalculator
+            loanAmount={amt}
+            tenure={ten}
+            moratorium={mor}
+            rate={9.5}
+            onViewSchedule={() => {}}
+          />
+        </View>
+
+        {/* collateral / security */}
+        <View style={{ marginTop: 12 }}>
+          <CollateralSection
+            list={collateral}
+            onChange={(next) => dispatch(setCollateral(next))}
+            loanAmount={amt}
+          />
+        </View>
+
       </ScrollView>
 
-      <View
-        style={[
-          styles.footer,
-          { borderTopColor: colors.borderLight, backgroundColor: colors.background },
-        ]}
-      >
-        <Button
-          text="Save & Continue"
-          click={() => navigation.navigate("CorporateDocuments")}
-          disabled={!loanComplete}
-          buttonStyle={styles.footerBtn}
-        />
-      </View>
+      <BottomButton
+        text="Save & Continue"
+        onPress={() => navigation.navigate("CorporateDocuments")}
+        // disabled
+      />
     </View>
   );
 };

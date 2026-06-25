@@ -5,8 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  Modal,
-  Switch,
 } from "react-native";
 import {
   widthPercentageToDP as wp,
@@ -15,13 +13,10 @@ import {
 import { useTheme } from "@src/common/ThemeContext";
 import {
   TextInputComponent,
-  DropdownWithModal,
   DateInput,
   CurrencyInput,
 } from "@src/common";
 import MobileNumberInputComponent from "@src/common/components/MobileNumberComponent";
-import Button from "@src/components/Button";
-import StepHeader from "./StepHeader";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setCompany,
@@ -29,112 +24,68 @@ import {
   setOpOffice,
   setFinancial,
   setDirectors,
+  addOwner,
+  removeOwner,
+  addObligation,
+  updateObligation,
+  removeObligation,
 } from "@src/store/corporate";
+import ScreenHeader from "@src/common/components/ScreenHeader";
+import BottomButton from "@src/common/components/BottomButton";
+import DropDownModal from "@src/common/components/DropDownModal";
+import ExpandableSection from "@src/common/components/ExpandableSection";
+import EntityEditor, { FieldConfig } from "@src/common/components/EntityEditor";
+import BankCard from "@src/common/components/BankCard";
+import type { RootState } from "@src/store";
 
-const BRAND = "#F97316";
-
-const BUSINESS_TYPES = [
-  { label: "Private Limited", value: "Private Limited" },
-  { label: "LLP", value: "LLP" },
-  { label: "Partnership", value: "Partnership" },
-  { label: "Sole Proprietorship", value: "Sole Proprietorship" },
-  { label: "Public Limited", value: "Public Limited" },
+const DIRECTOR_FIELDS: FieldConfig[] = [
+  { key: "name", label: "Full name", required: true, placeholder: "Director name" },
+  { key: "designation", label: "Designation", type: "select", required: true, placeholder: "Select designation", options: DESIGNATIONS_LATE() },
+  { key: "mobile", label: "Mobile number", required: true, type: "phone", defaultCode: "+91" },
+  { key: "email", label: "Email address", required: true, placeholder: "name@company.com" },
+  { key: "din", label: "DIN", required: true, placeholder: "02145673", numeric: true, maxLength: 8, helper: "Director Identification Number" },
+  { key: "isOwner", label: "Is this person an owner?", type: "toggle", helper: "Holds shares / profit-share in the company" },
+  { key: "ownership", label: "Ownership %", type: "percent", required: true, when: (v) => !!v.isOwner },
 ];
 
-const INDUSTRIES = [
-  { label: "Manufacturing", value: "Manufacturing" },
-  { label: "Retail", value: "Retail" },
-  { label: "Healthcare", value: "Healthcare" },
-  { label: "Technology", value: "Technology" },
-  { label: "Logistics", value: "Logistics" },
-  { label: "Construction", value: "Construction" },
-  { label: "Trading & Distribution", value: "Trading & Distribution" },
-  { label: "Financial Services", value: "Financial Services" },
+const PARTNER_FIELDS: FieldConfig[] = [
+  { key: "name", label: "Owner / shareholder name", required: true, placeholder: "Individual or entity name" },
+  { key: "ownerType", label: "Owner type", type: "select", required: true, placeholder: "Select type", options: [
+    { value: "Individual", label: "Individual" },
+    { value: "Corporate Body", label: "Corporate Body" },
+    { value: "Holding Company", label: "Holding Company" },
+    { value: "Trust", label: "Trust" },
+  ] },
+  { key: "shareholding", label: "Shareholding %", type: "percent", required: true },
 ];
 
-const COUNTRIES = [
-  { label: "India", value: "India" },
-  { label: "United States", value: "United States" },
-  { label: "United Kingdom", value: "United Kingdom" },
-  { label: "UAE", value: "UAE" },
-  { label: "Singapore", value: "Singapore" },
-  { label: "Australia", value: "Australia" },
-  { label: "Canada", value: "Canada" },
+const OBLIGATION_FIELDS: FieldConfig[] = [
+  { key: "lender", label: "Lender", required: true, placeholder: "Bank / NBFC name" },
+  { key: "facilityType", label: "Facility type", type: "select", required: true, placeholder: "Select facility", options: [
+    { value: "Term Loan", label: "Term Loan" },
+    { value: "Cash Credit", label: "Cash Credit" },
+    { value: "Overdraft", label: "Overdraft" },
+    { value: "Other", label: "Other" },
+  ] },
+  { key: "sanctioned", label: "Sanctioned amount", type: "amount", required: true, currency: "₹" },
+  { key: "outstanding", label: "Current outstanding", type: "amount", required: true, currency: "₹" },
+  { key: "emi", label: "Monthly EMI", type: "amount", currency: "₹" },
+  { key: "endDate", label: "End date", type: "date" },
 ];
 
-const INDIAN_STATES = [
-  { label: "Maharashtra", value: "Maharashtra" },
-  { label: "Delhi", value: "Delhi" },
-  { label: "Karnataka", value: "Karnataka" },
-  { label: "Tamil Nadu", value: "Tamil Nadu" },
-  { label: "Gujarat", value: "Gujarat" },
-  { label: "Telangana", value: "Telangana" },
-  { label: "West Bengal", value: "West Bengal" },
-  { label: "Rajasthan", value: "Rajasthan" },
-  { label: "Uttar Pradesh", value: "Uttar Pradesh" },
-  { label: "Madhya Pradesh", value: "Madhya Pradesh" },
-];
-
-interface ExpandableSectionProps {
-  icon: string;
-  title: string;
-  summary: string;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
-  colors: any;
+function DESIGNATIONS_LATE() {
+  return [
+    { value: "Managing Director", label: "Managing Director" },
+    { value: "Whole-time Director", label: "Whole-time Director" },
+    { value: "Director", label: "Director" },
+    { value: "Non-Executive Director", label: "Non-Executive Director" },
+    { value: "Independent Director", label: "Independent Director" },
+    { value: "Chief Executive Officer", label: "Chief Executive Officer" },
+    { value: "Chief Financial Officer", label: "Chief Financial Officer" },
+    { value: "Company Secretary", label: "Company Secretary" },
+  ];
 }
 
-const ExpandableSection = ({
-  icon,
-  title,
-  summary,
-  defaultOpen = false,
-  children,
-  colors,
-}: ExpandableSectionProps) => {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <TouchableOpacity
-        style={styles.sectionHeader}
-        onPress={() => setOpen((o) => !o)}
-        activeOpacity={0.7}
-      >
-        <View style={[styles.sectionIconBox, { backgroundColor: "#FFF4EC" }]}>
-          <Text style={{ fontSize: 16 }}>{icon}</Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>{title}</Text>
-          {!open && summary ? (
-            <Text style={[styles.sectionSummary, { color: colors.textSecondary }]} numberOfLines={1}>
-              {summary}
-            </Text>
-          ) : null}
-        </View>
-        <Text
-          style={[
-            styles.chevron,
-            { color: colors.textMuted, transform: [{ rotate: open ? "90deg" : "0deg" }] },
-          ]}
-        >
-          ›
-        </Text>
-      </TouchableOpacity>
-      {open && <View style={styles.sectionBody}>{children}</View>}
-    </View>
-  );
-};
-
-const DESIGNATIONS = [
-  { label: "Managing Director", value: "Managing Director" },
-  { label: "Whole-time Director", value: "Whole-time Director" },
-  { label: "Director", value: "Director" },
-  { label: "Non-Executive Director", value: "Non-Executive Director" },
-  { label: "Independent Director", value: "Independent Director" },
-  { label: "Chief Executive Officer", value: "Chief Executive Officer" },
-  { label: "Chief Financial Officer", value: "Chief Financial Officer" },
-  { label: "Company Secretary", value: "Company Secretary" },
-];
 
 const AVATAR_COLORS = ["#C2185B", "#7B1FA2", "#1565C0", "#00695C", "#E65100", "#4527A0"];
 
@@ -154,9 +105,23 @@ const EMPTY_DIR = { name: "", designation: "", mobile: "", isdCode: "91", email:
 const VerifyCompanyScreen = ({ navigation }: any) => {
   const { colors } = useTheme();
   const dispatch = useDispatch();
-  const { company: c, financial: f, office, directors, onboardMode } = useSelector(
-    (state: any) => state.corporate
-  );
+
+  const {
+    company: c,
+    financial: f,
+    office,
+    directors,
+    owners,
+    obligations,
+    onboardMode,
+  } = useSelector((state: RootState) => state.corporate);
+
+  // Reference / dropdown data — comes from API later, sample data for now
+  const BUSINESS_TYPES = useSelector((s: RootState) => s.catalogs.businessTypes);
+  const INDUSTRIES = useSelector((s: RootState) => s.catalogs.industries);
+  const COUNTRIES = useSelector((s: RootState) => s.catalogs.countries);
+  const INDIAN_STATES = useSelector((s: RootState) => s.catalogs.states);
+  const DESIGNATIONS = useSelector((s: RootState) => s.catalogs.designations);
   const isAI = onboardMode === "ai";
 
   const set = (k: string, v: any) => dispatch(setCompany({ [k]: v }));
@@ -167,7 +132,16 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
   // Director modal state
   const [dirModal, setDirModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [dirForm, setDirForm] = useState({ ...EMPTY_DIR });
+  const [dirForm, setDirForm] = useState<any>({ ...EMPTY_DIR });
+
+  // Partner / owner modal UI state (data lives in redux)
+  const [partnerModal, setPartnerModal] = useState(false);
+  const [partnerForm, setPartnerForm] = useState<any>({});
+
+  // Obligation modal UI state (data lives in redux)
+  const [obligationModal, setObligationModal] = useState(false);
+  const [obligationForm, setObligationForm] = useState<any>({});
+  const [editingObligationId, setEditingObligationId] = useState<string | null>(null);
 
   const openAddDir = () => {
     setEditingId(null);
@@ -181,16 +155,59 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
     setDirModal(true);
   };
 
-  const saveDir = () => {
-    if (!dirForm.name || !dirForm.designation) return;
+  const saveDir = (values: any) => {
+    if (!values.name || !values.designation) return;
     if (editingId) {
-      dispatch(setDirectors(directors.map((d: any) => d.id === editingId ? { ...d, ...dirForm } : d)));
+      dispatch(setDirectors(directors.map((d: any) => d.id === editingId ? { ...d, ...values } : d)));
     } else {
       const newId = String(Date.now());
-      dispatch(setDirectors([...directors, { id: newId, ...dirForm }]));
+      dispatch(setDirectors([...directors, { id: newId, ...values }]));
     }
     setDirModal(false);
   };
+
+  const openAddPartner = () => {
+    setPartnerForm({});
+    setPartnerModal(true);
+  };
+  const savePartner = (values: any) => {
+    dispatch(addOwner({ id: String(Date.now()), ...values }));
+    setPartnerModal(false);
+  };
+  const deleteOwner = (id: string) => dispatch(removeOwner(id));
+
+  const openAddObligation = () => {
+    setEditingObligationId(null);
+    setObligationForm({});
+    setObligationModal(true);
+  };
+  const openEditObligation = (o: any) => {
+    setEditingObligationId(o.id);
+    setObligationForm({
+      lender: o.lender,
+      facilityType: o.facilityType,
+      sanctioned: o.sanctioned,
+      outstanding: o.outstanding,
+      emi: o.emi,
+      endDate: o.endDate,
+    });
+    setObligationModal(true);
+  };
+  const saveObligation = (values: any) => {
+    if (editingObligationId) {
+      dispatch(updateObligation({ id: editingObligationId, patch: values }));
+    } else {
+      dispatch(addObligation({ id: String(Date.now()), ...values }));
+    }
+    setObligationModal(false);
+  };
+  const deleteObligation = (id: string) => dispatch(removeObligation(id));
+
+  // Total monthly obligations (sum of all EMIs)
+  const totalEmi = obligations.reduce(
+    (sum, o) => sum + (Number(o.emi) || 0),
+    0,
+  );
 
   const deleteDir = (id: string) => {
     dispatch(setDirectors(directors.filter((d: any) => d.id !== id)));
@@ -211,18 +228,20 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <StepHeader
+      
+      <ScreenHeader
         step={2}
-        title={isAI ? "Verify company information" : "Company information"}
-        onBack={() => navigation.goBack()}
+        showSteps={true}
+        title={isAI ? "Verify company info" : "Company information"}
+        onPress={() => navigation.goBack()}
         onSaveExit={() => navigation.navigate("CorporateHome")}
-        colors={colors}
+        totalSteps={6}
       />
 
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {isAI && (
           <View style={[styles.autoFillBanner, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={[styles.bannerIcon, { backgroundColor: "#FFF4EC" }]}>
+            <View style={[styles.bannerIcon, { backgroundColor: colors.brandTint }]}>
               <Text style={{ fontSize: 16 }}>🏢</Text>
             </View>
             <View style={{ flex: 1 }}>
@@ -238,68 +257,88 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
 
         {/* 1 · Classification */}
         <ExpandableSection
-          icon="🌐"
           title="Company classification"
           summary={[c.country, c.businessType, c.industry].filter(Boolean).join(" · ")}
           defaultOpen={!isAI}
-          colors={colors}
         >
-          <DropdownWithModal
-            options={COUNTRIES}
-            value={c.country}
-            setValue={(v) => set("country", v)}
+          <DropDownModal
+            selected={c.country}
+            onChange={(v: string) => set("country", v)}
+            header="Country of registration"
+            data={COUNTRIES}
             placeholder="Select country"
-            header="Country of Registration"
+            isSearchable={true}
+            searchPlaceholder="Search"
             label="Country of registration"
             required
+            style={{ marginBottom: 18 }}
           />
-          <DropdownWithModal
-            options={BUSINESS_TYPES}
-            value={c.businessType}
-            setValue={(v) => set("businessType", v)}
-            placeholder="Select business type"
+
+          <DropDownModal
+            selected={c.otherCountry}
+            onChange={(v: string) => set("otherCountry", v)}
+            header="Other country registration"
+            data={COUNTRIES}
+            placeholder="Select country"
+            isSearchable={true}
+            searchPlaceholder="Search"
+            label="Other country registration"
+            style={{ marginBottom: 18 }}
+          />
+
+          <DropDownModal
             header="Business Type"
+            selected={c.businessType}
+            onChange={(v: string) => set("businessType", v)}
+            data={BUSINESS_TYPES}
+            placeholder="Select business type"
             label="Business type"
             required
-            isSearchable={false}
+            style={{ marginBottom: 18 }}
           />
-          <DropdownWithModal
-            options={INDUSTRIES}
-            value={c.industry}
-            setValue={(v) => set("industry", v)}
+
+          <DropDownModal
+            header="Industry"
+            selected={c.industry}
+            onChange={(v: string) => set("industry", v)}
+            data={INDUSTRIES}
             placeholder="Select industry"
-            header="Industry Type"
             label="Industry type"
             required
+            style={{ marginBottom: 18 }}
           />
+
         </ExpandableSection>
+
 
         {/* 2 · Company identity */}
         <ExpandableSection
-          icon="🏢"
           title="Company identity"
           summary={c.name || "Tap to add"}
           defaultOpen={!isAI}
-          colors={colors}
         >
           <TextInputComponent
-            header="Registered company name"
+            header="Registered company name "
             placeholder="Company Pvt Ltd"
             value={c.name}
             onChange={(v: string) => set("name", v)}
             required
+            customStyles={{marginVertical : 8}}
           />
+
           <TextInputComponent
-            header="CIN"
+            header="Corporate Identification Number (CIN)"
             placeholder="U29299MH2009PTC000000"
             value={c.cin}
             onChange={(v: string) => set("cin", v.toUpperCase().slice(0, 21))}
             required
             caps
             maxLength={21}
+            customStyles={{marginVertical : 10}}
           />
+
           <TextInputComponent
-            header="PAN"
+            header="Permanent Account Number (PAN) "
             placeholder="AAFCM1234Q"
             value={c.pan}
             onChange={(v: string) =>
@@ -308,9 +347,11 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
             required
             caps
             maxLength={10}
+            customStyles={{marginVertical : 12}}
           />
+
           <TextInputComponent
-            header="GST registration number"
+            header="GST registration number "
             placeholder="27AAFCM1234Q1Z5"
             value={c.gst}
             onChange={(v: string) =>
@@ -318,59 +359,83 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
             }
             caps
             maxLength={15}
+            customStyles={{marginVertical : 10}}
           />
-          <DateInput
+
+          <TextInputComponent
+            header="Udyam Registration "
+            placeholder="UDYAM-KA-03-0012345"
+            value={c.udyam}
+            onChange={(v: string) =>
+              set("udyam", v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 15))
+            }
+            caps
+            maxLength={15}
+            customStyles={{marginVertical : 10}}
+          />
+
+          <View style={{marginVertical : 8}}>
+            <DateInput
             label="Date of incorporation"
             date={c.doi}
             onDateChange={(v: string) => set("doi", v)}
             required
             placeholder="YYYY-MM-DD"
+            customStyles={{marginVertical : 8}}
           />
+          </View>
         </ExpandableSection>
+
 
         {/* 3 · Registered office */}
         <ExpandableSection
-          icon="📍"
           title="Registered office"
-          summary={
-            office.reg.city
-              ? `${office.reg.city}, ${office.reg.state}`
-              : "Tap to add"
-          }
-          colors={colors}
+          summary={ office.reg.city ? `${office.reg.city}, ${office.reg.state}` : "Tap to add"}
         >
-          <DropdownWithModal
-            options={COUNTRIES}
-            value={office.reg.country || "India"}
-            setValue={(v: string) => setOff("reg", "country", v)}
-            placeholder="Select country"
+          <DropDownModal
+            selected={office.reg.country}
+            onChange={(v: string) => setOff("reg", "country", v)}
             header="Country"
+            data={COUNTRIES}
+            placeholder="Select country"
+            isSearchable={true}
+            searchPlaceholder="Search ..."
             label="Country"
             required
+            style={{ marginBottom: 18 }}
           />
-          <DropdownWithModal
-            options={INDIAN_STATES}
-            value={office.reg.state}
-            setValue={(v: string) => setOff("reg", "state", v)}
-            placeholder="Select state"
+
+          <DropDownModal
             header="State"
+            selected={office.reg.state}
+            onChange={(v: string) => setOff("reg", "state", v)}
+            data={INDIAN_STATES}
+            placeholder="Select State"
+            isSearchable={true}
+            searchPlaceholder="Search ..."
             label="State"
             required
+            style={{ marginBottom: 12 }}
           />
+
           <TextInputComponent
-            header="City"
+            header="City "
             placeholder="City"
             value={office.reg.city}
             onChange={(v: string) => setOff("reg", "city", v)}
             required
+            customStyles={{marginVertical : 8}}
           />
+
           <TextInputComponent
-            header="Area / locality"
+            header="Area / locality  "
             placeholder="Area / locality"
             value={office.reg.locality}
             onChange={(v: string) => setOff("reg", "locality", v)}
             required
+            customStyles={{marginVertical : 10}}
           />
+
           <TextInputComponent
             header="Building / office address"
             placeholder="Plot / Building / Street"
@@ -379,9 +444,11 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
             required
             multiline
             numberOfLines={2}
+            customStyles={{marginVertical : 10}}
           />
+
           <TextInputComponent
-            header="PIN code"
+            header="PIN code "
             placeholder="400001"
             value={office.reg.postal}
             onChange={(v: string) =>
@@ -390,52 +457,59 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
             required
             keyboardType="numeric"
             maxLength={6}
+            customStyles={{marginVertical : 10}}
           />
         </ExpandableSection>
 
         {/* 4 · Operational office */}
         <ExpandableSection
-          icon="🏭"
           title="Operational office"
-          summary={
-            office.op.city
-              ? `${office.op.city}, ${office.op.state}`
-              : "Tap to add"
-          }
-          colors={colors}
+          summary={ office.op.city ? `${office.op.city}, ${office.op.state}` : "Tap to add"}
         >
-          <DropdownWithModal
-            options={COUNTRIES}
-            value={office.op.country || "India"}
-            setValue={(v: string) => setOff("op", "country", v)}
-            placeholder="Select country"
+          <DropDownModal
             header="Country"
+            selected={office.op.country}
+            onChange={(v: string) => setOff("op", "country", v)}
+            data={COUNTRIES}
+            placeholder="Select country"
+            isSearchable={true}
+            searchPlaceholder="Search ..."
             label="Country"
             required
+            style={{ marginBottom: 18 }}
           />
-          <DropdownWithModal
-            options={INDIAN_STATES}
-            value={office.op.state}
-            setValue={(v: string) => setOff("op", "state", v)}
-            placeholder="Select state"
+
+          <DropDownModal
             header="State"
+            selected={office.op.state}
+            onChange={(v: string) => setOff("op", "state", v)}
+            data={INDIAN_STATES}
+            placeholder="Select State"
+            isSearchable={true}
+            searchPlaceholder="Search ..."
             label="State"
             required
+            style={{ marginBottom: 12 }}
           />
+
           <TextInputComponent
-            header="City"
+            header="City "
             placeholder="City"
             value={office.op.city}
             onChange={(v: string) => setOff("op", "city", v)}
             required
+            customStyles={{marginVertical : 8}}
           />
+
           <TextInputComponent
-            header="Area / locality"
+            header="Area / locality   "
             placeholder="Area / locality"
             value={office.op.locality}
             onChange={(v: string) => setOff("op", "locality", v)}
             required
+            customStyles={{marginVertical : 10}}
           />
+
           <TextInputComponent
             header="Building / office address"
             placeholder="Plot / Building / Street"
@@ -444,9 +518,11 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
             required
             multiline
             numberOfLines={2}
+            customStyles={{marginVertical : 10}}
           />
+
           <TextInputComponent
-            header="PIN code"
+            header="PIN code "
             placeholder="400001"
             value={office.op.postal}
             onChange={(v: string) =>
@@ -455,23 +531,19 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
             required
             keyboardType="numeric"
             maxLength={6}
+            customStyles={{marginVertical : 10}}
           />
         </ExpandableSection>
 
+
         {/* 5 · Directors */}
         <ExpandableSection
-          icon="👥"
           title="Directors & owners"
-          summary={
-            directors.length > 0
-              ? `${directors.length} director${directors.length > 1 ? "s" : ""} · ${totalOwnership}% shareholding`
-              : "Tap to add"
-          }
-          colors={colors}
+          summary={ directors.length > 0 ? `${directors.length} director${directors.length > 1 ? "s" : ""} · ${totalOwnership}% shareholding` : "Tap to add"}
         >
-          {directors.length > 0 && (
-            <Text style={[styles.dirGroupLabel, { color: colors.textMuted }]}>DIRECTORS</Text>
-          )}
+          {/* ── DIRECTORS ── */}
+          <Text style={[styles.dirGroupLabel, { color: colors.textMuted }]}>DIRECTORS</Text>
+
           {directors.map((d: any) => (
             <View
               key={d.id}
@@ -480,155 +552,110 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
               <View style={[styles.dirAvatar, { backgroundColor: getAvatarColor(d.id) }]}>
                 <Text style={styles.dirAvatarText}>{getInitials(d.name)}</Text>
               </View>
+
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={[styles.dirName, { color: colors.text }]} numberOfLines={1}>{d.name}</Text>
                 <Text style={[styles.dirRole, { color: colors.textSecondary }]}>{d.designation}</Text>
               </View>
+
               <TouchableOpacity
                 onPress={() => openEditDir(d)}
                 style={[styles.dirActionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
               >
                 <Text style={{ fontSize: 14 }}>✏️</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 onPress={() => deleteDir(d.id)}
-                style={[styles.dirActionBtn, { backgroundColor: "#FEF2F2", borderColor: "#FECACA" }]}
+                style={[styles.dirActionBtn, { backgroundColor: colors.dangerTint, borderColor: colors.dangerBorder }]}
               >
                 <Text style={{ fontSize: 14 }}>🗑️</Text>
               </TouchableOpacity>
+
             </View>
           ))}
+
           <TouchableOpacity
             onPress={openAddDir}
             style={[styles.addDirBtn, { borderColor: colors.border }]}
           >
             <Text style={[styles.addDirBtnText, { color: colors.text }]}>+ Add Director</Text>
           </TouchableOpacity>
+
+          {/*  OWNERS / SHAREHOLDERS  */}
+          <Text style={[styles.dirGroupLabel, { color: colors.textMuted, marginTop: 18 }]}>OWNERS / SHAREHOLDERS</Text>
+          {owners.map((o: any) => (
+            <View
+              key={o.id}
+              style={[styles.dirCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+            >
+              <View style={[styles.dirAvatar, { backgroundColor: getAvatarColor(o.id) }]}>
+                <Text style={styles.dirAvatarText}>{getInitials(o.name)}</Text>
+              </View>
+
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={[styles.dirName, { color: colors.text }]} numberOfLines={1}>{o.name}</Text>
+                <Text style={[styles.dirRole, { color: colors.textSecondary }]}>{o.ownerType}</Text>
+              </View>
+
+              <TouchableOpacity
+                style={[styles.dirActionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              >
+                <Text style={{ fontSize: 14 }}>✏️</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => deleteOwner(o.id)}
+                style={[styles.dirActionBtn, { backgroundColor: colors.dangerTint, borderColor: colors.dangerBorder }]}
+              >
+                <Text style={{ fontSize: 14 }}>🗑️</Text>
+              </TouchableOpacity>
+
+            </View>
+          ))}
+          
+          <TouchableOpacity
+            onPress={openAddPartner}
+            style={[styles.addDirBtn, { borderColor: colors.border }]}
+          >
+            <Text style={[styles.addDirBtnText, { color: colors.text }]}>+ Add Partner</Text>
+          </TouchableOpacity>
         </ExpandableSection>
 
-        {/* Director modal */}
-        <Modal visible={dirModal} animationType="slide" transparent onRequestClose={() => setDirModal(false)}>
-          <View style={styles.modalOverlay}>
-            <View style={[styles.modalSheet, { backgroundColor: colors.card }]}>
-              {/* Modal header */}
-              <View style={[styles.modalHeader, { borderBottomColor: colors.borderLight }]}>
-                <View>
-                  <Text style={[styles.modalTitle, { color: colors.text }]}>
-                    {editingId ? "Edit director" : "Add director"}
-                  </Text>
-                  <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
-                    Director details · India (IN)
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => setDirModal(false)}
-                  style={[styles.modalCloseBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                >
-                  <Text style={[styles.modalCloseTxt, { color: colors.text }]}>✕</Text>
-                </TouchableOpacity>
-              </View>
+        <EntityEditor
+          visible={partnerModal}
+          onClose={() => setPartnerModal(false)}
+          title="Add partner / owner"
+          subtitle="Shareholding details"
+          fields={PARTNER_FIELDS}
+          initial={partnerForm}
+          onSave={savePartner}
+        />
 
-              <ScrollView contentContainerStyle={styles.modalBody} keyboardShouldPersistTaps="handled">
-                <TextInputComponent
-                  header="Full name"
-                  placeholder="Director name"
-                  value={dirForm.name}
-                  onChange={(v: string) => setDirForm((f: any) => ({ ...f, name: v }))}
-                  required
-                />
-                <DropdownWithModal
-                  options={DESIGNATIONS}
-                  value={dirForm.designation}
-                  setValue={(v: string) => setDirForm((f: any) => ({ ...f, designation: v }))}
-                  placeholder="Select designation"
-                  header="Designation"
-                  label="Designation"
-                  required
-                />
-                <View style={{ marginVertical: hp(0.8) }}>
-                  <Text style={[styles.fieldLabel, { color: colors.text }]}>
-                    Mobile number <Text style={{ color: "red" }}>*</Text>
-                  </Text>
-                  <MobileNumberInputComponent
-                    isdCode={dirForm.isdCode}
-                    mobileNumber={dirForm.mobile}
-                    onChangeMobileNumber={(v: string) => setDirForm((f: any) => ({ ...f, mobile: v }))}
-                    onChangeIsdCode={(code: string | number) => setDirForm((f: any) => ({ ...f, isdCode: String(code) }))}
-                  />
-                </View>
-                <TextInputComponent
-                  header="Email address"
-                  placeholder="name@company.com"
-                  value={dirForm.email}
-                  onChange={(v: string) => setDirForm((f: any) => ({ ...f, email: v }))}
-                  required
-                  keyboardType="email-address"
-                />
-                <TextInputComponent
-                  header="DIN"
-                  placeholder="02145673"
-                  value={dirForm.din}
-                  onChange={(v: string) => setDirForm((f: any) => ({ ...f, din: v.replace(/[^0-9]/g, "").slice(0, 8) }))}
-                  required
-                  keyboardType="numeric"
-                  maxLength={8}
-                />
-                <Text style={[styles.dinHint, { color: colors.textMuted }]}>Director Identification Number</Text>
+        <EntityEditor
+          visible={obligationModal}
+          onClose={() => setObligationModal(false)}
+          title={editingObligationId ? "Edit obligation" : "Add obligation"}
+          subtitle="Existing borrowing details"
+          fields={OBLIGATION_FIELDS}
+          initial={obligationForm}
+          onSave={saveObligation}
+        />
 
-                {/* Owner toggle */}
-                <View style={[styles.ownerRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                  <View style={[styles.ownerIcon, { backgroundColor: colors.card }]}>
-                    <Text style={{ fontSize: 16 }}>%</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.ownerTitle, { color: colors.text }]}>Is this person an owner?</Text>
-                    <Text style={[styles.ownerDesc, { color: colors.textSecondary }]}>
-                      Holds shares / profit-share in the company
-                    </Text>
-                  </View>
-                  <Switch
-                    value={dirForm.isOwner}
-                    onValueChange={(v) => setDirForm((f: any) => ({ ...f, isOwner: v }))}
-                    trackColor={{ false: colors.border, true: BRAND }}
-                    thumbColor="#fff"
-                  />
-                </View>
-
-                {dirForm.isOwner && (
-                  <TextInputComponent
-                    header="Ownership %"
-                    placeholder="0"
-                    value={dirForm.ownership}
-                    onChange={(v: string) => setDirForm((f: any) => ({ ...f, ownership: v.replace(/[^0-9]/g, "").slice(0, 3) }))}
-                    required
-                    keyboardType="numeric"
-                    maxLength={3}
-                  />
-                )}
-              </ScrollView>
-
-              <View style={[styles.modalFooter, { borderTopColor: colors.borderLight, backgroundColor: colors.card }]}>
-                <Button
-                  text="✓  Save details"
-                  click={saveDir}
-                  disabled={!dirForm.name || !dirForm.designation}
-                  buttonStyle={styles.modalSaveBtn}
-                />
-              </View>
-            </View>
-          </View>
-        </Modal>
+        <EntityEditor
+          visible={dirModal}
+          onClose={() => setDirModal(false)}
+          title={editingId ? "Edit director" : "Add director"}
+          subtitle={`Director details · ${c.country || "India"} (${(c.country || "India").slice(0, 2).toUpperCase()})`}
+          fields={DIRECTOR_FIELDS}
+          initial={dirForm}
+          onSave={saveDir}
+        />
 
         {/* 6 · Financial information */}
         <ExpandableSection
-          icon="📊"
           title="Financial information"
-          summary={
-            f.annualRevenue
-              ? `Revenue ₹${(+f.annualRevenue / 10000000).toFixed(1)} Cr`
-              : "Tap to add"
-          }
-          colors={colors}
+          summary={f.annualRevenue ? `Revenue ₹${(+f.annualRevenue / 10000000).toFixed(1)} Cr` : "Tap to add"}
         >
           <CurrencyInput
             label="Annual revenue"
@@ -638,6 +665,7 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
             prefix="₹"
             placeholder="0"
           />
+
           <CurrencyInput
             label="Average monthly turnover"
             value={f.monthlyTurnover ? Number(f.monthlyTurnover) : null}
@@ -646,6 +674,7 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
             prefix="₹"
             placeholder="0"
           />
+
           <CurrencyInput
             label="Net profit (FY)"
             value={f.netProfit ? Number(f.netProfit) : null}
@@ -654,6 +683,7 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
             prefix="₹"
             placeholder="0"
           />
+
           <View style={styles.rowFields}>
             <View style={{ flex: 1 }}>
               <TextInputComponent
@@ -679,26 +709,67 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
               />
             </View>
           </View>
+
         </ExpandableSection>
 
+        {/* 7.  Existing obligations (own ExpandableSection)  */}
+        <ExpandableSection
+          title="Existing obligations"
+          summary={ obligations.length > 0 ? `${obligations.length} facilit${obligations.length === 1 ? "y" : "ies"}`
+            : "No existing borrowings"
+          }
+        >
+          <Text style={[styles.obligDesc, { color: colors.muted }]}>
+            Current borrowings — pre-filled from your credit-bureau report. Add or
+            correct any facility.
+          </Text>
+
+          {obligations.map((ob: any) => (
+            <View key={ob.id} style={{ marginBottom: 10 }}>
+              <BankCard
+                lender={ob.lender}
+                facilityType={ob.facilityType}
+                endDate={ob.endDate}
+                sanctioned={ob.sanctioned}
+                outstanding={ob.outstanding}
+                emi={ob.emi}
+                onEdit={() => openEditObligation(ob)}
+                onDelete={() => deleteObligation(ob.id)}
+              />
+            </View>
+          ))}
+
+          <TouchableOpacity
+            onPress={openAddObligation}
+            style={[styles.addDirBtn, { borderColor: colors.border }]}
+          >
+            <Text style={[styles.addDirBtnText, { color: colors.text }]}>
+              + Add Obligation
+            </Text>
+          </TouchableOpacity>
+
+          {obligations.length > 0 && (
+            <View style={[styles.totalRow, { backgroundColor: colors.buttonDisabledBackground }]}>
+              <Text style={[styles.totalLabel, { color: colors.muted }]}>Total monthly obligations</Text>
+              <Text style={[styles.totalValue, { color: colors.ink }]}>
+                ₹{totalEmi.toLocaleString("en-IN")}.00
+              </Text>
+            </View>
+          )}
+        </ExpandableSection>
+
+      
         <Text style={[styles.editNote, { color: colors.textMuted }]}>
           🔒 You can edit everything before submission
         </Text>
+
       </ScrollView>
 
-      <View
-        style={[
-          styles.footer,
-          { borderTopColor: colors.borderLight, backgroundColor: colors.background },
-        ]}
-      >
-        <Button
-          text="Confirm & Continue"
-          click={() => navigation.navigate("CorporateLoan")}
-          disabled={!companyComplete}
-          buttonStyle={styles.footerBtn}
-        />
-      </View>
+      <BottomButton
+        text="Confirm & Continue"
+        onPress={() => navigation.navigate("CorporateLoan")}
+        disabled={!companyComplete}
+      />
     </View>
   );
 };
@@ -868,4 +939,29 @@ const styles = StyleSheet.create({
     paddingBottom: hp(3),
   },
   footerBtn: { marginHorizontal: wp(4), borderRadius: 12 },
+
+  // ── Existing obligations section ──
+  // (color values are applied inline in JSX via colors.muted / colors.buttonDisabledBackground / colors.ink)
+  obligDesc: {
+    fontSize: 11.5,
+    lineHeight: 17,
+    marginBottom: 11,
+  },
+  totalRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 12,
+    paddingVertical: 11,
+    paddingHorizontal: 13,
+    borderRadius: 12,
+  },
+  totalLabel: {
+    fontSize: 12.5,
+    fontWeight: "600",
+  },
+  totalValue: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
 });

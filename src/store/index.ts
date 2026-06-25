@@ -3,6 +3,7 @@ import authSlice from "./auth";
 import customerSlice from "./customer";
 import loansSlice from "./loans";
 import corporateSlice from "./corporate";
+import catalogsSlice from "./catalogs";
 
 const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
     customer: customerSlice,
     loans: loansSlice,
     corporate: corporateSlice,
+    catalogs: catalogsSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

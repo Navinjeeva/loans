@@ -113,16 +113,12 @@ const CurrencyInputField: FC<CustomTextInputProps> = ({
       )}
 
       <View style={[withLabel && styles.container, { flex: 1 }]}>
-        {withLabel && (
-          <View style={{ flexDirection: "row" }}>
-            {label && (
-              <Text style={labelStyle ? labelStyle : styles.label}>
-                {label}
-              </Text>
-            )}
-            {lableimp && <Text style={{ color: "red" }}> *</Text>}
-          </View>
-        )}
+        {withLabel && label ? (
+          <Text style={labelStyle ? labelStyle : styles.label}>
+            {label}
+            {lableimp ? <Text style={{ color: "red" }}> *</Text> : null}
+          </Text>
+        ) : null}
 
         {isText ? (
           <TouchableOpacity
@@ -170,7 +166,7 @@ const CurrencyInputField: FC<CustomTextInputProps> = ({
             ]}
           >
             <CurrencyInput
-              value={Number(value)}
+              value={value}
               editable={!disabled}
               onChangeValue={(val) => {
                 if (onChangeText) onChangeText(val); // Ensure onChangeText is called with the updated value

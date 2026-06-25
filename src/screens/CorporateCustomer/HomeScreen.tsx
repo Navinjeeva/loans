@@ -11,11 +11,11 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import { useTheme } from "@src/common/ThemeContext";
-import Button from "@src/components/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { resetCorporate } from "@src/store/corporate";
+import ScreenHeader from "@src/common/components/ScreenHeader";
+import BottomButton from "@src/common/components/BottomButton";
 
-const BRAND = "#F97316";
 
 const HomeScreen = ({ navigation }: any) => {
   const { colors } = useTheme();
@@ -74,14 +74,9 @@ const HomeScreen = ({ navigation }: any) => {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={[styles.backArrow, { color: colors.text }]}>←</Text>
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Your applications</Text>
-        <View style={{ width: wp(10) }} />
-      </View>
+
+      {/* header */}
+      <ScreenHeader title="Your Applications" onPress={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scroll}>
         {drafts.length === 0 ? (
@@ -124,9 +119,10 @@ const HomeScreen = ({ navigation }: any) => {
         )}
       </ScrollView>
 
-      <View style={[styles.footer, { borderTopColor: colors.borderLight, backgroundColor: colors.background }]}>
-        <Button text="Start new application" click={startApplication} buttonStyle={styles.footerBtn} />
-      </View>
+      <BottomButton
+        text="Start new application"
+        onPress={() => startApplication()}
+      />
     </View>
   );
 };

@@ -44,7 +44,7 @@ const BuildingIcon = () => (
 const SelectProduct = ({ navigation }: any) => {
   useHideBottomBar();
   const { colors } = useTheme();
-const [selected, setSelected] = useState<CustomerType>(null);
+  const [selected, setSelected] = useState<CustomerType>(null);
 
   const handleContinue = () => {
     if (selected === "individual") {
@@ -161,15 +161,17 @@ const [selected, setSelected] = useState<CustomerType>(null);
       {/* Footer */}
       <View style={[styles.footer, { borderTopColor: colors.borderLight }]}>
         <View style={styles.encryptionRow}>
-          <Text style={[styles.lockIcon, { color: colors.textSecondary }]}>
+
+          {/* <Text style={[styles.lockIcon, { color: colors.textSecondary }]}>
             🔒
-          </Text>
-          <Text style={[styles.encryptionText, { color: colors.textSecondary }]}>
-            Bank-grade 256-bit encryption
+          </Text> */}
+
+          <Text style={[styles.encryptionText, { color: colors.textSecondary}]}>
+              🔒 Bank-grade 256-bit encryption
           </Text>
         </View>
         <Button
-          text="Continue"
+          text="Continue "
           click={handleContinue}
           buttonStyle={styles.continueButton}
         />
@@ -369,7 +371,9 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
   },
   encryptionText: {
+    flex : 1,
     fontSize: hp(1.6),
+    textAlign : "center"
   },
   continueButton: {
     marginHorizontal: wp(5),

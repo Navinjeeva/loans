@@ -55,6 +55,66 @@ interface ThemeContextType {
     buttonSecondaryHover: string;
     buttonText: string;
     buttonTextSecondary: string;
+    buttonDisabledBackground: string;
+    buttonDisabledText: string;
+
+    // Footer / sticky bar
+    footerBackground: string;
+
+    // Step indicator (ScreenHeader)
+    stepDone: string;
+    stepCurrent: string;
+    stepUpcoming: string;
+    stepNumber: string;
+    stepNumberTotal: string;
+
+    // Used in: ClassificationScreen (Corporate Loan onboarding)
+    brand: string;
+    dividerSoft: string;
+    ink: string;
+    ink2: string;
+    muted: string;
+    faint: string;
+    inputLabel: string;
+
+    // Used in: VerifyCompanyScreen (Corporate Loan) — tinted surfaces
+    brandTint: string;
+    dangerTint: string;
+    dangerBorder: string;
+
+    // Used in: CollateralSection — subtle surfaces & destructive accents
+    surfaceSoft: string;
+    danger: string;
+    dangerSoft: string;
+    dangerSoftBorder: string;
+
+    // Used in: PersonKYCCard — deterministic per-person avatar palette
+    avatarPalette: string[];
+
+    // Used in: ExpandableSection — amber "Please check" status badge
+    warningInk: string;
+    warningSoft: string;
+
+    // Used in: InAppCameraModal — fixed-dark camera UI surfaces
+    cameraBg: string;
+    cameraScrim: string;
+
+    // Used in: DocumentPreviewModal — "Uploaded" status badge (informational blue)
+    infoInk: string;
+    infoSoft: string;
+
+    // Used in: ReviewScreen declaration rows — soft success border
+    successBorder: string;
+
+    // Used in: DropDownModal / EntityEditor (bottom-sheet primitives)
+    hairline: string;
+    handle: string;
+    modalBackdrop: string;
+
+    // Used in: EntityEditor (form-modal accents)
+    brand600: string;
+    switchTrack: string;
+    brandBorder: string;
 
     // Shadow colors
     shadow: string;
@@ -116,13 +176,82 @@ const colors = {
     inputFocusBorder: "#F13937",
 
     // Button colors
-    buttonPrimary: "#4316CC",
+    buttonPrimary: "#f97316",
     //buttonPrimary: "#F13937",
-    buttonPrimaryHover: "#D2691E",
+    buttonPrimaryHover: "#CF5A1F",
     buttonSecondary: "#6C757D",
     buttonSecondaryHover: "#5A6268",
     buttonText: "#FFFFFF",
     buttonTextSecondary: "#6C757D",
+    buttonDisabledBackground: "#EFF0F4",
+    buttonDisabledText: "#9AA0AB",
+
+    // Footer / sticky bar
+    footerBackground: "rgba(255,255,255,0.92)",
+
+    // Step indicator (ScreenHeader)
+    stepDone: "#ED6E27",
+    stepCurrent: "#F2A875",
+    stepUpcoming: "#E6EAF0",
+    stepNumber: "#6F7480",
+    stepNumberTotal: "#9AA0AB",
+
+    // Used in: ClassificationScreen (Corporate Loan onboarding)
+    brand: "#ED6E27",
+    dividerSoft: "#EFF1F5",
+    ink: "#1A1D23",
+    ink2: "#2A2E37",
+    muted: "#6F7480",
+    faint: "#9AA0AB",
+    inputLabel: "#5B616E",
+
+    // Used in: VerifyCompanyScreen (Corporate Loan) — tinted surfaces
+    brandTint: "#FFF4EC",
+    dangerTint: "#FEF2F2",
+    dangerBorder: "#FECACA",
+
+    // Used in: CollateralSection — subtle surfaces & destructive accents
+    surfaceSoft: "#F6F7FA",
+    danger: "#E04A3F",
+    dangerSoft: "#FCEBEA",
+    dangerSoftBorder: "#F3C6C2",
+
+    // Used in: PersonKYCCard — deterministic per-person avatar palette
+    avatarPalette: [
+      "#C2185B",
+      "#7B1FA2",
+      "#1565C0",
+      "#00695C",
+      "#E65100",
+      "#4527A0",
+      "#D81B60",
+      "#5E35B1",
+    ],
+
+    // Used in: ExpandableSection — amber "Please check" status badge
+    warningInk: "#D97706",
+    warningSoft: "#FEF4E2",
+
+    // Used in: InAppCameraModal — fixed-dark camera UI surfaces
+    cameraBg: "#000000",
+    cameraScrim: "rgba(0,0,0,0.45)",
+
+    // Used in: DocumentPreviewModal — "Uploaded" status badge (informational blue)
+    infoInk: "#2563EB",
+    infoSoft: "#EAF1FE",
+
+    // Used in: ReviewScreen declaration rows — soft success border
+    successBorder: "#BBE6CB",
+
+    // Used in: DropDownModal / EntityEditor (bottom-sheet primitives)
+    hairline: "#F1F2F6",
+    handle: "#E2E8F0",
+    modalBackdrop: "rgba(15,23,42,0.42)",
+
+    // Used in: EntityEditor (form-modal accents)
+    brand600: "#E15F26",
+    switchTrack: "#D7DEE8",
+    brandBorder: "#F4CBA9",
 
     // Shadow colors
     shadow: "rgba(0, 0, 0, 0.1)",
@@ -181,11 +310,65 @@ const colors = {
     // Button colors
     buttonPrimary: "#4316CC",
     //buttonPrimary: "#F13937",
-    buttonPrimaryHover: "#D2691E",
+    buttonPrimaryHover: "#311299",
     buttonSecondary: "#03DAC6",
     buttonSecondaryHover: "#00BFA5",
     buttonText: "#FFFFFF",
     buttonTextSecondary: "#B0B0B0",
+    buttonDisabledBackground: "#2A2A2A",
+    buttonDisabledText: "#6F7480",
+
+    // Footer / sticky bar
+    footerBackground: "rgba(28,28,28,0.94)",
+
+    // Step indicator (ScreenHeader)
+    stepDone: "#ED6E27",
+    stepCurrent: "#F2A875",
+    stepUpcoming: "#3A3A3A",
+    stepNumber: "#B0B0B0",
+    stepNumberTotal: "#6F7480",
+
+    // Used in: ClassificationScreen (Corporate Loan onboarding)
+    brand: "#ED6E27",
+    dividerSoft: "#3A3A3A",
+    ink: "#FFFFFF",
+    ink2: "#E4E6EA",
+    muted: "#B0B0B0",
+    faint: "#808080",
+    inputLabel: "#B0B0B0",
+
+    // Used in: VerifyCompanyScreen (Corporate Loan) — tinted surfaces
+    brandTint: "#3A2415",
+    dangerTint: "#3A1414",
+    dangerBorder: "#5A2424",
+
+    // Used in: CollateralSection — subtle surfaces & destructive accents
+    surfaceSoft: "#2A2A2A",
+    danger: "#F44336",
+    dangerSoft: "#3A1414",
+    dangerSoftBorder: "#5A2424",
+
+    // Used in: PersonKYCCard — deterministic per-person avatar palette
+    avatarPalette: [
+      "#C2185B",
+      "#7B1FA2",
+      "#1565C0",
+      "#00695C",
+      "#E65100",
+      "#4527A0",
+      "#D81B60",
+      "#5E35B1",
+    ],
+
+    // Used in: DropDownModal / EntityEditor (bottom-sheet primitives)
+    hairline: "#2A2A2A",
+    handle: "#4A4A4A",
+    modalBackdrop: "rgba(0,0,0,0.6)",
+
+    // Used in: EntityEditor (form-modal accents)
+    brand600: "#E15F26",
+    switchTrack: "#3A3A3A",
+    brandBorder: "#5A3920",
 
     // Shadow colors
     shadow: "rgba(0, 0, 0, 0.3)",
@@ -194,6 +377,21 @@ const colors = {
     // Accent colors
     accent: "#03DAC6",
     accentLight: "#00BFA5",
+
+    // Used in: ExpandableSection — amber "Please check" status badge
+    warningInk: "#FBBF24",
+    warningSoft: "#3A2C14",
+
+    // Used in: InAppCameraModal — fixed-dark camera UI surfaces
+    cameraBg: "#000000",
+    cameraScrim: "rgba(0,0,0,0.45)",
+
+    // Used in: DocumentPreviewModal — "Uploaded" status badge (informational blue)
+    infoInk: "#60A5FA",
+    infoSoft: "#14243F",
+
+    // Used in: ReviewScreen declaration rows — soft success border
+    successBorder: "#2E5D3E",
   },
 };
 
