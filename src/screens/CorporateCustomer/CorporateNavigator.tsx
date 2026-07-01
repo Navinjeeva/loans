@@ -3,7 +3,6 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import HomeScreen from "./HomeScreen";
 import ClassificationScreen from "./ClassificationScreen";
-import AIExtractionScreen from "./AIExtractionScreen";
 import VerifyCompanyScreen from "./VerifyCompanyScreen";
 import LoanScreen from "./LoanScreen";
 import DocumentsScreen from "./DocumentsScreen";
@@ -21,7 +20,6 @@ const CorporateNavigator = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="CorporateHome">
       <Stack.Screen name="CorporateHome" component={HomeScreen} />
       <Stack.Screen name="CorporateClassification" component={ClassificationScreen} />
-      <Stack.Screen name="CorporateAIExtraction" component={AIExtractionScreen} />
       <Stack.Screen name="CorporateVerifyCompany" component={VerifyCompanyScreen} />
       <Stack.Screen name="CorporateLoan" component={LoanScreen} />
       <Stack.Screen name="CorporateDocuments" component={DocumentsScreen} />

@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   Alert,
   Animated,
   Easing,
+  Image,
   Modal,
   StyleSheet,
   Text,
@@ -15,10 +16,35 @@ import {
   launchImageLibrary,
   Asset,
 } from "react-native-image-picker";
+import ScanbotSDK, { Page } from "react-native-scanbot-sdk";
 import { useTheme } from "@src/common/ThemeContext";
 import type { DocumentEntry } from "@src/store/corporate";
 import { CameraIcon, ImageIcon , FileIcon, ChevronRight, CloseIcon, InfoIcon, LockIcon} from "@src/common/svg/CorporateLoansSvgs";
-import InAppCameraModal, { CapturedPhoto } from "@src/common/components/InAppCameraModal";
+import { pick, types } from "@react-native-documents/picker";
+
+const rotateLandscapeImage = async (page: Page): Promise<Page> => {
+  const imageUri = page.documentImageFileUri || page.originalImageFileUri;
+  return new Promise((resolve) => {
+    Image.getSize(
+      imageUri,
+      async (width, height) => {
+        if (width >= height) {
+          resolve(page);
+          return;
+        }
+        try {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore -- RotatePageResult extends Page; deprecated overload is the only available one
+          const rotated = await ScanbotSDK.rotatePage(page, 3);
+          resolve(rotated as Page);
+        } catch {
+          resolve(page);
+        }
+      },
+      () => resolve(page)
+    );
+  });
+};
 
 const formatSize = (bytes?: number) => {
   if (!bytes) return undefined;
@@ -42,6 +68,8 @@ interface BottomFileUploadModalProps {
   onClose: () => void;
   docName: string;
   onPicked: (entry: DocumentEntry) => void;
+  limit?: number;
+  required?: boolean;
 }
 
 const BottomFileUploadModal = ({
@@ -49,10 +77,11 @@ const BottomFileUploadModal = ({
   onClose,
   docName,
   onPicked,
+  limit = 1,
+  required = false,
 }: BottomFileUploadModalProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const [cameraOpen, setCameraOpen] = useState(false);
 
   const sheetY = useRef(new Animated.Value(1)).current;
   const backdrop = useRef(new Animated.Value(0)).current;
@@ -100,30 +129,38 @@ const BottomFileUploadModal = ({
     ]).start(() => onClose());
   };
 
-  const handleCamera = () => {
-    setCameraOpen(true);
-  };
+  const handleCamera = async () => {
+    try {
+      const result = await ScanbotSDK.UI.startDocumentScanner({});
+      if (result.status !== "OK") return;
 
-  const handleCameraCaptured = (photo: CapturedPhoto) => {
-    const entry: DocumentEntry = {
-      status: "uploaded",
-      fileName: photo.fileName,
-      size: formatSize(photo.fileSize),
-      uploadedAt: Date.now(),
-      uri: photo.uri,
-      mimeType: "image/jpeg",
-      source: "camera",
-    };
-    setCameraOpen(false);
-    onPicked(entry);
-    close();
+      const pages = result.data?.pages ?? [];
+      if (pages.length === 0) return;
+
+      const rotatedPage = await rotateLandscapeImage(pages[0]);
+      const imageUri = rotatedPage.documentImageFileUri || rotatedPage.originalImageFileUri;
+
+      const entry: DocumentEntry = {
+        status: "uploaded",
+        fileName: `scan_${Date.now()}.jpg`,
+        uploadedAt: Date.now(),
+        uri: imageUri,
+        mimeType: "image/jpeg",
+        source: "camera",
+      };
+      onPicked(entry);
+      close();
+    } catch (error: any) {
+      if (error?.message && !error.message.includes("cancel")) {
+        Alert.alert("Scan Error", "Failed to scan document. Please try again.");
+      }
+    }
   };
 
   const handleGallery = async () => {
     const res = await launchImageLibrary({
       mediaType: "photo",
-      // quality: 0.85,
-      selectionLimit: 1,
+      selectionLimit: limit,
     });
     if (res.didCancel) return;
     if (res.errorCode) {
@@ -137,11 +174,26 @@ const BottomFileUploadModal = ({
     }
   };
 
-  const handleFile = () => {
-    Alert.alert(
-      "Document picker not installed",
-      "Install react-native-document-picker to enable PDF / file picking.",
-    );
+  const handleFile = async () => {
+    const results = await pick({
+      type: [types.pdf, types.images],
+      allowMultiSelection: limit > 1,
+    });
+
+    const picked = results[0];
+    if (!picked) return;
+
+    const entry: DocumentEntry = {
+      status: "uploaded",
+      fileName: picked.name?.replace(/[^a-zA-Z0-9. ]/g, "") || "document",
+      size: formatSize(picked.size ?? undefined),
+      uploadedAt: Date.now(),
+      uri: picked.uri,
+      mimeType: picked.type ?? undefined,
+      source: "gallery",
+    };
+    onPicked(entry);
+    close();
   };
 
   const OPTIONS: {
@@ -156,7 +208,6 @@ const BottomFileUploadModal = ({
   ];
 
   return (
-    <>
     <Modal visible={visible} transparent animationType="none" onRequestClose={close} statusBarTranslucent>
       <View style={styles.root}>
         <TouchableWithoutFeedback onPress={close}>
@@ -178,7 +229,10 @@ const BottomFileUploadModal = ({
           <View style={styles.titleRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.title}>Add document</Text>
-              <Text style={styles.subtitle}>{docName}</Text>
+              <Text style={styles.subtitle}>
+                {docName}
+                {required && <Text style={styles.required}> *</Text>}
+              </Text>
             </View>
             <TouchableOpacity onPress={close} style={styles.closeBtn} hitSlop={6}>
               <CloseIcon size={18} color={colors.muted} />
@@ -217,14 +271,6 @@ const BottomFileUploadModal = ({
         </Animated.View>
       </View>
     </Modal>
-
-    <InAppCameraModal
-      visible={cameraOpen}
-      onClose={() => setCameraOpen(false)}
-      onCaptured={handleCameraCaptured}
-      title={docName || "Capture document"}
-    />
-    </>
   );
 };
 
@@ -309,4 +355,5 @@ const createStyles = (colors: any) =>
       marginTop: 6,
     },
     secureText: { fontSize: 12, color: colors.faint, fontWeight: "500" },
+    required: { color: colors.error, fontWeight: "700" },
   });

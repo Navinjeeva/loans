@@ -8,6 +8,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from "react-native";
 import { useTheme } from "@src/common/ThemeContext";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,6 +16,7 @@ import { setLookup, setOnboardMode } from "@src/store/corporate";
 import ScreenHeader from "@src/common/components/ScreenHeader";
 import BottomButton from "@src/common/components/BottomButton";
 import { EditIcon } from "@src/common/svg/CorporateLoansSvgs/index";
+import AIExtractionScreen from "./AIExtractionScreen";
 
 
 const ClassificationScreen = ({ navigation }: any) => {
@@ -24,13 +26,19 @@ const ClassificationScreen = ({ navigation }: any) => {
 
   const website = lookup?.website || "";
   const [focused, setFocused] = useState(false);
+  const [extracting, setExtracting] = useState(false);
   const hasInput = website.trim().length > 3;
 
   const setWebsite = (v: string) => dispatch(setLookup({ website: v }));
 
   const startAI = () => {
     dispatch(setOnboardMode("ai"));
-    navigation.navigate("CorporateAIExtraction");
+    setExtracting(true);
+  };
+
+  const handleExtractionDone = () => {
+    setExtracting(false);
+    navigation.navigate("CorporateVerifyCompany");
   };
 
   const goManual = () => {
@@ -136,8 +144,13 @@ const ClassificationScreen = ({ navigation }: any) => {
           note="✨ We’ll fetch & prefill your company details"
           disabled={!hasInput}
           onPress={startAI}
-          // loading
         />
+
+        <Modal visible={extracting} animationType="fade" statusBarTranslucent>
+          {extracting && (
+            <AIExtractionScreen key={String(extracting)} onDone={handleExtractionDone} />
+          )}
+        </Modal>
       </View>
     </KeyboardAvoidingView>
   );

@@ -81,7 +81,7 @@ const DocumentActionsModal = ({
     }
   }, [visible]);
 
-  const close = () => {
+  const slideOut = (then: () => void) => {
     Animated.parallel([
       Animated.timing(sheetY, {
         toValue: 1,
@@ -95,14 +95,18 @@ const DocumentActionsModal = ({
         easing: Easing.in(Easing.ease),
         useNativeDriver: true,
       }),
-    ]).start(() => onClose());
+    ]).start(() => then());
   };
 
+  const close = () => slideOut(onClose);
+
+  const handleActionPress = (fn: () => void) => () => slideOut(fn);
+
   const ACTIONS: Action[] = [
-    { key: "preview", title: "Preview document", Icon: EyeIcon, onPress: onPreview },
-    { key: "replace", title: "Replace document", Icon: RefreshIcon, onPress: onReplace },
-    { key: "download", title: "Download", Icon: DownloadIcon, onPress: onDownload },
-    { key: "delete", title: "Delete document", Icon: TrashIcon, onPress: onDelete, destructive: true },
+    { key: "preview", title: "Preview document", Icon: EyeIcon, onPress: handleActionPress(onPreview) },
+    { key: "replace", title: "Replace document", Icon: RefreshIcon, onPress: handleActionPress(onReplace) },
+    { key: "download", title: "Download", Icon: DownloadIcon, onPress: handleActionPress(onDownload) },
+    { key: "delete", title: "Delete document", Icon: TrashIcon, onPress: handleActionPress(onDelete), destructive: true },
   ];
 
   return (

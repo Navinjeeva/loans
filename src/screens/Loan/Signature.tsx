@@ -532,7 +532,7 @@ const Signature = () => {
       navigation.navigate("LoanFinalScreen");
     } catch (error) {
       console.log("Error submitting loan application:", error);
-      //logErr(error);
+      logErr(error);
     } finally {
       setLoading(false);
     }

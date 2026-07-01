@@ -11,6 +11,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { pdf } from "@src/common/assets";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { useTheme } from "@src/common/ThemeContext";
 import {
@@ -163,10 +164,20 @@ const DocumentPreviewModal = ({
               {!!metaLine && <Text style={styles.metaText}>{metaLine}</Text>}
             </View>
 
-            {/* Preview card — real image when available, skeleton fallback otherwise */}
+            {/* Preview card */}
             <TouchableOpacity activeOpacity={0.9} onPress={onViewFull} style={styles.previewCard}>
               <View style={styles.previewStripe} />
-              {uri && (!mimeType || mimeType.startsWith("image/")) ? (
+              {uri && mimeType === "application/pdf" ? (
+                <View style={styles.pdfWrap}>
+                  <Image source={pdf} style={styles.pdfIcon} resizeMode="contain" />
+                  <Text style={[styles.previewTitle, { color: colors.ink, textAlign: "center", marginTop: 10 }]} numberOfLines={2}>
+                    {docName}
+                  </Text>
+                  <Text style={[styles.previewEyebrow, { marginTop: 6, textAlign: "center" }]}>
+                    TAP "VIEW FULL DOCUMENT" TO OPEN
+                  </Text>
+                </View>
+              ) : uri && (!mimeType || mimeType.startsWith("image/")) ? (
                 <View style={styles.imageWrap}>
                   <View style={styles.imageHeader}>
                     <View style={{ flex: 1, minWidth: 0 }}>
@@ -325,6 +336,16 @@ const createStyles = (colors: any) =>
       flexDirection: "row",
       gap: 14,
       padding: 18,
+    },
+    pdfWrap: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 30,
+      paddingHorizontal: 20,
+    },
+    pdfIcon: {
+      width: 80,
+      height: 80,
     },
     imageWrap: {
       paddingHorizontal: 14,

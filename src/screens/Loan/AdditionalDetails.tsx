@@ -239,7 +239,7 @@ const AdditionalDetails = () => {
           />
           <View style={styles.dropdownContainer}>
             <DropdownWithModal
-              passIdAndDesc
+              //passIdAndDesc
               value={nationality}
               setValue={(id: string, desc?: string) => {
                 dispatch(
@@ -265,7 +265,7 @@ const AdditionalDetails = () => {
 
           <View style={styles.dropdownContainer}>
             <DropdownWithModal
-              passIdAndDesc
+              //passIdAndDesc
               value={residency}
               setValue={(id: string, desc?: string) => {
                 dispatch(
@@ -293,7 +293,7 @@ const AdditionalDetails = () => {
 
           <View style={styles.dropdownContainer}>
             <DropdownWithModal
-              passIdAndDesc
+              //passIdAndDesc
               value={countryOfBirth}
               setValue={(id: string, desc?: string) => {
                 dispatch(
@@ -353,7 +353,7 @@ const AdditionalDetails = () => {
 
           <View style={styles.dropdownContainer}>
             <DropdownWithModal
-              passIdAndDesc
+              //passIdAndDesc
               value={countryOfIssuance}
               setValue={(id: string, desc?: string) => {
                 dispatch(
@@ -390,7 +390,7 @@ const AdditionalDetails = () => {
                   })
                 );
               }}
-              passIdAndDesc
+              //passIdAndDesc
               placeholder={`SELECT MODE OF COMMUNICATION`}
               header="Preferred Mode of Communication"
               style={{ fontSize: 10, fontWeight: "bold" }}

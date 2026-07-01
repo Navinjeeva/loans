@@ -110,6 +110,7 @@ const LockIcon = (p: IconProps) => (
 
 const EXTRACT_STEPS: { label: string; Icon: (p: IconProps) => JSX.Element }[] = [
   { label: "Identifying company classification", Icon: GlobeIcon },
+  { label: "Verifying company identity & name", Icon: DocIcon },
   { label: "Fetching CIN / registration number", Icon: HashIcon },
   { label: "Collecting registered office details", Icon: MapPinIcon },
   { label: "Detecting operational office location", Icon: FactoryIcon },
@@ -124,7 +125,7 @@ const STEP_INTERVAL = 500;
 const DONE_DELAY = 500;
 const NAV_DELAY = 500;
 
-const AIExtractionScreen = ({ navigation }: any) => {
+const AIExtractionScreen = ({ onDone }: { onDone: () => void }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const dispatch = useDispatch();
@@ -172,7 +173,7 @@ const AIExtractionScreen = ({ navigation }: any) => {
         setTimeout(() => setDone(true), DONE_DELAY);
         setTimeout(() => {
           dispatch(applyExtraction());
-          navigation.navigate("CorporateVerifyCompany");
+          onDone();
         }, NAV_DELAY);
       } else {
         setActive(i);

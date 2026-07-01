@@ -30,7 +30,7 @@ import { logAlert, logErr, logSuccess } from "@src/common/utils/logger";
 import { useDispatch, useSelector } from "react-redux";
 import { setState } from "@src/store/customer";
 import { TextInputComponent } from "@src/common";
-import DropdownWithModal from "@src/common/components/DropdownWithModal";
+import DropDownModal from "@src/common/components/DropDownModal";
 import MobileNumberInputComponent from "@src/common/components/MobileNumberComponent";
 
 import Header from "@src/common/LoanComponents/Header";
@@ -369,7 +369,7 @@ const Customer = () => {
                 />
 
                 {/* Purpose of Loan */}
-                <DropdownWithModal
+                <DropDownModal
                   options={[
                     { label: "Personal Loan", value: "PERSONAL" },
                     { label: "Home Loan", value: "HOME" },
@@ -388,7 +388,7 @@ const Customer = () => {
                 />
 
                 {/* Promotions */}
-                <DropdownWithModal
+                <DropDownModal
                   options={[
                     { label: "Christmas Loan", value: "Christmas Loan" },
                     { label: "New Year Special", value: "New Year Special" },
@@ -404,7 +404,7 @@ const Customer = () => {
                   label="Promotions"
                 />
 
-                <DropdownWithModal
+                <DropDownModal
                   required={true}
                   labelStyle={{ fontSize: hp(1.5) }}
                   setValue={(id, desc) => {
@@ -512,7 +512,7 @@ const Customer = () => {
                 {/* Loan Tenor and Tenor Duration Row */}
                 <View ref={tenorRowRef} collapsable={false} style={styles.rowContainer}>
                   <View style={styles.halfWidth}>
-                    <DropdownWithModal
+                    <DropDownModal
                       options={[
                         { label: "Months", value: "Months" },
                         { label: "Years", value: "Years" },

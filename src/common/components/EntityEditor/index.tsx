@@ -590,22 +590,24 @@ const EntityEditor = ({
                 return (
                   <Field
                     key={f.key}
-                    label={f.label}
+                    //label={f.label}
                     required={f.required}
                     optional={f.optional}
                     error={err}
                     hint={f.helper}
                   >
                     <DropDownModal
-                      data={f.options || []}
-                      selected={values[f.key]}
-                      onChange={(v) => set(f.key, v)}
+                      options={f.options || []}
+                      value={values[f.key]}
+                      setValue={(v) => set(f.key, v)}
                       placeholder={
                         f.placeholder || `Select ${f.label.toLowerCase()}`
                       }
                       header={f.label}
+                      label={f.label}
                       error={err}
                       style={{ marginBottom: 0 }}
+                      required
                     />
                   </Field>
                 );

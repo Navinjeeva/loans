@@ -306,9 +306,9 @@ const DisbursementSection = ({
       {mode === "external" && (
         <>
           <DropDownModal
-            data={BANKS}
-            selected={values.bankName}
-            onChange={(v) => onChange("bankName", v)}
+            options={BANKS}
+            value={values.bankName}
+            setValue={(v) => onChange("bankName", v)}
             header="Bank Name"
             label="Bank name"
             required
@@ -384,9 +384,9 @@ const DisbursementSection = ({
             />
 
             <DropDownModal
-              data={ACCOUNT_TYPES}
-              selected={values.accountType}
-              onChange={(v) => onChange("accountType", v)}
+              options={ACCOUNT_TYPES}
+              value={values.accountType}
+              setValue={(v) => onChange("accountType", v)}
               header="Account type"
               label="Account type"
               required
@@ -449,9 +449,9 @@ const DisbursementSection = ({
         >
           <DropDownModal
             placeholder="Select the account type"
-            data={PREFERRED_OPEN_TYPES}
-            selected={values.preferredAccountType}
-            onChange={(v) => onChange("preferredAccountType", v)}
+            options={PREFERRED_OPEN_TYPES}
+            value={values.preferredAccountType}
+            setValue={(v) => onChange("preferredAccountType", v)}
             header="Preferred account type"
             label="Preferred account type"
             required

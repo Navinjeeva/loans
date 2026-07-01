@@ -30,9 +30,11 @@ const SAMPLE_EXTRACTION = {
     pan: "AAFCM1234Q",
     gst: "27AAFCM1234Q1Z5",
     doi: "2009-03-15",
+    udyam: "UDYAM-MH-01-0012345",
     businessType: "Private Limited",
     industry: "Manufacturing",
     country: "India",
+    otherCountry: "",
   },
   office: {
     reg: {
@@ -81,6 +83,46 @@ const SAMPLE_EXTRACTION = {
       din: "03987654",
       isOwner: true,
       ownership: "30",
+    },
+  ],
+  owners: [
+    {
+      id: "1",
+      name: "Rajiv Mehta",
+      ownerType: "Individual",
+      shareholding: "45",
+    },
+    {
+      id: "2",
+      name: "Priya Mehta",
+      ownerType: "Individual",
+      shareholding: "30",
+    },
+    {
+      id: "3",
+      name: "Meridian Holdings Pvt Ltd",
+      ownerType: "Corporate Body",
+      shareholding: "25",
+    },
+  ],
+  obligations: [
+    {
+      id: "1",
+      lender: "HDFC Bank",
+      facilityType: "Term Loan",
+      sanctioned: "5000000",
+      outstanding: "3200000",
+      emi: "120000",
+      endDate: "2027-03-31",
+    },
+    {
+      id: "2",
+      lender: "ICICI Bank",
+      facilityType: "Cash Credit",
+      sanctioned: "10000000",
+      outstanding: "7500000",
+      emi: "",
+      endDate: "2025-12-31",
     },
   ],
 };
@@ -445,6 +487,8 @@ export const corporateSlice = createSlice({
       state.office = SAMPLE_EXTRACTION.office;
       state.financial = { ...state.financial, ...SAMPLE_EXTRACTION.financial };
       state.directors = SAMPLE_EXTRACTION.directors;
+      state.owners = SAMPLE_EXTRACTION.owners;
+      state.obligations = SAMPLE_EXTRACTION.obligations;
     },
     resetCorporate: () => ({ ...initialState, drafts: initialState.drafts }),
   },

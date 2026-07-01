@@ -6,7 +6,12 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
+  Platform,
 } from "react-native";
+import RNBlobUtil from "react-native-blob-util";
+import RNFS from "react-native-fs";
+import PdfViewer from "@src/common/components/PdfViewer";
+import ImageViewer from "@src/common/components/ImageViewer";
 import Svg, { Path, Rect, Circle } from "react-native-svg";
 import {
   widthPercentageToDP as wp,
@@ -185,6 +190,46 @@ const DocumentsScreen = ({ navigation }: any) => {
   const [actionsFor, setActionsFor] = useState<{ id: string; name: string } | null>(null);
   const [previewFor, setPreviewFor] = useState<{ id: string; name: string } | null>(null);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [fullViewDoc, setFullViewDoc] = useState<{
+    uri: string;
+    mimeType?: string;
+    fileName?: string;
+  } | null>(null);
+  const [pdfBase64, setPdfBase64] = useState<string | null>(null);
+
+  const downloadDocument = async (entry: DocumentEntry) => {
+    if (!entry.uri) return;
+    try {
+      const base64 = await RNBlobUtil.fs.readFile(entry.uri, "base64");
+
+      const ext = entry.fileName?.split(".").pop() || (entry.mimeType === "application/pdf" ? "pdf" : "jpg");
+      const safeName = entry.fileName?.replace(/[^a-zA-Z0-9._-]/g, "_") || `document_${Date.now()}.${ext}`;
+      const destDir = Platform.OS === "android" ? RNFS.DownloadDirectoryPath : RNFS.DocumentDirectoryPath;
+      const destPath = `${destDir}/${safeName}`;
+
+      await RNFS.writeFile(destPath, base64, "base64");
+      Alert.alert("Downloaded", `Saved to ${Platform.OS === "android" ? "Downloads" : "Files"}: ${safeName}`);
+    } catch (e) {
+      Alert.alert("Download failed", "Could not save the file. Please try again.");
+    }
+  };
+
+  const openFullView = async (entry: DocumentEntry) => {
+    if (!entry.uri) return;
+    if (entry.mimeType === "application/pdf") {
+      try {
+        const uriForRead =
+          Platform.OS === "android" ? entry.uri : entry.uri.replace("file://", "");
+        const base64 = await RNBlobUtil.fs.readFile(uriForRead, "base64");
+        setPdfBase64(base64);
+        setFullViewDoc({ uri: entry.uri, mimeType: entry.mimeType, fileName: entry.fileName });
+      } catch (e) {
+        Alert.alert("Error", "Could not open PDF.");
+      }
+    } else {
+      setFullViewDoc({ uri: entry.uri, mimeType: entry.mimeType, fileName: entry.fileName });
+    }
+  };
 
   const people: Person[] = [
     ...directors.map((d) => ({
@@ -447,7 +492,11 @@ const DocumentsScreen = ({ navigation }: any) => {
           setPickerFor(target);
         }}
 
-        onDownload={() => {}}
+        onDownload={() => {
+          if (!actionsFor) return;
+          const entry = documents[actionsFor.id];
+          if (entry) downloadDocument(entry);
+        }}
 
         onDelete={() => {
           if (!actionsFor) return;
@@ -468,7 +517,11 @@ const DocumentsScreen = ({ navigation }: any) => {
 
         onClose={() => setPreviewFor(null)}
 
-        onDownload={() => {}}
+        onDownload={() => {
+          if (!previewFor) return;
+          const entry = documents[previewFor.id];
+          if (entry) downloadDocument(entry);
+        }}
 
         onReplace={() => {
           if (!previewFor) return;
@@ -477,8 +530,32 @@ const DocumentsScreen = ({ navigation }: any) => {
           setPickerFor(target);
         }}
 
-        onViewFull={() => {}}
+        onViewFull={() => {
+          if (!previewFor) return;
+          const entry = documents[previewFor.id];
+          if (entry) openFullView(entry);
+        }}
       />
+
+      {fullViewDoc?.mimeType === "application/pdf" && pdfBase64 ? (
+        <PdfViewer
+          visible
+          setVisible={(v) => { if (!v) { setFullViewDoc(null); setPdfBase64(null); } }}
+          pdfBase64={pdfBase64}
+          header={fullViewDoc.fileName || "Document"}
+          downloadAllowed={false}
+          deleteAllowed={false}
+        />
+      ) : fullViewDoc && (!fullViewDoc.mimeType || fullViewDoc.mimeType.startsWith("image/")) ? (
+        <ImageViewer
+          visible
+          setVisible={(v) => { if (!v) setFullViewDoc(null); }}
+          image={fullViewDoc.uri}
+          header={fullViewDoc.fileName || "Document"}
+          downloadAllowed={false}
+          deleteAllowed={false}
+        />
+      ) : null}
 
       <BottomButton
         text={allRequired ? "Continue" : `Upload ${requiredTotal - requiredDone} more to continue`}

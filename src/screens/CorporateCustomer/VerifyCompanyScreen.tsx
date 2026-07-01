@@ -262,10 +262,10 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
           defaultOpen={!isAI}
         >
           <DropDownModal
-            selected={c.country}
-            onChange={(v: string) => set("country", v)}
+            value={c.country}
+            setValue={(v: string) => set("country", v)}
             header="Country of registration"
-            data={COUNTRIES}
+            options={COUNTRIES}
             placeholder="Select country"
             isSearchable={true}
             searchPlaceholder="Search"
@@ -275,10 +275,10 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
           />
 
           <DropDownModal
-            selected={c.otherCountry}
-            onChange={(v: string) => set("otherCountry", v)}
+            value={c.otherCountry}
+            setValue={(v: string) => set("otherCountry", v)}
             header="Other country registration"
-            data={COUNTRIES}
+            options={COUNTRIES}
             placeholder="Select country"
             isSearchable={true}
             searchPlaceholder="Search"
@@ -288,9 +288,9 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
 
           <DropDownModal
             header="Business Type"
-            selected={c.businessType}
-            onChange={(v: string) => set("businessType", v)}
-            data={BUSINESS_TYPES}
+            value={c.businessType}
+            setValue={(v: string) => set("businessType", v)}
+            options={BUSINESS_TYPES}
             placeholder="Select business type"
             label="Business type"
             required
@@ -299,9 +299,9 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
 
           <DropDownModal
             header="Industry"
-            selected={c.industry}
-            onChange={(v: string) => set("industry", v)}
-            data={INDUSTRIES}
+            value={c.industry}
+            setValue={(v: string) => set("industry", v)}
+            options={INDUSTRIES}
             placeholder="Select industry"
             label="Industry type"
             required
@@ -393,10 +393,10 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
           summary={ office.reg.city ? `${office.reg.city}, ${office.reg.state}` : "Tap to add"}
         >
           <DropDownModal
-            selected={office.reg.country}
-            onChange={(v: string) => setOff("reg", "country", v)}
+            value={office.reg.country}
+            setValue={(v: string) => setOff("reg", "country", v)}
             header="Country"
-            data={COUNTRIES}
+            options={COUNTRIES}
             placeholder="Select country"
             isSearchable={true}
             searchPlaceholder="Search ..."
@@ -407,9 +407,9 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
 
           <DropDownModal
             header="State"
-            selected={office.reg.state}
-            onChange={(v: string) => setOff("reg", "state", v)}
-            data={INDIAN_STATES}
+            value={office.reg.state}
+            setValue={(v: string) => setOff("reg", "state", v)}
+            options={INDIAN_STATES}
             placeholder="Select State"
             isSearchable={true}
             searchPlaceholder="Search ..."
@@ -468,9 +468,9 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
         >
           <DropDownModal
             header="Country"
-            selected={office.op.country}
-            onChange={(v: string) => setOff("op", "country", v)}
-            data={COUNTRIES}
+            value={office.op.country}
+            setValue={(v: string) => setOff("op", "country", v)}
+            options={COUNTRIES}
             placeholder="Select country"
             isSearchable={true}
             searchPlaceholder="Search ..."
@@ -481,9 +481,9 @@ const VerifyCompanyScreen = ({ navigation }: any) => {
 
           <DropDownModal
             header="State"
-            selected={office.op.state}
-            onChange={(v: string) => setOff("op", "state", v)}
-            data={INDIAN_STATES}
+            value={office.op.state}
+            setValue={(v: string) => setOff("op", "state", v)}
+            options={INDIAN_STATES}
             placeholder="Select State"
             isSearchable={true}
             searchPlaceholder="Search ..."

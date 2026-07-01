@@ -120,9 +120,9 @@ const LoanScreen = ({ navigation }: any) => {
           </View>
 
           <DropDownModal
-            data={CATEGORIES}
-            selected={l.category}
-            onChange={(v) => set("category", v)}
+            options={CATEGORIES}
+            value={l.category}
+            setValue={(v) => set("category", v)}
             placeholder="Select Category"
             header="Loan Category"
             label="Select category"
@@ -131,9 +131,9 @@ const LoanScreen = ({ navigation }: any) => {
           />
 
          <DropDownModal
-            data={PRODUCTS}
-            selected={l.product}
-            onChange={(v) => set("product", v)}
+            options={PRODUCTS}
+            value={l.product}
+            setValue={(v) => set("product", v)}
             placeholder="Select product"
             header="Loan Product"
             label="Select product"
@@ -143,9 +143,9 @@ const LoanScreen = ({ navigation }: any) => {
 
 
           <DropDownModal
-            data={PRODUCTS}
-            selected={l.schema}
-            onChange={(v) => set("schema", v)}
+            options={PRODUCTS}
+            value={l.schema}
+            setValue={(v) => set("schema", v)}
             placeholder="Select Schema"
             header="Loan Schema"
             label="Select Schema"
@@ -189,9 +189,9 @@ const LoanScreen = ({ navigation }: any) => {
                 </View>
                 <View style={{ flex: 1 }}>
                   <DropDownModal
-                    data={MORATORIUM_OPTIONS}
-                    selected={l.moratorium || "0"}
-                    onChange={(v) => onLoanChange("moratorium", v)}
+                    options={MORATORIUM_OPTIONS}
+                    value={l.moratorium || "0"}
+                    setValue={(v) => onLoanChange("moratorium", v)}
                     placeholder="Select"
                     header="Moratorium"
                     label="Moratorium"
@@ -208,9 +208,9 @@ const LoanScreen = ({ navigation }: any) => {
           )}
 
           <DropDownModal
-            data={PURPOSES}
-            selected={l.purpose}
-            onChange={(v) => set("purpose", v)}
+            options={PURPOSES}
+            value={l.purpose}
+            setValue={(v) => set("purpose", v)}
             placeholder="Select purpose"
             header="Purpose of Loan"
             label="Purpose of loan"
